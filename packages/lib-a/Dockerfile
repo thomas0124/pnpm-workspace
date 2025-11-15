@@ -12,11 +12,11 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/lib-a/package.json ./packages/lib-a/
 COPY packages/lib-b/package.json ./packages/lib-b/
 
-# ワークスペース全体の依存をインストール
-RUN pnpm install --frozen-lockfile
-
 # 残りのソースコードをコピー
 COPY . .
+
+# ワークスペース全体の依存をインストール
+RUN pnpm install --frozen-lockfile
 
 # lib-b を TypeScript でビルド
 RUN cd packages/lib-b && pnpm run build
