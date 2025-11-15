@@ -5,7 +5,8 @@ RUN corepack enable && corepack prepare pnpm@9.15.5 --activate
 WORKDIR /workspace
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/*/package.json ./packages/*/
+COPY packages/lib-a/package.json ./packages/lib-a/
+COPY packages/lib-b/package.json ./packages/lib-b/
 
 RUN pnpm install --frozen-lockfile --reporter=silent
 
