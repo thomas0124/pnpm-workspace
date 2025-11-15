@@ -1,0 +1,23 @@
+{
+  "name": "@uttk/lib-a",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Next.js app that displays message from lib-b",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "16.0.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "@uttk/lib-b": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/react": "^18",
+    "@types/node": "^20"
+  }
+}

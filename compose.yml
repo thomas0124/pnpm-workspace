@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  lib-a:
+    build:
+      context: .
+      dockerfile: packages/lib-a/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/workspace:cached
+      - /workspace/node_modules
+    environment:
+      - NODE_ENV=development
+    working_dir: /workspace/packages/lib-a
+
+  lib-b:
+    build:
+      context: .
+      dockerfile: packages/lib-b/Dockerfile
+    ports:
+      - "8787:8787"
+    volumes:
+      - ./:/workspace:cached
+      - dbdata:/workspace/data
+      - /workspace/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=sqlite:./data/db.sqlite
+    working_dir: /workspace/packages/lib-b
+
+volumes:
+  dbdata:
+    driver: local
