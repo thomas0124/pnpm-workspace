@@ -12,11 +12,21 @@ importers:
         specifier: ^2.6.1
         version: 2.6.1
 
-  packages/lib-a:
+  packages/backend:
     dependencies:
-      '@uttk/lib-b':
+      hono:
+        specifier: ^4.10.6
+        version: 4.10.6
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/frontend:
+    dependencies:
+      '@uttk/backend':
         specifier: workspace:^
-        version: link:../lib-b
+        version: link:../backend
       next:
         specifier: 16.0.3
         version: 16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -33,16 +43,6 @@ importers:
       '@types/react':
         specifier: ^18
         version: 18.3.26
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  packages/lib-b:
-    dependencies:
-      hono:
-        specifier: ^4.10.6
-        version: 4.10.6
-    devDependencies:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
