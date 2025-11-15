@@ -1,21 +1,29 @@
 FROM node:20-alpine
 
+# pnpm を有効化
 RUN corepack enable && corepack prepare pnpm@9.15.5 --activate
 
 WORKDIR /workspace
 
+# ルートの設定ファイルをコピー
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# 各パッケージの package.json をコピー
 COPY packages/lib-a/package.json ./packages/lib-a/
 COPY packages/lib-b/package.json ./packages/lib-b/
 
-RUN pnpm install --frozen-lockfile --reporter=silent
+# ワークスペース全体の依存をインストール
+RUN pnpm install --frozen-lockfile
 
-# Copy the rest of the workspace
+# 残りのソースコードをコピー
 COPY . .
+
+# lib-b を TypeScript でビルド
+RUN cd packages/lib-b && pnpm run build
 
 WORKDIR /workspace/packages/lib-a
 
 EXPOSE 3000
 
-# Start Next.js dev server
+# Next.js dev サーバを起動
 CMD ["pnpm", "dev"]

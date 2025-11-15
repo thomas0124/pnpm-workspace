@@ -8,11 +8,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./packages/lib-a:/workspace/packages/lib-a
-      - ./package.json:/workspace/package.json
-      - ./pnpm-workspace.yaml:/workspace/pnpm-workspace.yaml
-      - ./pnpm-lock.yaml:/workspace/pnpm-lock.yaml
-      - node_modules_a:/workspace/node_modules
+      - workspace_vol:/workspace
+      - ./packages/lib-a/src:/workspace/packages/lib-a/src
+      - ./packages/lib-a/pages:/workspace/packages/lib-a/pages
+      - ./packages/lib-a/public:/workspace/packages/lib-a/public
     environment:
       - NODE_ENV=development
 
@@ -23,20 +22,15 @@ services:
     ports:
       - "8787:8787"
     volumes:
-      - ./packages/lib-b:/workspace/packages/lib-b
-      - ./package.json:/workspace/package.json
-      - ./pnpm-workspace.yaml:/workspace/pnpm-workspace.yaml
-      - ./pnpm-lock.yaml:/workspace/pnpm-lock.yaml
+      - workspace_vol:/workspace
+      - ./packages/lib-b/src:/workspace/packages/lib-b/src
       - dbdata:/workspace/data
-      - node_modules_b:/workspace/node_modules
     environment:
       - NODE_ENV=development
       - DATABASE_URL=sqlite:./data/db.sqlite
 
 volumes:
+  workspace_vol:
+    driver: local
   dbdata:
-    driver: local
-  node_modules_a:
-    driver: local
-  node_modules_b:
     driver: local
