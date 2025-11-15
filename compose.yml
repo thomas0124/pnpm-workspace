@@ -1,29 +1,29 @@
 version: '3.8'
 
 services:
-  lib-a:
+  frontend:
     build:
       context: .
-      dockerfile: packages/lib-a/Dockerfile
+      dockerfile: packages/frontend/Dockerfile
     ports:
       - "3000:3000"
     volumes:
       - workspace_vol:/workspace
-      - ./packages/lib-a/src:/workspace/packages/lib-a/src
-      - ./packages/lib-a/pages:/workspace/packages/lib-a/pages
-      - ./packages/lib-a/public:/workspace/packages/lib-a/public
+      - ./packages/frontend/src:/workspace/packages/frontend/src
+      - ./packages/frontend/pages:/workspace/packages/frontend/pages
+      - ./packages/frontend/public:/workspace/packages/frontend/public
     environment:
       - NODE_ENV=development
 
-  lib-b:
+  backend:
     build:
       context: .
-      dockerfile: packages/lib-b/Dockerfile
+      dockerfile: packages/backend/Dockerfile
     ports:
       - "8787:8787"
     volumes:
       - workspace_vol:/workspace
-      - ./packages/lib-b/src:/workspace/packages/lib-b/src
+      - ./packages/backend/src:/workspace/packages/backend/src
       - dbdata:/workspace/data
     environment:
       - NODE_ENV=development
