@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "turbo dev",
+    "dev:frontend": "pnpm --filter @uttk/frontend dev",
+    "dev:backend": "pnpm --filter @uttk/backend dev",
     "build": "turbo build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
