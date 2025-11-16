@@ -17,7 +17,7 @@
 
 ## 前提
 
-- Docker / Docker Compose（では Docker Desktop 推奨）
+- Docker / Docker Compose（Docker Desktop 推奨）
 - （ローカルで実行する場合）Node.js と pnpm
 
 ## クイックスタート（Docker）
