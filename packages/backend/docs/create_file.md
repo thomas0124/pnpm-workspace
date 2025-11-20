@@ -149,11 +149,24 @@ Presentation → Application → Domain ← Infrastructure
 - **何を書く？**: 新しく作ったリポジトリを登録
 - **実装例**:
 ```typescript
-get {domain}Repository(): {Domain}Repository {
+get postRepository(): PostRepository {
+  // isTestは `process.env.NODE_ENV === 'test'` で定義されていると仮定します
   if (isTest) {
-    return { /* テストの時はインメモリ */ };
+    // inMemoryPostRepoはインポートされていると仮定します
+    return {
+      save: inMemoryPostRepo.save,
+      findById: inMemoryPostRepo.findById,
+      findAll: inMemoryPostRepo.findAll,
+      delete: inMemoryPostRepo.delete,
+    };
   }
-  return { /* 本番の時はPrisma */ };
+  // prismaPostRepoはインポートされていると仮定します
+  return {
+    save: prismaPostRepo.save,
+    findById: prismaPostRepo.findById,
+    findAll: prismaPostRepo.findAll,
+    delete: prismaPostRepo.delete,
+  };
 }
 ```
 - **ここがポイント！**: 環境に応じて自動で切り替わる賢い子 🧠
