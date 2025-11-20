@@ -951,6 +951,11 @@ export const container = {
 ```typescript
 // infrastructure/di/container.ts
 
+import { PrismaClient } from '@prisma/client';
+import type { UserRepository } from '../../domain/repositories/userRepository';
+import * as prismaUserRepo from '../persistence/prisma/prismaUserRepository';
+import * as inMemoryUserRepo from '../persistence/inmemory/inMemoryUserRepository';
+
 export function createContainer(env: 'test' | 'production') {
   const prisma = new PrismaClient();
   
@@ -959,9 +964,19 @@ export function createContainer(env: 'test' | 'production') {
     
     get userRepository(): UserRepository {
       if (env === 'test') {
-        return createInMemoryUserRepository();
+        return {
+          save: inMemoryUserRepo.save,
+          findById: inMemoryUserRepo.findById,
+          findByEmail: inMemoryUserRepo.findByEmail,
+          delete: inMemoryUserRepo.deleteUser,
+        };
       }
-      return createPrismaUserRepository(prisma);
+      return {
+        save: prismaUserRepo.save,
+        findById: prismaUserRepo.findById,
+        findByEmail: prismaUserRepo.findByEmail,
+        delete: prismaUserRepo.deleteUser,
+      };
     },
   };
 }
