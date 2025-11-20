@@ -52,12 +52,12 @@ Presentation → Application → Domain ← Infrastructure
 ### 作るファイルたち
 
 #### 1-1. 📋 モデル定義
-- **ファイル**: `src/domain/models/{domain}/{domain}.ts`
+- **ファイル**: `domain/models/{domain}/{domain}.ts`
 - **何を書く？**: Zodスキーマでデータの形とルールを定義
 - **ここがポイント！**: バリデーションやビジネスルールをここで表現するよ
 
 #### 1-2. 🏭 ファクトリ関数
-- **ファイル**: `src/domain/factories/{domain}/{domain}Factory.ts`
+- **ファイル**: `domain/factories/{domain}/{domain}Factory.ts`
 - **何を書く？**: 
   - `create{Domain}()` - ✨ 新しく作る
   - `reconstruct{Domain}()` - 🔄 DBから取ったデータを組み立て直す
@@ -65,13 +65,13 @@ Presentation → Application → Domain ← Infrastructure
 - **ここがポイント！**: いつも新しいオブジェクトを返す（イミュータブル = 安全！）
 
 #### 1-3. 📜 リポジトリ型定義
-- **ファイル**: `src/domain/repositories/{domain}Repository.ts`
+- **ファイル**: `domain/repositories/{domain}Repository.ts`
 - **何を書く？**: データベース操作の「お約束」だけ（実装はまだ書かない）
 - **メソッド例**: `save`, `findById`, `findAll`, `delete`
 - **ここがポイント！**: 「こういう関数があるよ」って約束するだけ！
 
 #### 1-4. 🤝 ドメインサービス（必要な時だけ）
-- **ファイル**: `src/domain/services/{domain}DomainService.ts`
+- **ファイル**: `domain/services/{domain}DomainService.ts`
 - **何を書く？**: 1つのエンティティに収まらないビジネスロジック
 - **ここがポイント！**: 複数のデータをまたぐ処理はここに書くよ
 
@@ -84,14 +84,14 @@ Presentation → Application → Domain ← Infrastructure
 ### 作るファイルたち
 
 #### 2-1. 💌 DTO定義
-- **ファイル**: `src/application/dto/{domain}Dto.ts`
+- **ファイル**: `application/dto/{domain}Dto.ts`
 - **何を書く？**:
   - レスポンスDTO: `{Domain}Dto` - 📤 返す時の形
   - リクエストDTO: `Create{Domain}Request`, `Update{Domain}Request` - 📥 受け取る時の形
 - **ここがポイント！**: APIとドメインの間の通訳さん！
 
 #### 2-2. ✨ ユースケース: 作成
-- **ファイル**: `src/application/usecases/{domain}/create{Domain}.ts`
+- **ファイル**: `application/usecases/{domain}/create{Domain}.ts`
 - **やることリスト**:
   1. ドメインオブジェクトを生成 🎨
   2. ビジネスルールをチェック ✅
@@ -99,14 +99,14 @@ Presentation → Application → Domain ← Infrastructure
   4. DTOにして返す 📦
 
 #### 2-3. 🔍 ユースケース: 取得
-- **ファイル**: `src/application/usecases/{domain}/get{Domain}.ts`
+- **ファイル**: `application/usecases/{domain}/get{Domain}.ts`
 - **何を書く？**: 
   - 単体取得: `get{Domain}UseCase()` - 1つだけ取る
   - 一覧取得: `getAll{Domain}sUseCase()` - 全部取る
   - 条件付き取得: `get{Domain}sByXxxUseCase()` - 条件を指定して取る
 
 #### 2-4. ✏️ ユースケース: 更新
-- **ファイル**: `src/application/usecases/{domain}/update{Domain}.ts`
+- **ファイル**: `application/usecases/{domain}/update{Domain}.ts`
 - **やることリスト**:
   1. 今のデータを取得 📖
   2. 権限があるかチェック 🔐
@@ -114,7 +114,7 @@ Presentation → Application → Domain ← Infrastructure
   4. リポジトリで保存 💾
 
 #### 2-5. 🗑️ ユースケース: 削除
-- **ファイル**: `src/application/usecases/{domain}/delete{Domain}.ts`
+- **ファイル**: `application/usecases/{domain}/delete{Domain}.ts`
 - **やることリスト**:
   1. 今のデータを取得 📖
   2. 権限があるかチェック 🔐
@@ -129,14 +129,14 @@ Presentation → Application → Domain ← Infrastructure
 ### 作るファイルたち
 
 #### 3-1. 💭 インメモリリポジトリ実装（テスト用）
-- **ファイル**: `src/infrastructure/persistence/inmemory/inMemory{Domain}Repository.ts`
+- **ファイル**: `infrastructure/persistence/inmemory/inMemory{Domain}Repository.ts`
 - **何を書く？**: リポジトリの「お約束」を実際に動く形に！
 - **実装方法**: Mapを使ってメモリにデータを保存（軽くて速い！）
 - **メソッド**: `save`, `findById`, `findAll`, `delete` など
 - **ここがポイント！**: テストや開発で使える軽量版だよ 🚀
 
 #### 3-2. 🗄️ Prismaリポジトリ実装（本番用）
-- **ファイル**: `src/infrastructure/persistence/prisma/prisma{Domain}Repository.ts`
+- **ファイル**: `infrastructure/persistence/prisma/prisma{Domain}Repository.ts`
 - **何を書く？**: Prismaでデータベースとやり取りする実装
 - **メソッド**: `save`, `findById`, `findAll`, `delete` など
 - **ここがポイント！**: 
@@ -145,7 +145,7 @@ Presentation → Application → Domain ← Infrastructure
   - 型チェックで「お約束」通りか確認 ✅
 
 #### 3-3. 🎁 DIコンテナに追加
-- **ファイル**: `src/infrastructure/di/container.ts`
+- **ファイル**: `infrastructure/di/container.ts`
 - **何を書く？**: 新しく作ったリポジトリを登録
 - **実装例**:
 ```typescript
@@ -180,7 +180,7 @@ get postRepository(): PostRepository {
 ### 作るファイルたち
 
 #### 4-1. 🎯 ハンドラー関数
-- **ファイル**: `src/presentation/handlers/{domain}Handlers.ts`
+- **ファイル**: `presentation/handlers/{domain}Handlers.ts`
 - **何を書く？**: 各エンドポイントで何をするか
 - **作る関数たち**:
   - `handleCreate{Domain}` - ✨ 作成
@@ -196,7 +196,7 @@ get postRepository(): PostRepository {
   5. エラーが出たら優しく教える 💕
 
 #### 4-2. 🛣️ ルーティング定義
-- **ファイル**: `src/presentation/routes/{domain}.ts`
+- **ファイル**: `presentation/routes/{domain}.ts`
 - **何を書く？**: URLとハンドラーを紐付ける道案内
 - **やること**:
   - DIコンテナからリポジトリをもらう 🎁
@@ -209,7 +209,7 @@ get postRepository(): PostRepository {
   - `DELETE /{domains}/:id` - 🗑️ 削除
 
 #### 4-3. 🚪 メインルーターへマウント
-- **ファイル**: `src/presentation/routes/index.ts`
+- **ファイル**: `presentation/routes/index.ts`
 - **何を書く？**: 新しいルートをメインに追加
 - **実装**: `app.route('/api', {domain}Routes);` を1行追加するだけ！
 

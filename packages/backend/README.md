@@ -15,7 +15,7 @@
 ## 📂 ディレクトリ構成
 
 ```
-src/
+backend/
 ├── domain/              # ドメイン層
 │   ├── models/         # 値オブジェクト・エンティティ
 │   │   └── user/
@@ -48,15 +48,18 @@ src/
 │   └── external/      # 外部API連携
 │       └── emailService.ts
 │
-└── presentation/       # プレゼンテーション層
-    ├── routes/        # ルーティング
-    │   ├── user.ts
-    │   └── index.ts
-    ├── middlewares/   # ミドルウェア
-    │   ├── errorHandler.ts
-    │   └── logger.ts
-    └── handlers/      # ハンドラー関数
-        └── userHandlers.ts
+├── presentation/       # プレゼンテーション層
+│   ├── routes/        # ルーティング
+│   │   ├── user.ts
+│   │   └── index.ts
+│   ├── middlewares/   # ミドルウェア
+│   │   ├── errorHandler.ts
+│   │   └── logger.ts
+│   └── handlers/      # ハンドラー関数
+│       └── userHandlers.ts
+│
+├── index.ts           # エントリポイント
+└── server.ts          # サーバー設定
 ```
 
 ---
@@ -264,10 +267,10 @@ export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
 ```typescript
 // application/usecases/user/createUser.ts
 
-import { createUser } from '../../../domain/factories/user/userFactory';
-import { isDuplicateEmail } from '../../../domain/services/userDomainService';
-import type { UserRepository } from '../../../domain/repositories/userRepository';
-import type { CreateUserRequest, UserDto } from '../../dto/userDto';
+import { createUser } from '../../domain/factories/user/userFactory';
+import { isDuplicateEmail } from '../../domain/services/userDomainService';
+import type { UserRepository } from '../../domain/repositories/userRepository';
+import type { CreateUserRequest, UserDto } from '../dto/userDto';
 
 /**
  * ユーザー作成ユースケース
@@ -302,8 +305,8 @@ export async function createUserUseCase(
 ```typescript
 // application/usecases/user/getUser.ts
 
-import type { UserRepository } from '../../../domain/repositories/userRepository';
-import type { UserDto } from '../../dto/userDto';
+import type { UserRepository } from '../../domain/repositories/userRepository';
+import type { UserDto } from '../dto/userDto';
 
 export async function getUserUseCase(
   userId: string,
@@ -319,9 +322,9 @@ export async function getUserUseCase(
 ```typescript
 // application/usecases/user/updateUser.ts
 
-import { updateUserName, updateUserEmail } from '../../../domain/factories/user/userFactory';
-import type { UserRepository } from '../../../domain/repositories/userRepository';
-import type { UpdateUserRequest, UserDto } from '../../dto/userDto';
+import { updateUserName, updateUserEmail } from '../../domain/factories/user/userFactory';
+import type { UserRepository } from '../../domain/repositories/userRepository';
+import type { UpdateUserRequest, UserDto } from '../dto/userDto';
 
 export async function updateUserUseCase(
   userId: string,
@@ -372,9 +375,9 @@ export async function updateUserUseCase(
 // infrastructure/persistence/prisma/prismaUserRepository.ts
 
 import { PrismaClient } from '@prisma/client';
-import { reconstructUser } from '../../../domain/factories/user/userFactory';
-import type { User } from '../../../domain/models/user/user';
-import type { UserRepository } from '../../../domain/repositories/userRepository';
+import { reconstructUser } from '../../domain/factories/user/userFactory';
+import type { User } from '../../domain/models/user/user';
+import type { UserRepository } from '../../domain/repositories/userRepository';
 
 const prisma = new PrismaClient();
 
@@ -448,8 +451,8 @@ const _typeCheck: UserRepository = {
 ```typescript
 // infrastructure/persistence/inmemory/inMemoryUserRepository.ts
 
-import type { User } from '../../../domain/models/user/user';
-import type { UserRepository } from '../../../domain/repositories/userRepository';
+import type { User } from '../../domain/models/user/user';
+import type { UserRepository } from '../../domain/repositories/userRepository';
 
 // プライベートストレージ
 const users = new Map<string, User>();
@@ -584,11 +587,11 @@ export type Container = typeof container;
 // presentation/handlers/userHandlers.ts
 
 import type { Context } from 'hono';
-import { createUserUseCase } from '../../application/usecases/user/createUser';
-import { getUserUseCase } from '../../application/usecases/user/getUser';
-import { updateUserUseCase } from '../../application/usecases/user/updateUser';
-import { CreateUserRequestSchema, UpdateUserRequestSchema } from '../../application/dto/userDto';
-import type { UserRepository } from '../../domain/repositories/userRepository';
+import { createUserUseCase } from '../application/usecases/user/createUser';
+import { getUserUseCase } from '../application/usecases/user/getUser';
+import { updateUserUseCase } from '../application/usecases/user/updateUser';
+import { CreateUserRequestSchema, UpdateUserRequestSchema } from '../application/dto/userDto';
+import type { UserRepository } from '../domain/repositories/userRepository';
 
 /**
  * ユーザー作成ハンドラーだよ
@@ -693,13 +696,13 @@ export async function handleDeleteUser(
 // presentation/routes/user.ts
 
 import { Hono } from 'hono';
-import { container } from '../../infrastructure/di/container';
+import { container } from '../infrastructure/di/container';
 import {
   handleCreateUser,
   handleGetUser,
   handleUpdateUser,
   handleDeleteUser,
-} from '../handlers/userHandlers';
+} from './handlers/userHandlers';
 
 export const userRoutes = new Hono();
 
@@ -906,7 +909,7 @@ beforeEach(() => {
 // infrastructure/di/container.ts
 
 import { PrismaClient } from '@prisma/client';
-import * as prismaUserRepo from '../persistence/prisma/prismaUserRepository';
+import * as prismaUserRepo from './persistence/prisma/prismaUserRepository';
 
 export const container = {
   prisma: new PrismaClient(),
@@ -927,8 +930,8 @@ export const container = {
 ```typescript
 // infrastructure/di/container.ts
 
-import * as prismaUserRepo from '../persistence/prisma/prismaUserRepository';
-import * as inMemoryUserRepo from '../persistence/inmemory/inMemoryUserRepository';
+import * as prismaUserRepo from './persistence/prisma/prismaUserRepository';
+import * as inMemoryUserRepo from './persistence/inmemory/inMemoryUserRepository';
 
 const isTest = process.env.NODE_ENV === 'test';
 
@@ -952,9 +955,9 @@ export const container = {
 // infrastructure/di/container.ts
 
 import { PrismaClient } from '@prisma/client';
-import type { UserRepository } from '../../domain/repositories/userRepository';
-import * as prismaUserRepo from '../persistence/prisma/prismaUserRepository';
-import * as inMemoryUserRepo from '../persistence/inmemory/inMemoryUserRepository';
+import type { UserRepository } from '../domain/repositories/userRepository';
+import * as prismaUserRepo from './persistence/prisma/prismaUserRepository';
+import * as inMemoryUserRepo from './persistence/inmemory/inMemoryUserRepository';
 
 export function createContainer(env: 'test' | 'production') {
   const prisma = new PrismaClient();
@@ -995,8 +998,8 @@ export const container = createContainer(
 ```typescript
 // presentation/routes/user.ts
 
-import { container } from '../../infrastructure/di/container';
-import { handleCreateUser } from '../handlers/userHandlers';
+import { container } from '../infrastructure/di/container';
+import { handleCreateUser } from './handlers/userHandlers';
 
 export const userRoutes = new Hono();
 
@@ -1031,7 +1034,7 @@ export async function handleCreateUser(
 // presentation/routes/user.ts
 
 import { PrismaClient } from '@prisma/client';
-import * as prismaUserRepo from '../../infrastructure/persistence/prisma/prismaUserRepository';
+import * as prismaUserRepo from '../infrastructure/persistence/prisma/prismaUserRepository';
 
 const prisma = new PrismaClient();
 
@@ -1064,7 +1067,7 @@ Repository型定義は**契約（Contract）**として機能するよ！実装�
 ```typescript
 // application/usecases/user/createUser.ts
 
-import type { UserRepository } from '../../../domain/repositories/userRepository';
+import type { UserRepository } from '../../domain/repositories/userRepository';
 
 // 引数の型として UserRepository を指定
 export async function createUserUseCase(
@@ -1090,7 +1093,7 @@ export async function createUserUseCase(
 
 import { describe, it, expect } from 'vitest';
 import { createUserUseCase } from './createUser';
-import type { UserRepository } from '../../../domain/repositories/userRepository';
+import type { UserRepository } from '../../domain/repositories/userRepository';
 
 describe('createUserUseCase', () => {
   it('should create user', async () => {
@@ -1127,7 +1130,7 @@ describe('createUserUseCase', () => {
 ```typescript
 // infrastructure/persistence/prisma/prismaUserRepository.ts
 
-import type { UserRepository } from '../../../domain/repositories/userRepository';
+import type { UserRepository } from '../../domain/repositories/userRepository';
 
 export async function save(user: User): Promise<void> { ... }
 export async function findById(id: string): Promise<User | null> { ... }
@@ -1251,8 +1254,8 @@ describe('updateUserName', () => {
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createUserUseCase } from './createUser';
-import type { UserRepository } from '../../../domain/repositories/userRepository';
-import type { User } from '../../../domain/models/user/user';
+import type { UserRepository } from '../../domain/repositories/userRepository';
+import type { User } from '../../domain/models/user/user';
 
 describe('createUserUseCase', () => {
   let mockRepository: UserRepository;
@@ -1316,7 +1319,7 @@ describe('createUserUseCase', () => {
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createUserUseCase } from './createUser';
-import * as inMemoryUserRepo from '../../../infrastructure/persistence/inmemory/inMemoryUserRepository';
+import * as inMemoryUserRepo from '../../infrastructure/persistence/inmemory/inMemoryUserRepository';
 
 describe('createUserUseCase (with InMemory)', () => {
   beforeEach(() => {
