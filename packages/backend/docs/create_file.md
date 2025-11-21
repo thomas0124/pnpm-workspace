@@ -9,20 +9,9 @@ DDD × 関数型プログラミングの4層アーキテクチャで、新しい
 
 ## 🎒 準備するもの
 
-### 使う技術たち
-
-- 🔷 **TypeScript** - 型安全な開発
-- ✅ **Zod** - データのバリデーション
-- ⚡ **Hono** - 軽くて速いWebフレームワーク
-- 🗄️ **Prisma** - データベースとの橋渡し（or インメモリ実装）
-
 ### 📦 4層の関係を理解しよう
 
-```
-Presentation → Application → Domain ← Infrastructure
-                               ↑
-                        (型定義だけに依存)
-```
+4層アーキテクチャの詳細は [README.md](../README.md) を参照してね！
 
 **大事な約束ごと** 💡:
 - ドメイン層は他の層に依存しない（ピュアに保つ！）
@@ -128,48 +117,24 @@ Presentation → Application → Domain ← Infrastructure
 
 ### 作るファイルたち
 
-#### 3-1. 💭 インメモリリポジトリ実装（テスト用）
-- **ファイル**: `infrastructure/persistence/inmemory/inMemory{Domain}Repository.ts`
-- **何を書く？**: リポジトリの「お約束」を実際に動く形に！
-- **実装方法**: Mapを使ってメモリにデータを保存（軽くて速い！）
-- **メソッド**: `save`, `findById`, `findAll`, `delete` など
-- **ここがポイント！**: テストや開発で使える軽量版だよ 🚀
+#### 3-1. 🗄️ Drizzleスキーマ定義
+- **ファイル**: `infrastructure/persistence/drizzle/schema/{domain}.ts`
+- **何を書く？**: データベーステーブルの定義
+- **ここがポイント！**: Cloudflare D1はSQLiteベースだよ
 
-#### 3-2. 🗄️ Prismaリポジトリ実装（本番用）
-- **ファイル**: `infrastructure/persistence/prisma/prisma{Domain}Repository.ts`
-- **何を書く？**: Prismaでデータベースとやり取りする実装
+#### 3-2. 🗄️ Drizzleリポジトリ実装
+- **ファイル**: `infrastructure/persistence/drizzle/drizzle{Domain}Repository.ts`
+- **何を書く？**: Drizzle ORMでデータベースとやり取りする実装
 - **メソッド**: `save`, `findById`, `findAll`, `delete` など
 - **ここがポイント！**: 
-  - `upsert`で作成も更新もおまかせ！ 🔄
+  - D1Databaseを引数で受け取る形式にする 🔄
   - `reconstruct{Domain}()`でドメインオブジェクトに変身させる ✨
   - 型チェックで「お約束」通りか確認 ✅
 
 #### 3-3. 🎁 DIコンテナに追加
 - **ファイル**: `infrastructure/di/container.ts`
 - **何を書く？**: 新しく作ったリポジトリを登録
-- **実装例**:
-```typescript
-get postRepository(): PostRepository {
-  // isTestは `process.env.NODE_ENV === 'test'` で定義されていると仮定します
-  if (isTest) {
-    // inMemoryPostRepoはインポートされていると仮定します
-    return {
-      save: inMemoryPostRepo.save,
-      findById: inMemoryPostRepo.findById,
-      findAll: inMemoryPostRepo.findAll,
-      delete: inMemoryPostRepo.delete,
-    };
-  }
-  // prismaPostRepoはインポートされていると仮定します
-  return {
-    save: prismaPostRepo.save,
-    findById: prismaPostRepo.findById,
-    findAll: prismaPostRepo.findAll,
-    delete: prismaPostRepo.delete,
-  };
-}
-```
-- **ここがポイント！**: 環境に応じて自動で切り替わる賢い子 🧠
+- **実装例**: [README.md](../README.md#diコンテナ依存性注入) を参照してね
 
 ---
 
@@ -200,6 +165,7 @@ get postRepository(): PostRepository {
 - **何を書く？**: URLとハンドラーを紐付ける道案内
 - **やること**:
   - DIコンテナからリポジトリをもらう 🎁
+  - Cloudflare WorkersのBindingからD1Databaseを取得 ☁️
   - エンドポイントとハンドラーをつなぐ 🔗
 - **エンドポイント例**:
   - `POST /{domains}` - ✨ 作成
@@ -207,6 +173,7 @@ get postRepository(): PostRepository {
   - `GET /{domains}` - 📋 一覧取得
   - `PUT /{domains}/:id` - ✏️ 更新
   - `DELETE /{domains}/:id` - 🗑️ 削除
+- **Cloudflare D1の使用例**: [README.md](../README.md#cloudflare-workersでの使用例) を参照してね
 
 #### 4-3. 🚪 メインルーターへマウント
 - **ファイル**: `presentation/routes/index.ts`
@@ -234,8 +201,8 @@ get postRepository(): PostRepository {
 - [ ] 🗑️ ユースケース: 削除
 
 ### 🔌 インフラストラクチャ層
-- [ ] 💭 インメモリリポジトリ実装
-- [ ] 🗄️ Prismaリポジトリ実装（本番用）
+- [ ] 🗄️ Drizzleスキーマ定義
+- [ ] 🗄️ Drizzleリポジトリ実装
 - [ ] 🎁 DIコンテナへの登録
 
 ### 🌐 プレゼンテーション層
