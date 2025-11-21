@@ -134,7 +134,7 @@ DDD × 関数型プログラミングの4層アーキテクチャで、新しい
 #### 3-3. 🎁 DIコンテナに追加
 - **ファイル**: `infrastructure/di/container.ts`
 - **何を書く？**: 新しく作ったリポジトリを登録
-- **実装例**: [README.md](../README.md#-diコンテナ依存性注入) を参照してね
+- **実装例**: [README.md](../README.md#diコンテナ依存性注入) を参照してね
 
 ---
 
@@ -173,7 +173,7 @@ DDD × 関数型プログラミングの4層アーキテクチャで、新しい
   - `GET /{domains}` - 📋 一覧取得
   - `PUT /{domains}/:id` - ✏️ 更新
   - `DELETE /{domains}/:id` - 🗑️ 削除
-- **Cloudflare D1の使用例**: [README.md](../README.md#-cloudflare-workersでの使用例) を参照してね
+- **Cloudflare D1の使用例**: [README.md](../README.md#cloudflare-workersでの使用例) を参照してね
 
 #### 4-3. 🚪 メインルーターへマウント
 - **ファイル**: `presentation/routes/index.ts`
