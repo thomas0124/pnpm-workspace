@@ -14,13 +14,13 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
-    "lint": "eslint .",
+    "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "format:fix": "prettier --write .",
     "type-check": "tsc --noEmit",
-    "check": "pnpm run type-check && pnpm run lint && pnpm run format:check",
-    "fix": "pnpm run lint:fix && pnpm run format"
+    "check": "pnpm run type-check && pnpm run lint:check && pnpm run format:check",
+    "fix": "pnpm run lint:fix && pnpm run format:fix"
   },
   "keywords": [],
   "author": "",
