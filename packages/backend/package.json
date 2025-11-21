@@ -16,8 +16,11 @@
     "build": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"**/*.{ts,json}\"",
-    "format:check": "prettier --check \"**/*.{ts,json}\""
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "tsc --noEmit",
+    "check": "pnpm run type-check && pnpm run lint && pnpm run format:check",
+    "fix": "pnpm run lint:fix && pnpm run format"
   },
   "keywords": [],
   "author": "",
@@ -26,9 +29,9 @@
     "typescript": "^5.9.3",
     "tsx": "^4.7.0",
     "@types/node": "^20",
-    "eslint": "^8",
-    "@typescript-eslint/parser": "^7",
-    "@typescript-eslint/eslint-plugin": "^7",
+    "eslint": "^9",
+    "@hono/eslint-config": "^1.0.3",
+    "eslint-plugin-simple-import-sort": "^12",
     "prettier": "^3.2.5",
     "eslint-config-prettier": "^9"
   },
