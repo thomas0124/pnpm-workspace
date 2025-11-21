@@ -31,9 +31,7 @@ backend/
 ├── application/        # アプリケーション層
 │   ├── usecases/      # ユースケース
 │   │   └── user/
-│   │       ├── createUser.ts    # ユーザー作成
-│   │       ├── getUser.ts       # ユーザー取得
-│   │       └── updateUser.ts    # ユーザー更新
+│   │       └── createUser.ts    # ユーザー作成
 │   └── dto/           # DTO定義
 │       └── userDto.ts
 │
@@ -41,10 +39,8 @@ backend/
 │   ├── di/            # 依存性注入
 │   │   └── container.ts         # DIコンテナ
 │   ├── persistence/   # データベース実装
-│   │   ├── prisma/
-│   │   │   └── prismaUserRepository.ts  # Prisma実装（関数群）
-│   │   └── inmemory/
-│   │       └── inMemoryUserRepository.ts # インメモリ実装（関数群）
+│   │   └── prisma/
+│   │       └── prismaUserRepository.ts  # Prisma実装（関数群）
 │   └── external/      # 外部API連携
 │       └── emailService.ts
 │
@@ -53,8 +49,7 @@ backend/
 │   │   ├── user.ts
 │   │   └── index.ts
 │   ├── middlewares/   # ミドルウェア
-│   │   ├── errorHandler.ts
-│   │   └── logger.ts
+│   │   └── errorHandler.ts
 │   └── handlers/      # ハンドラー関数
 │       └── userHandlers.ts
 │
@@ -147,24 +142,6 @@ export function reconstructUser(data: {
 }): User {
   return UserSchema.parse(data);
 }
-
-// ユーザー名を変更（新しいオブジェクトを返す）
-export function updateUserName(user: User, newName: string): User {
-  return UserSchema.parse({
-    ...user,
-    name: newName,
-    updatedAt: new Date(),
-  });
-}
-
-// メールアドレスを変更（新しいオブジェクトを返す）
-export function updateUserEmail(user: User, newEmail: string): User {
-  return UserSchema.parse({
-    ...user,
-    email: newEmail,
-    updatedAt: new Date(),
-  });
-}
 ```
 
 ##### 📜 リポジトリ型定義（インターフェース）
@@ -180,7 +157,6 @@ import type { User } from '../models/user/user';
  * この型定義は「契約（Contract）」として機能するよ！：
  * - ✨ ドメイン層は実装に依存せず、この型だけに依存するんだ
  * - 🔧 インフラ層がこの型を満たす実装を提供してくれる
- * - 🧪 テスト時はモック実装を簡単に作れるよ
  */
 export type UserRepository = {
   save: (user: User) => Promise<void>;
@@ -253,13 +229,6 @@ export const CreateUserRequestSchema = z.object({
 });
 
 export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>;
-
-export const UpdateUserRequestSchema = z.object({
-  name: z.string().optional(),
-  email: z.string().optional(),
-});
-
-export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
 ```
 
 ##### ✨ ユースケース - ユーザー作成
@@ -296,58 +265,6 @@ export async function createUserUseCase(
   await repository.save(user);
 
   // 4. DTOとして返すよ
-  return user;
-}
-```
-
-##### 🔍 ユースケース - ユーザー取得
-
-```typescript
-// application/usecases/user/getUser.ts
-
-import type { UserRepository } from '../../domain/repositories/userRepository';
-import type { UserDto } from '../dto/userDto';
-
-export async function getUserUseCase(
-  userId: string,
-  repository: UserRepository
-): Promise<UserDto | null> {
-  const user = await repository.findById(userId);
-  return user;
-}
-```
-
-##### ✏️ ユースケース - ユーザー更新
-
-```typescript
-// application/usecases/user/updateUser.ts
-
-import { updateUserName, updateUserEmail } from '../../domain/factories/user/userFactory';
-import type { UserRepository } from '../../domain/repositories/userRepository';
-import type { UpdateUserRequest, UserDto } from '../dto/userDto';
-
-export async function updateUserUseCase(
-  userId: string,
-  request: UpdateUserRequest,
-  repository: UserRepository
-): Promise<UserDto> {
-  // 1. ユーザーを取得するよ
-  let user = await repository.findById(userId);
-  if (!user) {
-    throw new Error('User not found');
-  }
-
-  // 2. 更新するよ（イミュータブル）
-  if (request.name) {
-    user = updateUserName(user, request.name);
-  }
-  if (request.email) {
-    user = updateUserEmail(user, request.email);
-  }
-
-  // 3. 保存するよ
-  await repository.save(user);
-
   return user;
 }
 ```
@@ -414,97 +331,6 @@ export async function findById(id: string): Promise<User | null> {
 
   return reconstructUser(userData);
 }
-
-/**
- * メールアドレスでユーザーを検索するよ
- */
-export async function findByEmail(email: string): Promise<User | null> {
-  const userData = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (!userData) return null;
-
-  return reconstructUser(userData);
-}
-
-/**
- * ユーザーを削除するよ
- */
-export async function deleteUser(id: string): Promise<void> {
-  await prisma.user.delete({
-    where: { id },
-  });
-}
-
-// 型チェック（オプション）: 実装が型定義を満たしているか確認
-const _typeCheck: UserRepository = {
-  save,
-  findById,
-  findByEmail,
-  delete: deleteUser,
-};
-```
-
-##### 💭 インメモリリポジトリ（テスト用）
-
-```typescript
-// infrastructure/persistence/inmemory/inMemoryUserRepository.ts
-
-import type { User } from '../../domain/models/user/user';
-import type { UserRepository } from '../../domain/repositories/userRepository';
-
-// プライベートストレージ
-const users = new Map<string, User>();
-
-/**
- * ユーザーを保存するよ
- */
-export async function save(user: User): Promise<void> {
-  users.set(user.id, { ...user });
-}
-
-/**
- * IDでユーザーを検索するよ
- */
-export async function findById(id: string): Promise<User | null> {
-  const user = users.get(id);
-  return user ? { ...user } : null;
-}
-
-/**
- * メールアドレスでユーザーを検索するよ
- */
-export async function findByEmail(email: string): Promise<User | null> {
-  for (const user of users.values()) {
-    if (user.email === email) {
-      return { ...user };
-    }
-  }
-  return null;
-}
-
-/**
- * ユーザーを削除するよ
- */
-export async function deleteUser(id: string): Promise<void> {
-  users.delete(id);
-}
-
-/**
- * すべてのユーザーをクリアするよ（テスト用）
- */
-export function clear(): void {
-  users.clear();
-}
-
-// 型チェック（オプション）
-const _typeCheck: UserRepository = {
-  save,
-  findById,
-  findByEmail,
-  delete: deleteUser,
-};
 ```
 
 ##### 🎁 DIコンテナ
@@ -515,7 +341,6 @@ const _typeCheck: UserRepository = {
 import { PrismaClient } from '@prisma/client';
 import type { UserRepository } from '../../domain/repositories/userRepository';
 import * as prismaUserRepo from '../persistence/prisma/prismaUserRepository';
-import * as inMemoryUserRepo from '../persistence/inmemory/inMemoryUserRepository';
 
 /**
  * シンプルなDIコンテナ
@@ -524,29 +349,14 @@ import * as inMemoryUserRepo from '../persistence/inmemory/inMemoryUserRepositor
  * ただのオブジェクトで依存性を管理できるんだ。
  */
 
-// 環境変数で実装を切り替えるよ
-const isTest = process.env.NODE_ENV === 'test';
-
 export const container = {
   // Prismaクライアント（シングルトン）
   prisma: new PrismaClient(),
   
   /**
    * ユーザーリポジトリ
-   * 環境に応じて実装を切り替えるよ
    */
   get userRepository(): UserRepository {
-    // テスト環境ではインメモリ
-    if (isTest) {
-      return {
-        save: inMemoryUserRepo.save,
-        findById: inMemoryUserRepo.findById,
-        findByEmail: inMemoryUserRepo.findByEmail,
-        delete: inMemoryUserRepo.deleteUser,
-      };
-    }
-    
-    // 本番・開発環境ではPrisma
     return {
       save: prismaUserRepo.save,
       findById: prismaUserRepo.findById,
@@ -554,10 +364,7 @@ export const container = {
       delete: prismaUserRepo.deleteUser,
     };
   },
-  
-  // 他のリポジトリも同様に追加
-  // get postRepository(): PostRepository { ... },
-  // get commentRepository(): CommentRepository { ... },
+
 };
 
 export type Container = typeof container;
@@ -588,9 +395,7 @@ export type Container = typeof container;
 
 import type { Context } from 'hono';
 import { createUserUseCase } from '../application/usecases/user/createUser';
-import { getUserUseCase } from '../application/usecases/user/getUser';
-import { updateUserUseCase } from '../application/usecases/user/updateUser';
-import { CreateUserRequestSchema, UpdateUserRequestSchema } from '../application/dto/userDto';
+import { CreateUserRequestSchema } from '../application/dto/userDto';
 import type { UserRepository } from '../domain/repositories/userRepository';
 
 /**
@@ -602,7 +407,7 @@ export async function handleCreateUser(
 ) {
   try {
     const body = await c.req.json();
-    
+
     // リクエストバリデーション
     const request = CreateUserRequestSchema.parse(body);
 
@@ -610,77 +415,6 @@ export async function handleCreateUser(
     const user = await createUserUseCase(request, userRepository);
 
     return c.json(user, 201);
-  } catch (error) {
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-}
-
-/**
- * ユーザー取得ハンドラーだよ
- */
-export async function handleGetUser(
-  c: Context,
-  userRepository: UserRepository
-) {
-  try {
-    const id = c.req.param('id');
-    
-    const user = await getUserUseCase(id, userRepository);
-    
-    if (!user) {
-      return c.json({ error: 'User not found' }, 404);
-    }
-
-    return c.json(user);
-  } catch (error) {
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-}
-
-/**
- * ユーザー更新ハンドラーだよ
- */
-export async function handleUpdateUser(
-  c: Context,
-  userRepository: UserRepository
-) {
-  try {
-    const id = c.req.param('id');
-    const body = await c.req.json();
-    
-    // リクエストバリデーション
-    const request = UpdateUserRequestSchema.parse(body);
-    
-    const user = await updateUserUseCase(id, request, userRepository);
-
-    return c.json(user);
-  } catch (error) {
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-}
-
-/**
- * ユーザー削除ハンドラーだよ
- */
-export async function handleDeleteUser(
-  c: Context,
-  userRepository: UserRepository
-) {
-  try {
-    const id = c.req.param('id');
-    
-    await userRepository.delete(id);
-    
-    return c.json({ message: 'User deleted successfully' });
   } catch (error) {
     if (error instanceof Error) {
       return c.json({ error: error.message }, 400);
@@ -697,12 +431,7 @@ export async function handleDeleteUser(
 
 import { Hono } from 'hono';
 import { container } from '../infrastructure/di/container';
-import {
-  handleCreateUser,
-  handleGetUser,
-  handleUpdateUser,
-  handleDeleteUser,
-} from './handlers/userHandlers';
+import { handleCreateUser } from './handlers/userHandlers';
 
 export const userRoutes = new Hono();
 
@@ -711,9 +440,6 @@ const { userRepository } = container;
 
 // ルーティング
 userRoutes.post('/users', (c) => handleCreateUser(c, userRepository));
-userRoutes.get('/users/:id', (c) => handleGetUser(c, userRepository));
-userRoutes.put('/users/:id', (c) => handleUpdateUser(c, userRepository));
-userRoutes.delete('/users/:id', (c) => handleDeleteUser(c, userRepository));
 ```
 
 ##### 🎪 メインルーター
@@ -724,14 +450,12 @@ userRoutes.delete('/users/:id', (c) => handleDeleteUser(c, userRepository));
 import { Hono } from 'hono';
 import { userRoutes } from './user';
 import { errorHandler } from '../middlewares/errorHandler';
-import { logger } from '../middlewares/logger';
 
 export function createApp() {
   const app = new Hono();
 
-  // グローバルミドルウェア（エラーハンドラーが先）
+  // グローバルミドルウェア
   app.use('*', errorHandler);
-  app.use('*', logger);
 
   // ヘルスチェック
   app.get('/health', (c) => c.json({ status: 'ok' }));
@@ -791,27 +515,6 @@ export async function errorHandler(c: Context, next: Next) {
 }
 ```
 
-##### 📝 ミドルウェア - ロガー
-
-```typescript
-// presentation/middlewares/logger.ts
-
-import type { Context, Next } from 'hono';
-
-export async function logger(c: Context, next: Next) {
-  const start = Date.now();
-  const method = c.req.method;
-  const path = c.req.path;
-  
-  await next();
-  
-  const duration = Date.now() - start;
-  const status = c.res.status;
-  
-  console.log(`[${method}] ${path} - ${status} (${duration}ms)`);
-}
-```
-
 ---
 
 ## 🎁 DIコンテナ（依存性注入）
@@ -860,33 +563,21 @@ export const container = {
 };
 ```
 
-#### 3. **🔄 環境による実装切り替え**
+#### 3. **🔄 実装の切り替え**
 
-テスト環境と本番環境で、自動的に実装を切り替えられるよ：
+環境に応じて、異なるリポジトリ実装を使用できるよ：
 
 ```typescript
-const isTest = process.env.NODE_ENV === 'test';
-
 export const container = {
   get userRepository(): UserRepository {
-    // テスト環境ではインメモリ、本番環境ではPrisma
-    return isTest ? inMemoryUserRepo : prismaUserRepo;
+    return {
+      save: prismaUserRepo.save,
+      findById: prismaUserRepo.findById,
+      findByEmail: prismaUserRepo.findByEmail,
+      delete: prismaUserRepo.deleteUser,
+    };
   },
 };
-```
-
-#### 4. **🧪 テストの容易性**
-
-モックに簡単に差し替えられるよ：
-
-```typescript
-// テストコード
-import { container } from './container';
-
-beforeEach(() => {
-  // テスト用にモックに差し替え
-  container.userRepository = mockUserRepository;
-});
 ```
 
 ---
@@ -903,7 +594,7 @@ beforeEach(() => {
 
 ### 🎨 DIコンテナの実装パターン
 
-#### パターン1: シンプルなオブジェクト（推奨）✨
+#### シンプルなオブジェクト（推奨）✨
 
 ```typescript
 // infrastructure/di/container.ts
@@ -923,70 +614,6 @@ export const container = {
     };
   },
 };
-```
-
-#### パターン2: 環境による切り替え 🔄
-
-```typescript
-// infrastructure/di/container.ts
-
-import * as prismaUserRepo from './persistence/prisma/prismaUserRepository';
-import * as inMemoryUserRepo from './persistence/inmemory/inMemoryUserRepository';
-
-const isTest = process.env.NODE_ENV === 'test';
-
-export const container = {
-  get userRepository(): UserRepository {
-    const impl = isTest ? inMemoryUserRepo : prismaUserRepo;
-    
-    return {
-      save: impl.save,
-      findById: impl.findById,
-      findByEmail: impl.findByEmail,
-      delete: impl.deleteUser || impl.delete,
-    };
-  },
-};
-```
-
-#### パターン3: ファクトリ関数 🏭
-
-```typescript
-// infrastructure/di/container.ts
-
-import { PrismaClient } from '@prisma/client';
-import type { UserRepository } from '../domain/repositories/userRepository';
-import * as prismaUserRepo from './persistence/prisma/prismaUserRepository';
-import * as inMemoryUserRepo from './persistence/inmemory/inMemoryUserRepository';
-
-export function createContainer(env: 'test' | 'production') {
-  const prisma = new PrismaClient();
-  
-  return {
-    prisma,
-    
-    get userRepository(): UserRepository {
-      if (env === 'test') {
-        return {
-          save: inMemoryUserRepo.save,
-          findById: inMemoryUserRepo.findById,
-          findByEmail: inMemoryUserRepo.findByEmail,
-          delete: inMemoryUserRepo.deleteUser,
-        };
-      }
-      return {
-        save: prismaUserRepo.save,
-        findById: prismaUserRepo.findById,
-        findByEmail: prismaUserRepo.findByEmail,
-        delete: prismaUserRepo.deleteUser,
-      };
-    },
-  };
-}
-
-export const container = createContainer(
-  process.env.NODE_ENV === 'test' ? 'test' : 'production'
-);
 ```
 
 ---
@@ -1054,7 +681,6 @@ userRoutes.post('/users', (c) => handleCreateUser(c, userRepository));
 
 **注意点** ⚠️:
 - コードの重複が発生しちゃう
-- 環境切り替えが面倒なんだ
 
 ---
 
@@ -1081,49 +707,11 @@ export async function createUserUseCase(
 
 **いいところ** ✨:
 - ユースケースは実装の詳細を知らなくていい（疎結合）
-- テスト時に簡単にモックに差し替えられるよ
-- Prisma、InMemory、MongoDB など、どの実装でも動くよ
+- Prisma、MongoDB など、どの実装でも動くよ
 
 ---
 
-### 2. 🧪 テストでモック作成
-
-```typescript
-// application/usecases/user/createUser.test.ts
-
-import { describe, it, expect } from 'vitest';
-import { createUserUseCase } from './createUser';
-import type { UserRepository } from '../../domain/repositories/userRepository';
-
-describe('createUserUseCase', () => {
-  it('should create user', async () => {
-    // モックリポジトリ（型定義を満たす）
-    const mockRepository: UserRepository = {
-      save: async (user) => {
-        console.log('Saved:', user);
-      },
-      findById: async (id) => null,
-      findByEmail: async (email) => null,
-      delete: async (id) => {},
-    };
-    
-    const result = await createUserUseCase(
-      { name: 'Test', email: 'test@example.com' },
-      mockRepository
-    );
-    
-    expect(result.name).toBe('Test');
-  });
-});
-```
-
-**いいところ** ✨:
-- 型定義があるので、モックが簡単に作れるよ
-- 実装が変わってもテストコードは変わらないんだ
-
----
-
-### 3. ✅ 型チェック（実装側）
+### 2. ✅ 型チェック（実装側）
 
 実装が型定義を満たしているか確認できるよ：
 
@@ -1181,177 +769,9 @@ Presentation → Application → Domain ← Infrastructure
 
 ---
 
-## 🧪 テスト戦略
-
-### ✅ 単体テスト - バリデーション
-
-```typescript
-// domain/models/user/user.test.ts
-
-import { describe, it, expect } from 'vitest';
-import { EmailSchema, UserNameSchema } from './user';
-
-describe('EmailSchema', () => {
-  it('should validate correct email', () => {
-    const result = EmailSchema.safeParse('test@example.com');
-    expect(result.success).toBe(true);
-  });
-
-  it('should reject invalid email', () => {
-    const result = EmailSchema.safeParse('invalid-email');
-    expect(result.success).toBe(false);
-  });
-
-  it('should normalize email', () => {
-    const email = EmailSchema.parse('  TEST@EXAMPLE.COM  ');
-    expect(email).toBe('test@example.com');
-  });
-});
-```
-
-### 🏭 単体テスト - ファクトリ関数
-
-```typescript
-// domain/factories/user/userFactory.test.ts
-
-import { describe, it, expect } from 'vitest';
-import { createUser, updateUserName } from './userFactory';
-
-describe('createUser', () => {
-  it('should create user with valid data', () => {
-    const user = createUser('Test User', 'test@example.com');
-    
-    expect(user.name).toBe('Test User');
-    expect(user.email).toBe('test@example.com');
-    expect(user.id).toBeDefined();
-    expect(user.createdAt).toBeInstanceOf(Date);
-  });
-
-  it('should throw error for invalid email', () => {
-    expect(() => createUser('Test', 'invalid')).toThrow();
-  });
-});
-
-describe('updateUserName', () => {
-  it('should update name immutably', () => {
-    const user = createUser('Old Name', 'test@example.com');
-    const updated = updateUserName(user, 'New Name');
-    
-    // 元のオブジェクトは変更されないよ
-    expect(user.name).toBe('Old Name');
-    // 新しいオブジェクトは変更されているよ
-    expect(updated.name).toBe('New Name');
-    // IDは同じだよ
-    expect(updated.id).toBe(user.id);
-  });
-});
-```
-
-### 🔗 統合テスト - ユースケース（モックリポジトリ使用）
-
-```typescript
-// application/usecases/user/createUser.test.ts
-
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createUserUseCase } from './createUser';
-import type { UserRepository } from '../../domain/repositories/userRepository';
-import type { User } from '../../domain/models/user/user';
-
-describe('createUserUseCase', () => {
-  let mockRepository: UserRepository;
-  let savedUsers: User[];
-
-  beforeEach(() => {
-    savedUsers = [];
-    
-    // モックリポジトリを作るよ
-    mockRepository = {
-      save: async (user: User) => {
-        savedUsers.push(user);
-      },
-      findById: async (id: string) => {
-        return savedUsers.find(u => u.id === id) || null;
-      },
-      findByEmail: async (email: string) => {
-        return savedUsers.find(u => u.email === email) || null;
-      },
-      delete: async (id: string) => {
-        savedUsers = savedUsers.filter(u => u.id !== id);
-      },
-    };
-  });
-
-  it('should create new user', async () => {
-    const result = await createUserUseCase(
-      {
-        name: 'Test User',
-        email: 'test@example.com',
-      },
-      mockRepository
-    );
-
-    expect(result.name).toBe('Test User');
-    expect(result.email).toBe('test@example.com');
-    expect(result.id).toBeDefined();
-    expect(savedUsers).toHaveLength(1);
-  });
-
-  it('should throw error for duplicate email', async () => {
-    await createUserUseCase(
-      { name: 'Test User', email: 'test@example.com' },
-      mockRepository
-    );
-
-    await expect(
-      createUserUseCase(
-        { name: 'Another User', email: 'test@example.com' },
-        mockRepository
-      )
-    ).rejects.toThrow('User with this email already exists');
-  });
-});
-```
-
-### 💾 統合テスト - ユースケース（インメモリリポジトリ使用）
-
-```typescript
-// application/usecases/user/createUser.integration.test.ts
-
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createUserUseCase } from './createUser';
-import * as inMemoryUserRepo from '../../infrastructure/persistence/inmemory/inMemoryUserRepository';
-
-describe('createUserUseCase (with InMemory)', () => {
-  beforeEach(() => {
-    inMemoryUserRepo.clear();
-  });
-
-  it('should create and persist user', async () => {
-    const repository = {
-      save: inMemoryUserRepo.save,
-      findById: inMemoryUserRepo.findById,
-      findByEmail: inMemoryUserRepo.findByEmail,
-      delete: inMemoryUserRepo.deleteUser,
-    };
-
-    const result = await createUserUseCase(
-      { name: 'Test User', email: 'test@example.com' },
-      repository
-    );
-
-    // 実際に保存されているか確認するよ
-    const saved = await inMemoryUserRepo.findById(result.id);
-    expect(saved).not.toBeNull();
-    expect(saved?.name).toBe('Test User');
-  });
-});
-```
-
----
-
 ## 🎉 まとめ
 
-このアーキテクチャは、**DDDの原則**と**シンプルな関数型スタイル**を組み合わせることで、保守性が高くてテストしやすいコードを実現できるよ！✨
+このアーキテクチャは、**DDDの原則**と**シンプルな関数型スタイル**を組み合わせることで、保守性が高いコードを実現できるよ！✨
 
 ### 💎 主な特徴
 
@@ -1359,7 +779,7 @@ describe('createUserUseCase (with InMemory)', () => {
 ✅ **実用的**: Zodで型安全、Repository型定義で柔軟な実装切り替えができるよ  
 ✅ **保守性**: 4層アーキテクチャで関心事をきれいに分離できるんだ
 
-この手順に従えば、保守しやすくてテストもしやすいコードが書けるよ！
+この手順に従えば、保守しやすいコードが書けるよ！
 頑張ってね！ 💪✨
 
 ## 📚 参考資料
