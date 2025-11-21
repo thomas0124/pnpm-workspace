@@ -10,6 +10,8 @@
 - 🔷 **TypeScript** - 型安全な開発ができるよ
 - ✅ **Zod** - スキーマバリデーションとドメインモデル定義に使うよ
 - ⚡ **Hono** - 軽量高速なWebフレームワークだよ
+- 🗄️ **Drizzle ORM** - 型安全で軽量なORMだよ
+- ☁️ **Cloudflare D1** - エッジで動くSQLiteデータベースだよ
 - 💭 **関数型の考え方** - シンプルで予測可能なコードが書けるよ
 
 ## 📂 ディレクトリ構成
@@ -39,8 +41,14 @@ backend/
 │   ├── di/            # 依存性注入
 │   │   └── container.ts         # DIコンテナ
 │   ├── persistence/   # データベース実装
-│   │   └── prisma/
-│   │       └── prismaUserRepository.ts  # Prisma実装（関数群）
+│   │   └── drizzle/
+│   │       ├── schema/
+│   │       │   └── user.ts      # Drizzleスキーマ定義
+│   │       ├── migrations/      # マイグレーションファイル
+│   │       │   ├── 0000_xxx.sql
+│   │       │   └── meta/
+│   │       ├── client.ts        # Drizzleクライアント
+│   │       └── drizzleUserRepository.ts  # Drizzle実装（関数群）
 │   └── external/      # 外部API連携
 │       └── emailService.ts
 │
@@ -53,6 +61,7 @@ backend/
 │   └── handlers/      # ハンドラー関数
 │       └── userHandlers.ts
 │
+├── drizzle.config.ts  # Drizzle設定ファイル
 ├── index.ts           # エントリポイント
 └── server.ts          # サーバー設定
 ```
@@ -286,50 +295,133 @@ export async function createUserUseCase(
 
 #### 📝 実装例
 
-##### 🗄️ Prismaリポジトリ実装
+##### 🗄️ Drizzleスキーマ定義
 
 ```typescript
-// infrastructure/persistence/prisma/prismaUserRepository.ts
+// infrastructure/persistence/drizzle/schema/user.ts
 
-import { PrismaClient } from '@prisma/client';
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+
+/**
+ * ユーザーテーブルのスキーマ定義
+ * Cloudflare D1はSQLiteベースだよ
+ */
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
+
+export type UserTable = typeof users.$inferSelect;
+export type NewUserTable = typeof users.$inferInsert;
+```
+
+##### 🔌 Drizzleクライアント
+
+```typescript
+// infrastructure/persistence/drizzle/client.ts
+
+import { drizzle } from 'drizzle-orm/d1';
+import type { DrizzleD1Database } from 'drizzle-orm/d1';
+import * as schema from './schema/user';
+
+let db: DrizzleD1Database<typeof schema> | null = null;
+
+/**
+ * Drizzleクライアントを取得（シングルトン）
+ */
+export function getDb(d1: D1Database): DrizzleD1Database<typeof schema> {
+  if (!db) {
+    db = drizzle(d1, { schema });
+  }
+  return db;
+}
+```
+
+##### 🗄️ Drizzleリポジトリ実装
+
+```typescript
+// infrastructure/persistence/drizzle/drizzleUserRepository.ts
+
+import { eq } from 'drizzle-orm';
+import { getDb } from './client';
+import { users } from './schema/user';
 import { reconstructUser } from '../../domain/factories/user/userFactory';
 import type { User } from '../../domain/models/user/user';
-import type { UserRepository } from '../../domain/repositories/userRepository';
-
-const prisma = new PrismaClient();
 
 /**
  * ユーザーを保存するよ（作成または更新）
  */
-export async function save(user: User): Promise<void> {
-  await prisma.user.upsert({
-    where: { id: user.id },
-    update: {
-      name: user.name,
-      email: user.email,
-      updatedAt: user.updatedAt,
-    },
-    create: {
+export async function save(user: User, d1: D1Database): Promise<void> {
+  const db = getDb(d1);
+  
+  const existing = await db.select().from(users).where(eq(users.id, user.id)).get();
+  
+  if (existing) {
+    await db.update(users)
+      .set({
+        name: user.name,
+        email: user.email,
+        updatedAt: user.updatedAt,
+      })
+      .where(eq(users.id, user.id));
+  } else {
+    await db.insert(users).values({
       id: user.id,
       name: user.name,
       email: user.email,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-    },
-  });
+    });
+  }
 }
 
 /**
  * IDでユーザーを検索するよ
  */
-export async function findById(id: string): Promise<User | null> {
-  const userData = await prisma.user.findUnique({
-    where: { id },
-  });
+export async function findById(id: string, d1: D1Database): Promise<User | null> {
+  const db = getDb(d1);
+  
+  const userData = await db.select().from(users).where(eq(users.id, id)).get();
 
   if (!userData) return null;
 
-  return reconstructUser(userData);
+  return reconstructUser({
+    id: userData.id,
+    name: userData.name,
+    email: userData.email,
+    createdAt: userData.createdAt,
+    updatedAt: userData.updatedAt,
+  });
+}
+
+/**
+ * メールアドレスでユーザーを検索するよ
+ */
+export async function findByEmail(email: string, d1: D1Database): Promise<User | null> {
+  const db = getDb(d1);
+  
+  const userData = await db.select().from(users).where(eq(users.email, email)).get();
+
+  if (!userData) return null;
+
+  return reconstructUser({
+    id: userData.id,
+    name: userData.name,
+    email: userData.email,
+    createdAt: userData.createdAt,
+    updatedAt: userData.updatedAt,
+  });
+}
+
+/**
+ * ユーザーを削除するよ
+ */
+export async function deleteUser(id: string, d1: D1Database): Promise<void> {
+  const db = getDb(d1);
+  await db.delete(users).where(eq(users.id, id));
 }
 ```
 
@@ -338,33 +430,34 @@ export async function findById(id: string): Promise<User | null> {
 ```typescript
 // infrastructure/di/container.ts
 
-import { PrismaClient } from '@prisma/client';
 import type { UserRepository } from '../../domain/repositories/userRepository';
-import * as prismaUserRepo from '../persistence/prisma/prismaUserRepository';
+import * as drizzleUserRepo from '../persistence/drizzle/drizzleUserRepository';
 
 /**
  * シンプルなDIコンテナ
  * 
  * 複雑なDIライブラリは不要だよ！
  * ただのオブジェクトで依存性を管理できるんだ。
+ * 
+ * Cloudflare WorkersではD1DatabaseはリクエストごとにBindingから取得するため、
+ * ここではリポジトリ関数のみを提供するよ
  */
 
 export const container = {
-  // Prismaクライアント（シングルトン）
-  prisma: new PrismaClient(),
-  
   /**
    * ユーザーリポジトリ
+   * 
+   * 注意: Drizzleの関数はD1Databaseを引数に取るため、
+   * 実際の使用時にはBindingからD1を渡す必要があるよ
    */
-  get userRepository(): UserRepository {
+  get userRepository() {
     return {
-      save: prismaUserRepo.save,
-      findById: prismaUserRepo.findById,
-      findByEmail: prismaUserRepo.findByEmail,
-      delete: prismaUserRepo.deleteUser,
+      save: drizzleUserRepo.save,
+      findById: drizzleUserRepo.findById,
+      findByEmail: drizzleUserRepo.findByEmail,
+      delete: drizzleUserRepo.deleteUser,
     };
   },
-
 };
 
 export type Container = typeof container;
@@ -527,18 +620,19 @@ DIコンテナは、アプリケーション全体の**依存性を一元管理*
 
 #### 1. **📦 依存関係の一元管理**
 
-DIコンテナがない場合、各ルーティングファイルで毎回インスタンス化が必要になっちゃうよ：
+DIコンテナがない場合、各ルーティングファイルで毎回インポートが必要になっちゃうよ：
 
 ```typescript
 // DIコンテナなし - コードの重複
 // routes/user.ts
-const prisma = new PrismaClient();
-const userRepository = createPrismaUserRepository(prisma);
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository';
+const userRepository = drizzleUserRepo;
 
 // routes/post.ts
-const prisma = new PrismaClient(); // 重複
-const userRepository = createPrismaUserRepository(prisma); // 重複
-const postRepository = createPrismaPostRepository(prisma);
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository'; // 重複
+import * as drizzlePostRepo from '../infrastructure/persistence/drizzle/drizzlePostRepository';
+const userRepository = drizzleUserRepo; // 重複
+const postRepository = drizzlePostRepo;
 ```
 
 DIコンテナがあれば、1箇所で管理できちゃう！：
@@ -549,16 +643,19 @@ import { container } from '../../infrastructure/di/container';
 const { userRepository } = container;
 ```
 
-#### 2. **🔒 シングルトンの保証**
+#### 2. **🔒 依存性の一貫性**
 
-PrismaClientなどは、複数インスタンスを作るとコネクションプールの問題が発生しちゃうんだ。DIコンテナで1つのインスタンスを共有しよう：
+Drizzleクライアントは、D1Databaseインスタンスから生成されるよ。DIコンテナでリポジトリ関数を一元管理しよう：
 
 ```typescript
 export const container = {
-  prisma: new PrismaClient(), // シングルトン
-  
   get userRepository() {
-    return createPrismaUserRepository(this.prisma); // 同じprismaを使用
+    return {
+      save: drizzleUserRepo.save,
+      findById: drizzleUserRepo.findById,
+      findByEmail: drizzleUserRepo.findByEmail,
+      delete: drizzleUserRepo.deleteUser,
+    };
   },
 };
 ```
@@ -571,10 +668,10 @@ export const container = {
 export const container = {
   get userRepository(): UserRepository {
     return {
-      save: prismaUserRepo.save,
-      findById: prismaUserRepo.findById,
-      findByEmail: prismaUserRepo.findByEmail,
-      delete: prismaUserRepo.deleteUser,
+      save: drizzleUserRepo.save,
+      findById: drizzleUserRepo.findById,
+      findByEmail: drizzleUserRepo.findByEmail,
+      delete: drizzleUserRepo.deleteUser,
     };
   },
 };
@@ -599,18 +696,15 @@ export const container = {
 ```typescript
 // infrastructure/di/container.ts
 
-import { PrismaClient } from '@prisma/client';
-import * as prismaUserRepo from './persistence/prisma/prismaUserRepository';
+import * as drizzleUserRepo from './persistence/drizzle/drizzleUserRepository';
 
 export const container = {
-  prisma: new PrismaClient(),
-  
   get userRepository() {
     return {
-      save: prismaUserRepo.save,
-      findById: prismaUserRepo.findById,
-      findByEmail: prismaUserRepo.findByEmail,
-      delete: prismaUserRepo.deleteUser,
+      save: drizzleUserRepo.save,
+      findById: drizzleUserRepo.findById,
+      findByEmail: drizzleUserRepo.findByEmail,
+      delete: drizzleUserRepo.deleteUser,
     };
   },
 };
@@ -660,16 +754,13 @@ export async function handleCreateUser(
 ```typescript
 // presentation/routes/user.ts
 
-import { PrismaClient } from '@prisma/client';
-import * as prismaUserRepo from '../infrastructure/persistence/prisma/prismaUserRepository';
-
-const prisma = new PrismaClient();
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository';
 
 const userRepository = {
-  save: prismaUserRepo.save,
-  findById: prismaUserRepo.findById,
-  findByEmail: prismaUserRepo.findByEmail,
-  delete: prismaUserRepo.deleteUser,
+  save: drizzleUserRepo.save,
+  findById: drizzleUserRepo.findById,
+  findByEmail: drizzleUserRepo.findByEmail,
+  delete: drizzleUserRepo.deleteUser,
 };
 
 userRoutes.post('/users', (c) => handleCreateUser(c, userRepository));
@@ -707,7 +798,7 @@ export async function createUserUseCase(
 
 **いいところ** ✨:
 - ユースケースは実装の詳細を知らなくていい（疎結合）
-- Prisma、MongoDB など、どの実装でも動くよ
+- Drizzle、MongoDB など、どの実装でも動くよ
 
 ---
 
@@ -716,16 +807,18 @@ export async function createUserUseCase(
 実装が型定義を満たしているか確認できるよ：
 
 ```typescript
-// infrastructure/persistence/prisma/prismaUserRepository.ts
+// infrastructure/persistence/drizzle/drizzleUserRepository.ts
 
 import type { UserRepository } from '../../domain/repositories/userRepository';
 
-export async function save(user: User): Promise<void> { ... }
-export async function findById(id: string): Promise<User | null> { ... }
-export async function findByEmail(email: string): Promise<User | null> { ... }
-export async function deleteUser(id: string): Promise<void> { ... }
+export async function save(user: User, d1: D1Database): Promise<void> { ... }
+export async function findById(id: string, d1: D1Database): Promise<User | null> { ... }
+export async function findByEmail(email: string, d1: D1Database): Promise<User | null> { ... }
+export async function deleteUser(id: string, d1: D1Database): Promise<void> { ... }
 
 // 型チェック用（ビルド時にエラーが出る）
+// 注意: Drizzleの実装はD1Databaseを追加で受け取るため、
+// 実際の使用時には引数を調整する必要があるよ
 const _typeCheck: UserRepository = {
   save,
   findById,
@@ -769,6 +862,79 @@ Presentation → Application → Domain ← Infrastructure
 
 ---
 
+## 🔧 Drizzle設定ファイル
+
+### 📄 drizzle.config.ts
+
+プロジェクトルート（`backend/`）に配置するDrizzle設定ファイルだよ：
+
+```typescript
+// drizzle.config.ts
+
+import type { Config } from 'drizzle-kit';
+
+export default {
+  schema: './src/infrastructure/persistence/drizzle/schema/*.ts',
+  out: './src/infrastructure/persistence/drizzle/migrations',
+  driver: 'd1',
+  dbCredentials: {
+    wranglerConfigPath: './wrangler.toml',
+    dbName: 'your-d1-database-name',
+  },
+} satisfies Config;
+```
+
+### 🚀 マイグレーションコマンド
+
+```bash
+# スキーマからマイグレーションファイルを生成
+npx drizzle-kit generate:sqlite
+
+# ローカルD1にマイグレーション適用
+npx wrangler d1 migrations apply your-d1-database-name --local
+
+# 本番D1にマイグレーション適用
+npx wrangler d1 migrations apply your-d1-database-name --remote
+```
+
+### 📌 重要な注意点
+
+- **Cloudflare D1はSQLiteベース**: Drizzleでは`sqlite`モードを使用するよ
+- **ローカル開発**: `wrangler dev`でローカルD1環境が立ち上がるよ
+- **Binding**: Cloudflare WorkersではD1DatabaseはBindingとして注入されるよ
+- **リクエストごと**: D1Databaseはリクエストごとに`env.DB`などから取得するよ
+
+### 🌐 Cloudflare Workersでの使用例
+
+```typescript
+// Honoアプリでの使用例
+import { Hono } from 'hono';
+import type { D1Database } from '@cloudflare/workers-types';
+
+type Bindings = {
+  DB: D1Database;
+};
+
+const app = new Hono<{ Bindings: Bindings }>();
+
+app.post('/users', async (c) => {
+  const d1 = c.env.DB; // Bindingから取得
+  const request = CreateUserRequestSchema.parse(await c.req.json());
+  
+  // D1Databaseをリポジトリ関数に渡す
+  const user = await createUserUseCase(request, {
+    save: (user) => drizzleUserRepo.save(user, d1),
+    findById: (id) => drizzleUserRepo.findById(id, d1),
+    findByEmail: (email) => drizzleUserRepo.findByEmail(email, d1),
+    delete: (id) => drizzleUserRepo.deleteUser(id, d1),
+  });
+  
+  return c.json(user, 201);
+});
+```
+
+---
+
 ## 🎉 まとめ
 
 このアーキテクチャは、**DDDの原則**と**シンプルな関数型スタイル**を組み合わせることで、保守性が高いコードを実現できるよ！✨
@@ -777,7 +943,8 @@ Presentation → Application → Domain ← Infrastructure
 
 ✅ **シンプル**: クラス不要、普通のTypeScriptで書けるよ！  
 ✅ **実用的**: Zodで型安全、Repository型定義で柔軟な実装切り替えができるよ  
-✅ **保守性**: 4層アーキテクチャで関心事をきれいに分離できるんだ
+✅ **保守性**: 4層アーキテクチャで関心事をきれいに分離できるんだ  
+✅ **エッジ対応**: Cloudflare D1でエッジコンピューティングに最適化されているよ
 
 この手順に従えば、保守しやすいコードが書けるよ！
 頑張ってね！ 💪✨
@@ -786,4 +953,6 @@ Presentation → Application → Domain ← Infrastructure
 
 - [TypeScript × ドメイン駆動設計ハンズオン](https://zenn.dev/yamachan0625/books/ddd-hands-on)
 - [Zod Documentation](https://zod.dev/)
+- [Drizzle ORM Documentation](https://orm.drizzle.team/)
+- [Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/)
 - エリック・エヴァンスのドメイン駆動設計（DDD本）
