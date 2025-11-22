@@ -13,7 +13,14 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "lint:check": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "type-check": "tsc --noEmit",
+    "check": "pnpm run type-check && pnpm run lint:check && pnpm run format:check",
+    "fix": "pnpm run lint:fix && pnpm run format:fix"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +28,12 @@
   "devDependencies": {
     "typescript": "^5.9.3",
     "tsx": "^4.7.0",
-    "@types/node": "^20"
+    "@types/node": "^20",
+    "eslint": "^9",
+    "@hono/eslint-config": "^1.0.3",
+    "eslint-plugin-simple-import-sort": "^12",
+    "prettier": "^3.2.5",
+    "eslint-config-prettier": "^9"
   },
   "dependencies": {
     "hono": "^4.10.6",
