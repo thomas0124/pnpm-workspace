@@ -87,7 +87,6 @@ jobs:
               echo "Error: Failed to retrieve database ID after creation"
               exit 1
             fi
-            echo "Created database with ID: $DB_ID"
           else
             echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
           fi
@@ -148,6 +147,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
         run: |
+          echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
           pnpm run build
 
       - name: Create Cloudflare Pages project if not exists
@@ -180,7 +180,7 @@ jobs:
           # デプロイされたURLを生成
           PAGES_URL="https://preview-pr-${{ github.event.pull_request.number }}.ar-pamph.pages.dev"
           echo "PAGES_URL=$PAGES_URL" >> $GITHUB_OUTPUT
-          echo "Frontend deployed to: $PAGES_URL"
+          echo "✅ Frontend deployed to: $PAGES_URL"
 
       - name: Comment PR with deployment URLs
         uses: actions/github-script@v7
