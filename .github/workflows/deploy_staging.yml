@@ -8,6 +8,7 @@ on:
 env:
   PNPM_VERSION: "9.15.5"
   NODE_VERSION: "20"
+  CLOUDFLARE_WORKERS_SUBDOMAIN: "sekibun3109"
 
 jobs:
   deploy-staging:
@@ -114,13 +115,9 @@ jobs:
           DEPLOY_OUTPUT=$(wrangler deploy --env staging)
           echo "$DEPLOY_OUTPUT"
           
-          # デプロイされたURLを抽出
-          WORKER_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https://[^\s]+' | head -1 || echo "")
-          
-          if [ -z "$WORKER_URL" ]; then
-            echo "❌ Error: Could not extract Worker URL from deployment output"
-            exit 1
-          fi
+          # 環境変数とWorker名から明示的にURLを生成
+          WORKER_NAME="ar-pamph-staging"
+          WORKER_URL="https://${WORKER_NAME}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
           
           echo "WORKER_URL=$WORKER_URL" >> $GITHUB_OUTPUT
           echo "✅ Backend deployed to: $WORKER_URL"
