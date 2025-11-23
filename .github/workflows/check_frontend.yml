@@ -43,3 +43,6 @@ jobs:
         run: |
           git add -N .
           git diff --name-only --exit-code
+
+      - name: Build Frontend
+        run: pnpm --filter @uttk/frontend run build

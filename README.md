@@ -69,6 +69,58 @@ pnpm test
 		└─ src/
 ```
 
+## デプロイメント（CI/CD）
+
+このプロジェクトは、Cloudflare（Pages, Workers, D1）を使用した自動デプロイを実装しています。
+
+### 環境構成
+
+| 環境 | トリガー | フロントエンド | バックエンド | データベース |
+|------|---------|--------------|------------|------------|
+| **Preview** | Pull Request作成時 | Cloudflare Pages | Cloudflare Workers | D1 (PR毎に作成) |
+| **Staging** | `develop`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
+| **Production** | `main`ブランチへのマージ | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
+
+### デプロイフロー
+
+#### Preview環境（開発中の機能確認）
+1. Pull Requestを作成
+2. GitHub Actionsが自動的に実行
+3. PR専用の環境がデプロイされる（例: `preview-pr-123.ar-pamph.pages.dev`）
+4. PRにコメントでURLが通知される
+5. レビュー時に実際の動作を確認可能
+
+#### Staging環境（統合テスト）
+1. `develop`ブランチにマージ/push
+2. GitHub Actionsが自動的に実行
+3. Staging環境にデプロイ
+   - Frontend: `https://ar-pamph-staging.pages.dev`
+   - Backend: `https://ar-pamph-staging.workers.dev`
+   - Database: `ar-pamph-db-staging`
+
+#### Production環境（本番リリース）
+1. `main`ブランチにマージ
+2. GitHub Actionsが自動的に実行
+3. 本番環境にデプロイ
+   - Frontend: `https://ar-pamph.pages.dev`
+   - Backend: `https://ar-pamph.workers.dev`
+   - Database: `ar-pamph-db-production`
+
+### ブランチ戦略
+
+```
+main (本番環境)
+  ↑
+  └─ develop (Staging環境)
+       ↑
+       └─ feature/xxx (Pull Request → Preview環境)
+```
+
+1. 新機能は `feature/xxx` ブランチで開発
+2. Pull Requestを作成してPreview環境で確認
+3. レビュー後、`develop` にマージしてStaging環境で統合テスト
+4. 問題なければ `main` にマージして本番リリース
+
 ## 貢献
 
 1. Issue を立てて目的を共有してください。
