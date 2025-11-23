@@ -1,8 +1,11 @@
 # Cloudflare Workers Configuration for Backend
 
 name = "ar-pamph"
-main = "src/index.ts"
+main = "index.ts"
 compatibility_date = "2024-11-01"
+
+# マイグレーションディレクトリの設定
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
 
 # Workers環境の設定
 
