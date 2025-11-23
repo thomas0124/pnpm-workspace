@@ -85,10 +85,9 @@ jobs:
             done
             if [ -z "$DB_ID" ]; then
               echo "Error: Failed to retrieve database ID after creation"
-                exit 1
-              fi
-              echo "Created database with ID: $DB_ID"
+              exit 1
             fi
+            echo "Created database with ID: $DB_ID"
           else
             echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
           fi
