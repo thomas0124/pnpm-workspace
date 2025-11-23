@@ -3,8 +3,6 @@ name: Deploy Preview Environment
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - main
 
 env:
   PNPM_VERSION: "9.15.5"
