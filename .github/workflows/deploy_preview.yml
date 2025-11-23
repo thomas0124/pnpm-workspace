@@ -150,6 +150,23 @@ jobs:
         run: |
           pnpm run build
 
+      - name: Create Cloudflare Pages project if not exists
+        working-directory: packages/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 既存のプロジェクトを確認
+          PROJECTS=$(wrangler pages project list --json || echo "[]")
+          PROJECT_EXISTS=$(echo "$PROJECTS" | jq -r ".[] | select(.name==\"ar-pamph\") | .name" || echo "")
+          
+          if [ -z "$PROJECT_EXISTS" ]; then
+            echo "Creating Cloudflare Pages project: ar-pamph"
+            wrangler pages project create ar-pamph
+          else
+            echo "Project ar-pamph already exists"
+          fi
+
       - name: Deploy Frontend to Cloudflare Pages
         id: deploy-frontend
         working-directory: packages/frontend
