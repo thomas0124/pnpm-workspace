@@ -72,8 +72,11 @@ jobs:
           
           if [ -z "$DB_ID" ]; then
             echo "Creating new D1 database: $DB_NAME"
-            DB_CREATE=$(wrangler d1 create "$DB_NAME" --json)
-            DB_ID=$(echo "$DB_CREATE" | jq -r '.uuid')
+            wrangler d1 create "$DB_NAME"
+            # データベース作成の反映を待つ
+            sleep 2
+            # リストから新しく作成されたデータベースのIDを取得
+            DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
             echo "Created database with ID: $DB_ID"
           else
             echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
