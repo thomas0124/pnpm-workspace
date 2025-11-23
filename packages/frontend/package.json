@@ -7,7 +7,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "type-check": "tsc --noEmit"
+    "lint:check": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "type-check": "tsc --noEmit",
+    "check": "pnpm run type-check && pnpm run lint:check && pnpm run format:check",
+    "fix": "pnpm run lint:fix && pnpm run format:fix"
   },
   "dependencies": {
     "@uttk/backend": "workspace:^",

@@ -75,12 +75,14 @@ backend/
 **役割**: ビジネスロジックの心臓部！他の層には一切頼らないよ 💪
 
 **責務**:
+
 - ✨ ビジネスルールの定義
 - 💎 ドメインモデルの定義（Zodスキーマ）
 - 📜 リポジトリの型定義（インターフェース）
 - 🔒 他の層に依存しない
 
 **特徴**:
+
 - **Zodスキーマ**: バリデーションとドメイン知識を表現できるよ
 - **シンプルな関数**: 副作用を少なくして予測しやすいコードに
 - **型定義**: 実装ではなく契約を定義するんだ
@@ -92,20 +94,18 @@ backend/
 ```typescript
 // domain/models/user/user.ts
 
-import { z } from 'zod';
+import { z } from 'zod'
 
 // Zodスキーマで値オブジェクトを定義
-export const EmailSchema = z.string()
-  .email('Invalid email format')
-  .toLowerCase()
-  .trim();
+export const EmailSchema = z.string().email('Invalid email format').toLowerCase().trim()
 
-export const UserNameSchema = z.string()
+export const UserNameSchema = z
+  .string()
   .min(1, 'Name must not be empty')
   .max(100, 'Name must be 100 characters or less')
-  .trim();
+  .trim()
 
-export const UserIdSchema = z.string().uuid();
+export const UserIdSchema = z.string().uuid()
 
 // エンティティのスキーマ
 export const UserSchema = z.object({
@@ -114,10 +114,10 @@ export const UserSchema = z.object({
   email: EmailSchema,
   createdAt: z.date(),
   updatedAt: z.date(),
-});
+})
 
 // 型を生成
-export type User = z.infer<typeof UserSchema>;
+export type User = z.infer<typeof UserSchema>
 ```
 
 ##### 🏭 ファクトリ関数
@@ -125,31 +125,31 @@ export type User = z.infer<typeof UserSchema>;
 ```typescript
 // domain/factories/user/userFactory.ts
 
-import { v4 as uuidv4 } from 'uuid';
-import { UserSchema, type User } from '../../models/user/user';
+import { v4 as uuidv4 } from 'uuid'
+import { UserSchema, type User } from '../../models/user/user'
 
 // 新規ユーザーを作成
 export function createUser(name: string, email: string): User {
-  const now = new Date();
-  
+  const now = new Date()
+
   return UserSchema.parse({
     id: uuidv4(),
     name,
     email,
     createdAt: now,
     updatedAt: now,
-  });
+  })
 }
 
 // DBから取得したデータを再構築
 export function reconstructUser(data: {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  name: string
+  email: string
+  createdAt: Date
+  updatedAt: Date
 }): User {
-  return UserSchema.parse(data);
+  return UserSchema.parse(data)
 }
 ```
 
@@ -158,21 +158,21 @@ export function reconstructUser(data: {
 ```typescript
 // domain/repositories/userRepository.ts
 
-import type { User } from '../models/user/user';
+import type { User } from '../models/user/user'
 
 /**
  * ユーザーリポジトリの型定義
- * 
+ *
  * この型定義は「契約（Contract）」として機能するよ！：
  * - ✨ ドメイン層は実装に依存せず、この型だけに依存するんだ
  * - 🔧 インフラ層がこの型を満たす実装を提供してくれる
  */
 export type UserRepository = {
-  save: (user: User) => Promise<void>;
-  findById: (id: string) => Promise<User | null>;
-  findByEmail: (email: string) => Promise<User | null>;
-  delete: (id: string) => Promise<void>;
-};
+  save: (user: User) => Promise<void>
+  findById: (id: string) => Promise<User | null>
+  findByEmail: (email: string) => Promise<User | null>
+  delete: (id: string) => Promise<void>
+}
 ```
 
 ##### 🤝 ドメインサービス
@@ -180,19 +180,16 @@ export type UserRepository = {
 ```typescript
 // domain/services/userDomainService.ts
 
-import type { User } from '../models/user/user';
-import type { UserRepository } from '../repositories/userRepository';
+import type { User } from '../models/user/user'
+import type { UserRepository } from '../repositories/userRepository'
 
 /**
  * メールアドレスの重複チェック
  * エンティティに属さないビジネスロジックだよ
  */
-export async function isDuplicateEmail(
-  user: User,
-  repository: UserRepository
-): Promise<boolean> {
-  const existingUser = await repository.findByEmail(user.email);
-  return existingUser !== null && existingUser.id !== user.id;
+export async function isDuplicateEmail(user: User, repository: UserRepository): Promise<boolean> {
+  const existingUser = await repository.findByEmail(user.email)
+  return existingUser !== null && existingUser.id !== user.id
 }
 ```
 
@@ -203,11 +200,13 @@ export async function isDuplicateEmail(
 **役割**: 業務の流れを指揮する司令塔！ドメイン層の機能を組み合わせるよ 🎵
 
 **責務**:
+
 - 🚀 ユースケースの実行
 - 🎵 ドメイン層のオーケストレーション
 - 💼 トランザクション管理
 
 **特徴**:
+
 - **関数で実装**: シンプルな関数でユースケースを表現するよ
 - **Repository型を使用**: 実装ではなく型に依存するんだ
 
@@ -218,7 +217,7 @@ export async function isDuplicateEmail(
 ```typescript
 // application/dto/userDto.ts
 
-import { z } from 'zod';
+import { z } from 'zod'
 
 // DTOスキーマ
 export const UserDtoSchema = z.object({
@@ -227,17 +226,17 @@ export const UserDtoSchema = z.object({
   email: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
-});
+})
 
-export type UserDto = z.infer<typeof UserDtoSchema>;
+export type UserDto = z.infer<typeof UserDtoSchema>
 
 // リクエストDTO
 export const CreateUserRequestSchema = z.object({
   name: z.string(),
   email: z.string(),
-});
+})
 
-export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>;
+export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>
 ```
 
 ##### ✨ ユースケース - ユーザー作成
@@ -245,14 +244,14 @@ export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>;
 ```typescript
 // application/usecases/user/createUser.ts
 
-import { createUser } from '../../domain/factories/user/userFactory';
-import { isDuplicateEmail } from '../../domain/services/userDomainService';
-import type { UserRepository } from '../../domain/repositories/userRepository';
-import type { CreateUserRequest, UserDto } from '../dto/userDto';
+import { createUser } from '../../domain/factories/user/userFactory'
+import { isDuplicateEmail } from '../../domain/services/userDomainService'
+import type { UserRepository } from '../../domain/repositories/userRepository'
+import type { CreateUserRequest, UserDto } from '../dto/userDto'
 
 /**
  * ユーザー作成ユースケース
- * 
+ *
  * @param request - ユーザー作成リクエストだよ
  * @param repository - リポジトリ（型定義に依存、実装は問わない）
  * @returns 作成されたユーザー
@@ -262,19 +261,19 @@ export async function createUserUseCase(
   repository: UserRepository
 ): Promise<UserDto> {
   // 1. ユーザーを作成するよ
-  const user = createUser(request.name, request.email);
+  const user = createUser(request.name, request.email)
 
   // 2. 重複チェックするよ
-  const duplicate = await isDuplicateEmail(user, repository);
+  const duplicate = await isDuplicateEmail(user, repository)
   if (duplicate) {
-    throw new Error('User with this email already exists');
+    throw new Error('User with this email already exists')
   }
 
   // 3. 保存するよ
-  await repository.save(user);
+  await repository.save(user)
 
   // 4. DTOとして返すよ
-  return user;
+  return user
 }
 ```
 
@@ -285,11 +284,13 @@ export async function createUserUseCase(
 **役割**: データベースなど、外の世界とつながる架け橋！🌉
 
 **責務**:
+
 - 💾 データベースアクセスの実装
 - 🌐 外部APIとの通信
 - 🔐 技術的詳細の隠蔽
 
 **特徴**:
+
 - **関数を個別エクスポート**: 各関数を独立して実装するよ
 - **型定義を満たす**: ドメイン層の型定義に準拠するんだ
 
@@ -300,7 +301,7 @@ export async function createUserUseCase(
 ```typescript
 // infrastructure/persistence/drizzle/schema/user.ts
 
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
 /**
  * ユーザーテーブルのスキーマ定義
@@ -312,10 +313,10 @@ export const users = sqliteTable('users', {
   email: text('email').notNull().unique(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
-});
+})
 
-export type UserTable = typeof users.$inferSelect;
-export type NewUserTable = typeof users.$inferInsert;
+export type UserTable = typeof users.$inferSelect
+export type NewUserTable = typeof users.$inferInsert
 ```
 
 ##### 🔌 Drizzleクライアント
@@ -323,20 +324,20 @@ export type NewUserTable = typeof users.$inferInsert;
 ```typescript
 // infrastructure/persistence/drizzle/client.ts
 
-import { drizzle } from 'drizzle-orm/d1';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import * as schema from './schema/user';
+import { drizzle } from 'drizzle-orm/d1'
+import type { DrizzleD1Database } from 'drizzle-orm/d1'
+import * as schema from './schema/user'
 
-let db: DrizzleD1Database<typeof schema> | null = null;
+let db: DrizzleD1Database<typeof schema> | null = null
 
 /**
  * Drizzleクライアントを取得（シングルトン）
  */
 export function getDb(d1: D1Database): DrizzleD1Database<typeof schema> {
   if (!db) {
-    db = drizzle(d1, { schema });
+    db = drizzle(d1, { schema })
   }
-  return db;
+  return db
 }
 ```
 
@@ -345,28 +346,29 @@ export function getDb(d1: D1Database): DrizzleD1Database<typeof schema> {
 ```typescript
 // infrastructure/persistence/drizzle/drizzleUserRepository.ts
 
-import { eq } from 'drizzle-orm';
-import { getDb } from './client';
-import { users } from './schema/user';
-import { reconstructUser } from '../../domain/factories/user/userFactory';
-import type { User } from '../../domain/models/user/user';
+import { eq } from 'drizzle-orm'
+import { getDb } from './client'
+import { users } from './schema/user'
+import { reconstructUser } from '../../domain/factories/user/userFactory'
+import type { User } from '../../domain/models/user/user'
 
 /**
  * ユーザーを保存するよ（作成または更新）
  */
 export async function save(user: User, d1: D1Database): Promise<void> {
-  const db = getDb(d1);
-  
-  const existing = await db.select().from(users).where(eq(users.id, user.id)).get();
-  
+  const db = getDb(d1)
+
+  const existing = await db.select().from(users).where(eq(users.id, user.id)).get()
+
   if (existing) {
-    await db.update(users)
+    await db
+      .update(users)
       .set({
         name: user.name,
         email: user.email,
         updatedAt: user.updatedAt,
       })
-      .where(eq(users.id, user.id));
+      .where(eq(users.id, user.id))
   } else {
     await db.insert(users).values({
       id: user.id,
@@ -374,7 +376,7 @@ export async function save(user: User, d1: D1Database): Promise<void> {
       email: user.email,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-    });
+    })
   }
 }
 
@@ -382,11 +384,11 @@ export async function save(user: User, d1: D1Database): Promise<void> {
  * IDでユーザーを検索するよ
  */
 export async function findById(id: string, d1: D1Database): Promise<User | null> {
-  const db = getDb(d1);
-  
-  const userData = await db.select().from(users).where(eq(users.id, id)).get();
+  const db = getDb(d1)
 
-  if (!userData) return null;
+  const userData = await db.select().from(users).where(eq(users.id, id)).get()
+
+  if (!userData) return null
 
   return reconstructUser({
     id: userData.id,
@@ -394,18 +396,18 @@ export async function findById(id: string, d1: D1Database): Promise<User | null>
     email: userData.email,
     createdAt: userData.createdAt,
     updatedAt: userData.updatedAt,
-  });
+  })
 }
 
 /**
  * メールアドレスでユーザーを検索するよ
  */
 export async function findByEmail(email: string, d1: D1Database): Promise<User | null> {
-  const db = getDb(d1);
-  
-  const userData = await db.select().from(users).where(eq(users.email, email)).get();
+  const db = getDb(d1)
 
-  if (!userData) return null;
+  const userData = await db.select().from(users).where(eq(users.email, email)).get()
+
+  if (!userData) return null
 
   return reconstructUser({
     id: userData.id,
@@ -413,15 +415,15 @@ export async function findByEmail(email: string, d1: D1Database): Promise<User |
     email: userData.email,
     createdAt: userData.createdAt,
     updatedAt: userData.updatedAt,
-  });
+  })
 }
 
 /**
  * ユーザーを削除するよ
  */
 export async function deleteUser(id: string, d1: D1Database): Promise<void> {
-  const db = getDb(d1);
-  await db.delete(users).where(eq(users.id, id));
+  const db = getDb(d1)
+  await db.delete(users).where(eq(users.id, id))
 }
 ```
 
@@ -430,15 +432,15 @@ export async function deleteUser(id: string, d1: D1Database): Promise<void> {
 ```typescript
 // infrastructure/di/container.ts
 
-import type { UserRepository } from '../../domain/repositories/userRepository';
-import * as drizzleUserRepo from '../persistence/drizzle/drizzleUserRepository';
+import type { UserRepository } from '../../domain/repositories/userRepository'
+import * as drizzleUserRepo from '../persistence/drizzle/drizzleUserRepository'
 
 /**
  * シンプルなDIコンテナ
- * 
+ *
  * 複雑なDIライブラリは不要だよ！
  * ただのオブジェクトで依存性を管理できるんだ。
- * 
+ *
  * Cloudflare WorkersではD1DatabaseはリクエストごとにBindingから取得するため、
  * ここではリポジトリ関数のみを提供するよ
  */
@@ -446,7 +448,7 @@ import * as drizzleUserRepo from '../persistence/drizzle/drizzleUserRepository';
 export const container = {
   /**
    * ユーザーリポジトリ
-   * 
+   *
    * 注意: Drizzleの関数はD1Databaseを引数に取るため、
    * 実際の使用時にはBindingからD1を渡す必要があるよ
    */
@@ -456,11 +458,11 @@ export const container = {
       findById: drizzleUserRepo.findById,
       findByEmail: drizzleUserRepo.findByEmail,
       delete: drizzleUserRepo.deleteUser,
-    };
+    }
   },
-};
+}
 
-export type Container = typeof container;
+export type Container = typeof container
 ```
 
 ---
@@ -470,12 +472,14 @@ export type Container = typeof container;
 **役割**: HTTPリクエストの受付窓口！外の世界とのやり取りを担当するよ 📞
 
 **責務**:
+
 - 📥 HTTPリクエストの受付
 - ✅ リクエストのバリデーション
 - 🚀 ユースケースの呼び出し
 - 📤 レスポンスの整形
 
 **特徴**:
+
 - **シンプルなハンドラー**: 直接的な関数でリクエストを処理するよ
 - **DIコンテナ経由**: リポジトリはコンテナから取得するんだ
 
@@ -486,33 +490,30 @@ export type Container = typeof container;
 ```typescript
 // presentation/handlers/userHandlers.ts
 
-import type { Context } from 'hono';
-import { createUserUseCase } from '../application/usecases/user/createUser';
-import { CreateUserRequestSchema } from '../application/dto/userDto';
-import type { UserRepository } from '../domain/repositories/userRepository';
+import type { Context } from 'hono'
+import { createUserUseCase } from '../application/usecases/user/createUser'
+import { CreateUserRequestSchema } from '../application/dto/userDto'
+import type { UserRepository } from '../domain/repositories/userRepository'
 
 /**
  * ユーザー作成ハンドラーだよ
  */
-export async function handleCreateUser(
-  c: Context,
-  userRepository: UserRepository
-) {
+export async function handleCreateUser(c: Context, userRepository: UserRepository) {
   try {
-    const body = await c.req.json();
+    const body = await c.req.json()
 
     // リクエストバリデーション
-    const request = CreateUserRequestSchema.parse(body);
+    const request = CreateUserRequestSchema.parse(body)
 
     // ユースケース実行
-    const user = await createUserUseCase(request, userRepository);
+    const user = await createUserUseCase(request, userRepository)
 
-    return c.json(user, 201);
+    return c.json(user, 201)
   } catch (error) {
     if (error instanceof Error) {
-      return c.json({ error: error.message }, 400);
+      return c.json({ error: error.message }, 400)
     }
-    return c.json({ error: 'Internal server error' }, 500);
+    return c.json({ error: 'Internal server error' }, 500)
   }
 }
 ```
@@ -522,17 +523,17 @@ export async function handleCreateUser(
 ```typescript
 // presentation/routes/user.ts
 
-import { Hono } from 'hono';
-import { container } from '../infrastructure/di/container';
-import { handleCreateUser } from './handlers/userHandlers';
+import { Hono } from 'hono'
+import { container } from '../infrastructure/di/container'
+import { handleCreateUser } from './handlers/userHandlers'
 
-export const userRoutes = new Hono();
+export const userRoutes = new Hono()
 
 // DIコンテナから依存性を取得
-const { userRepository } = container;
+const { userRepository } = container
 
 // ルーティング
-userRoutes.post('/users', (c) => handleCreateUser(c, userRepository));
+userRoutes.post('/users', (c) => handleCreateUser(c, userRepository))
 ```
 
 ##### 🎪 メインルーター
@@ -540,23 +541,23 @@ userRoutes.post('/users', (c) => handleCreateUser(c, userRepository));
 ```typescript
 // presentation/routes/index.ts
 
-import { Hono } from 'hono';
-import { userRoutes } from './user';
-import { errorHandler } from '../middlewares/errorHandler';
+import { Hono } from 'hono'
+import { userRoutes } from './user'
+import { errorHandler } from '../middlewares/errorHandler'
 
 export function createApp() {
-  const app = new Hono();
+  const app = new Hono()
 
   // グローバルミドルウェア
-  app.use('*', errorHandler);
+  app.use('*', errorHandler)
 
   // ヘルスチェック
-  app.get('/health', (c) => c.json({ status: 'ok' }));
+  app.get('/health', (c) => c.json({ status: 'ok' }))
 
   // APIルーティング
-  app.route('/api', userRoutes);
+  app.route('/api', userRoutes)
 
-  return app;
+  return app
 }
 ```
 
@@ -565,15 +566,15 @@ export function createApp() {
 ```typescript
 // presentation/middlewares/errorHandler.ts
 
-import type { Context, Next } from 'hono';
-import { ZodError } from 'zod';
+import type { Context, Next } from 'hono'
+import { ZodError } from 'zod'
 
 export async function errorHandler(c: Context, next: Next) {
   try {
-    await next();
+    await next()
   } catch (error) {
-    console.error('Error:', error);
-    
+    console.error('Error:', error)
+
     // Zodエラーの処理
     if (error instanceof ZodError) {
       return c.json(
@@ -583,9 +584,9 @@ export async function errorHandler(c: Context, next: Next) {
           timestamp: new Date().toISOString(),
         },
         400
-      );
+      )
     }
-    
+
     // 一般的なエラー
     if (error instanceof Error) {
       return c.json(
@@ -594,16 +595,16 @@ export async function errorHandler(c: Context, next: Next) {
           timestamp: new Date().toISOString(),
         },
         500
-      );
+      )
     }
-    
+
     return c.json(
       {
         error: 'Internal server error',
         timestamp: new Date().toISOString(),
       },
       500
-    );
+    )
   }
 }
 ```
@@ -625,22 +626,22 @@ DIコンテナがない場合、各ルーティングファイルで毎回イン
 ```typescript
 // DIコンテナなし - コードの重複
 // routes/user.ts
-import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository';
-const userRepository = drizzleUserRepo;
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository'
+const userRepository = drizzleUserRepo
 
 // routes/post.ts
-import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository'; // 重複
-import * as drizzlePostRepo from '../infrastructure/persistence/drizzle/drizzlePostRepository';
-const userRepository = drizzleUserRepo; // 重複
-const postRepository = drizzlePostRepo;
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository' // 重複
+import * as drizzlePostRepo from '../infrastructure/persistence/drizzle/drizzlePostRepository'
+const userRepository = drizzleUserRepo // 重複
+const postRepository = drizzlePostRepo
 ```
 
 DIコンテナがあれば、1箇所で管理できちゃう！：
 
 ```typescript
 // DIコンテナあり - 一元管理
-import { container } from '../../infrastructure/di/container';
-const { userRepository } = container;
+import { container } from '../../infrastructure/di/container'
+const { userRepository } = container
 ```
 
 #### 2. **🔒 依存性の一貫性**
@@ -655,9 +656,9 @@ export const container = {
       findById: drizzleUserRepo.findById,
       findByEmail: drizzleUserRepo.findByEmail,
       delete: drizzleUserRepo.deleteUser,
-    };
+    }
   },
-};
+}
 ```
 
 #### 3. **🔄 実装の切り替え**
@@ -672,20 +673,20 @@ export const container = {
       findById: drizzleUserRepo.findById,
       findByEmail: drizzleUserRepo.findByEmail,
       delete: drizzleUserRepo.deleteUser,
-    };
+    }
   },
-};
+}
 ```
 
 ---
 
 ### 📊 いつDIコンテナを使うべきか
 
-| プロジェクト規模 | DIコンテナ | 理由 |
-|---|---|---|
-| **小規模**<br>（エンドポイント ~10個） | 不要 | 直接インポートで十分だよ |
-| **中規模**<br>（エンドポイント 10-30個） | **推奨** | 管理が楽になるよ |
-| **大規模**<br>（エンドポイント 30個~） | **必須** | DIライブラリも検討しよう |
+| プロジェクト規模                         | DIコンテナ | 理由                     |
+| ---------------------------------------- | ---------- | ------------------------ |
+| **小規模**<br>（エンドポイント ~10個）   | 不要       | 直接インポートで十分だよ |
+| **中規模**<br>（エンドポイント 10-30個） | **推奨**   | 管理が楽になるよ         |
+| **大規模**<br>（エンドポイント 30個~）   | **必須**   | DIライブラリも検討しよう |
 
 ---
 
@@ -696,7 +697,7 @@ export const container = {
 ```typescript
 // infrastructure/di/container.ts
 
-import * as drizzleUserRepo from './persistence/drizzle/drizzleUserRepository';
+import * as drizzleUserRepo from './persistence/drizzle/drizzleUserRepository'
 
 export const container = {
   get userRepository() {
@@ -705,9 +706,9 @@ export const container = {
       findById: drizzleUserRepo.findById,
       findByEmail: drizzleUserRepo.findByEmail,
       delete: drizzleUserRepo.deleteUser,
-    };
+    }
   },
-};
+}
 ```
 
 ---
@@ -719,15 +720,15 @@ export const container = {
 ```typescript
 // presentation/routes/user.ts
 
-import { container } from '../infrastructure/di/container';
-import { handleCreateUser } from './handlers/userHandlers';
+import { container } from '../infrastructure/di/container'
+import { handleCreateUser } from './handlers/userHandlers'
 
-export const userRoutes = new Hono();
+export const userRoutes = new Hono()
 
 // コンテナから依存性を取得
-const { userRepository } = container;
+const { userRepository } = container
 
-userRoutes.post('/users', (c) => handleCreateUser(c, userRepository));
+userRoutes.post('/users', (c) => handleCreateUser(c, userRepository))
 ```
 
 #### 🎯 ハンドラーで使用
@@ -739,9 +740,9 @@ export async function handleCreateUser(
   c: Context,
   userRepository: UserRepository // 型定義に依存
 ) {
-  const request = CreateUserRequestSchema.parse(await c.req.json());
-  const user = await createUserUseCase(request, userRepository);
-  return c.json(user, 201);
+  const request = CreateUserRequestSchema.parse(await c.req.json())
+  const user = await createUserUseCase(request, userRepository)
+  return c.json(user, 201)
 }
 ```
 
@@ -754,23 +755,25 @@ export async function handleCreateUser(
 ```typescript
 // presentation/routes/user.ts
 
-import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository';
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository'
 
 const userRepository = {
   save: drizzleUserRepo.save,
   findById: drizzleUserRepo.findById,
   findByEmail: drizzleUserRepo.findByEmail,
   delete: drizzleUserRepo.deleteUser,
-};
+}
 
-userRoutes.post('/users', (c) => handleCreateUser(c, userRepository));
+userRoutes.post('/users', (c) => handleCreateUser(c, userRepository))
 ```
 
 **いいところ** ✨:
+
 - シンプルだよ
 - ファイル数が少なくて済むよ
 
 **注意点** ⚠️:
+
 - コードの重複が発生しちゃう
 
 ---
@@ -784,12 +787,12 @@ Repository型定義は**契約（Contract）**として機能するよ！実装�
 ```typescript
 // application/usecases/user/createUser.ts
 
-import type { UserRepository } from '../../domain/repositories/userRepository';
+import type { UserRepository } from '../../domain/repositories/userRepository'
 
 // 引数の型として UserRepository を指定
 export async function createUserUseCase(
   request: CreateUserRequest,
-  repository: UserRepository  // ← どの実装でも受け入れ可能
+  repository: UserRepository // ← どの実装でも受け入れ可能
 ): Promise<UserDto> {
   // repository.save, repository.findById などが使える
   // 具体的な実装は知らなくて良い
@@ -797,6 +800,7 @@ export async function createUserUseCase(
 ```
 
 **いいところ** ✨:
+
 - ユースケースは実装の詳細を知らなくていい（疎結合）
 - Drizzle、MongoDB など、どの実装でも動くよ
 
@@ -828,6 +832,7 @@ const _typeCheck: UserRepository = {
 ```
 
 **いいところ** ✨:
+
 - コンパイル時に型の不一致を検出できるよ
 - リファクタリング時の安全性が上がるよ
 
@@ -871,7 +876,7 @@ Presentation → Application → Domain ← Infrastructure
 ```typescript
 // drizzle.config.ts
 
-import type { Config } from 'drizzle-kit';
+import type { Config } from 'drizzle-kit'
 
 export default {
   schema: './src/infrastructure/persistence/drizzle/schema/*.ts',
@@ -881,7 +886,7 @@ export default {
     wranglerConfigPath: './wrangler.toml',
     dbName: 'your-d1-database-name',
   },
-} satisfies Config;
+} satisfies Config
 ```
 
 ### 🚀 マイグレーションコマンド
@@ -908,29 +913,29 @@ npx wrangler d1 migrations apply your-d1-database-name --remote
 
 ```typescript
 // Honoアプリでの使用例
-import { Hono } from 'hono';
-import type { D1Database } from '@cloudflare/workers-types';
+import { Hono } from 'hono'
+import type { D1Database } from '@cloudflare/workers-types'
 
 type Bindings = {
-  DB: D1Database;
-};
+  DB: D1Database
+}
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Bindings }>()
 
 app.post('/users', async (c) => {
-  const d1 = c.env.DB; // Bindingから取得
-  const request = CreateUserRequestSchema.parse(await c.req.json());
-  
+  const d1 = c.env.DB // Bindingから取得
+  const request = CreateUserRequestSchema.parse(await c.req.json())
+
   // D1Databaseをリポジトリ関数に渡す
   const user = await createUserUseCase(request, {
     save: (user) => drizzleUserRepo.save(user, d1),
     findById: (id) => drizzleUserRepo.findById(id, d1),
     findByEmail: (email) => drizzleUserRepo.findByEmail(email, d1),
     delete: (id) => drizzleUserRepo.deleteUser(id, d1),
-  });
-  
-  return c.json(user, 201);
-});
+  })
+
+  return c.json(user, 201)
+})
 ```
 
 ---

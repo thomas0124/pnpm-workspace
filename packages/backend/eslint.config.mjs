@@ -1,6 +1,6 @@
 import honoConfig from '@hono/eslint-config'
-import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import prettierConfig from 'eslint-config-prettier'
+import simpleImportSort from 'eslint-plugin-simple-import-sort'
 
 export default [
   ...honoConfig,
