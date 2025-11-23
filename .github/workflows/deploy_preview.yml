@@ -174,8 +174,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Cloudflare Pagesにデプロイ
-          npx wrangler pages deploy .next --project-name=ar-pamph --branch=preview-pr-${{ github.event.pull_request.number }}
+          # Cloudflare Pagesにデプロイ（静的エクスポートされたoutディレクトリをデプロイ）
+          npx wrangler pages deploy out --project-name=ar-pamph --branch=preview-pr-${{ github.event.pull_request.number }}
 
           # デプロイされたURLを生成
           PAGES_URL="https://preview-pr-${{ github.event.pull_request.number }}.ar-pamph.pages.dev"
