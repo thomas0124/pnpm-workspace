@@ -80,7 +80,7 @@ jobs:
                 break
               fi
               echo "Waiting for database to be available (attempt $i/5)..."
-              sleep $((i * 2))
+              sleep $((2 ** i))
             done
             if [ -z "$DB_ID" ]; then
               echo "Error: Failed to retrieve database ID after creation"
