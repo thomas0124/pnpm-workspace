@@ -97,8 +97,17 @@ jobs:
       - name: Update wrangler.toml with D1 database ID
         working-directory: packages/backend
         run: |
-          # Preview環境のdatabase_idを動的に設定
-          sed -i 's/database_id = ""/database_id = "${{ steps.d1-setup.outputs.DB_ID }}"/' wrangler.toml
+          # Preview環境のdatabase_nameとdatabase_idを動的に設定
+          DB_NAME="${{ steps.d1-setup.outputs.DB_NAME }}"
+          DB_ID="${{ steps.d1-setup.outputs.DB_ID }}"
+          
+          # env.preview.d1_databasesセクション内のdatabase_nameを更新
+          sed -i "s|database_name = \"ar-pamph-db-preview\"|database_name = \"$DB_NAME\"|" wrangler.toml
+          
+          # env.preview.d1_databasesセクション内のdatabase_idを更新
+          # [[env.preview.d1_databases]]から次のセクションまでの範囲でdatabase_idを置換
+          sed -i "/\[\[env.preview.d1_databases\]\]/,/^\[\[/ s|database_id = \"\"|database_id = \"$DB_ID\"|" wrangler.toml
+          
           cat wrangler.toml
 
       - name: Run D1 Database Migrations
