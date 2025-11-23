@@ -77,7 +77,10 @@ jobs:
             sleep 2
             # リストから新しく作成されたデータベースのIDを取得
             DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
-            echo "Created database with ID: $DB_ID"
+            if [ -z "$DB_ID" ]; then
+              echo "Error: Failed to retrieve database ID after creation"
+              exit 1
+            fi            echo "Created database with ID: $DB_ID"
           else
             echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
           fi
