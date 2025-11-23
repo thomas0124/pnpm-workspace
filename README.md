@@ -77,7 +77,7 @@ pnpm test
 
 | 環境 | トリガー | フロントエンド | バックエンド | データベース |
 |------|---------|--------------|------------|------------|
-| **Preview** | Pull Request作成時 | Cloudflare Pages | Cloudflare Workers | D1 (PR毎に作成) |
+| **Preview** | Pull Request作成時 | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
 | **Staging** | `develop`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
 | **Production** | `main`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
 
@@ -89,7 +89,7 @@ pnpm test
 3. PR専用の環境がデプロイされる
    - Frontend: `https://preview-pr-{PR番号}.ar-pamph.pages.dev`
    - Backend: `https://ar-pamph-preview.sekibun3109.workers.dev`
-   - Database: `ar-pamph-db-pr-{PR番号}` (PR毎に作成)
+   - Database: `ar-pamph-db-preview` (共有)
 4. PRにコメントでURLが通知される
 5. レビュー時に実際の動作を確認可能
 
