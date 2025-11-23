@@ -15,4 +15,3 @@ export function getDb(d1: D1Database): DrizzleD1Database<typeof schema> {
 
 export { schema }
 export type { User, NewUser } from './schema/user'
-
