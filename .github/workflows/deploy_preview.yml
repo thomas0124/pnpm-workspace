@@ -105,8 +105,7 @@ jobs:
           
           # env.preview.d1_databasesセクション内のdatabase_idを更新
           # [[env.preview.d1_databases]]から次のセクションまでの範囲でdatabase_idを置換
-          sed -i "0,/\[\[env.preview.d1_databases\]\]/,/database_id = \"\"/ s|database_id = \"\"|database_id = \"$DB_ID\"|" wrangler.toml
-          
+          sed -i "/\[\[env\.preview\.d1_databases\]\]/,/^\[\[/ s|database_id = \"\"|database_id = \"$DB_ID\"|" wrangler.toml
           cat wrangler.toml
 
       - name: Run D1 Database Migrations
