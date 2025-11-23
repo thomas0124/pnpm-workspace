@@ -28,7 +28,10 @@
     "generate-types": "wrangler types",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply ar-pamph-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply ar-pamph-db --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply ar-pamph-db --remote",
+    "db:migrate:remote:preview": "wrangler d1 migrations apply ar-pamph-db-preview --remote --env preview",
+    "db:migrate:remote:staging": "wrangler d1 migrations apply ar-pamph-db-staging --remote --env staging",
+    "db:migrate:remote:production": "wrangler d1 migrations apply ar-pamph-db-production --remote --env production"
   },
   "keywords": [],
   "author": "",
