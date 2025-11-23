@@ -85,7 +85,8 @@ jobs:
             if [ -z "$DB_ID" ]; then
               echo "Error: Failed to retrieve database ID after creation"
               exit 1
-            fi            echo "Created database with ID: $DB_ID"
+            fi
+            echo "✅ Created database with ID: $DB_ID"
           else
             echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
           fi
@@ -141,6 +142,23 @@ jobs:
           echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
           pnpm run build
 
+      - name: Create Cloudflare Pages project if not exists
+        working-directory: packages/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 既存のプロジェクトを確認
+          PROJECTS=$(wrangler pages project list 2>/dev/null || echo "")
+          PROJECT_EXISTS=$(echo "$PROJECTS" | grep -q "ar-pamph-staging" && echo "exists" || echo "")
+          
+          if [ -z "$PROJECT_EXISTS" ]; then
+            echo "Creating Cloudflare Pages project: ar-pamph-staging"
+            wrangler pages project create ar-pamph-staging --production-branch=main
+          else
+            echo "Project ar-pamph-staging already exists"
+          fi
+
       - name: Deploy Frontend to Cloudflare Pages (Staging)
         id: deploy-frontend
         working-directory: packages/frontend
@@ -148,8 +166,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Cloudflare Pagesにデプロイ（staging環境）
-          npx wrangler pages deploy .next --project-name=ar-pamph-staging --branch=main
+          # Cloudflare Pagesにデプロイ（静的エクスポートされたoutディレクトリをデプロイ）
+          wrangler pages deploy out --project-name=ar-pamph-staging --branch=main
           
           # デプロイされたURLを生成
           PAGES_URL="https://ar-pamph-staging.pages.dev"

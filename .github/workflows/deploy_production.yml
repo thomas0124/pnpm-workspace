@@ -146,6 +146,23 @@ jobs:
           echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
           pnpm run build
 
+      - name: Create Cloudflare Pages project if not exists
+        working-directory: packages/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 既存のプロジェクトを確認
+          PROJECTS=$(wrangler pages project list 2>/dev/null || echo "")
+          PROJECT_EXISTS=$(echo "$PROJECTS" | grep -q "ar-pamph" && echo "exists" || echo "")
+          
+          if [ -z "$PROJECT_EXISTS" ]; then
+            echo "Creating Cloudflare Pages project: ar-pamph"
+            wrangler pages project create ar-pamph --production-branch=main
+          else
+            echo "Project ar-pamph already exists"
+          fi
+
       - name: Deploy Frontend to Cloudflare Pages (Production)
         id: deploy-frontend
         working-directory: packages/frontend
@@ -154,7 +171,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # Cloudflare Pagesにデプロイ（静的エクスポートされたoutディレクトリをデプロイ）
-          npx wrangler pages deploy out --project-name=ar-pamph --branch=main
+          wrangler pages deploy out --project-name=ar-pamph --branch=main
 
           # デプロイされたURLを生成
           PAGES_URL="https://ar-pamph.pages.dev"
