@@ -77,16 +77,19 @@ pnpm test
 
 | 環境 | トリガー | フロントエンド | バックエンド | データベース |
 |------|---------|--------------|------------|------------|
-| **Preview** | Pull Request作成時 | Cloudflare Pages | Cloudflare Workers | D1 (PR毎に作成) |
+| **Preview** | Pull Request作成時 | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
 | **Staging** | `develop`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
-| **Production** | `main`ブランチへのマージ | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
+| **Production** | `main`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
 
 ### デプロイフロー
 
 #### Preview環境（開発中の機能確認）
 1. Pull Requestを作成
 2. GitHub Actionsが自動的に実行
-3. PR専用の環境がデプロイされる（例: `preview-pr-123.ar-pamph.pages.dev`）
+3. PR専用の環境がデプロイされる
+   - Frontend: `https://preview-pr-{PR番号}.ar-pamph.pages.dev`
+   - Backend: `https://ar-pamph-preview.sekibun3109.workers.dev`
+   - Database: `ar-pamph-db-preview` (共有)
 4. PRにコメントでURLが通知される
 5. レビュー時に実際の動作を確認可能
 
@@ -95,15 +98,15 @@ pnpm test
 2. GitHub Actionsが自動的に実行
 3. Staging環境にデプロイ
    - Frontend: `https://ar-pamph-staging.pages.dev`
-   - Backend: `https://ar-pamph-staging.workers.dev`
+   - Backend: `https://ar-pamph-staging.sekibun3109.workers.dev`
    - Database: `ar-pamph-db-staging`
 
 #### Production環境（本番リリース）
-1. `main`ブランチにマージ
+1. `main`ブランチにpush
 2. GitHub Actionsが自動的に実行
 3. 本番環境にデプロイ
    - Frontend: `https://ar-pamph.pages.dev`
-   - Backend: `https://ar-pamph.workers.dev`
+   - Backend: `https://ar-pamph.sekibun3109.workers.dev`
    - Database: `ar-pamph-db-production`
 
 ### ブランチ戦略
