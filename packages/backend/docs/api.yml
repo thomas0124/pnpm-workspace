@@ -1163,9 +1163,9 @@ paths:
               schema:
                 type: object
                 required:
-                  - categories
+                  - data
                 properties:
-                  categories:
+                  data:
                     type: array
                     items:
                       $ref: '#/components/schemas/CategoryCount'
