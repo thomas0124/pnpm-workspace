@@ -1,0 +1,1174 @@
+openapi: 3.0.3
+
+info:
+  title: デジタルパンフレットAPI
+  description: 学園祭などのイベント向けデジタルパンフレットアプリケーションのAPI仕様（DB設計準拠版）
+  version: 1.0.1
+  contact:
+    name: API Support
+
+servers:
+  - url: https://api.digital-pamphlet.example.com/v1
+    description: 本番環境
+  - url: https://api-dev.digital-pamphlet.example.com/v1
+    description: 開発環境
+
+tags:
+  - name: Authentication
+    description: 認証関連のエンドポイント
+  - name: Exhibition Management
+    description: 出展情報管理（出展者向け）
+  - name: Public
+    description: 公開情報（ユーザー向け）
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT認証トークン
+
+  schemas:
+    # エラーレスポンス
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "BAD_REQUEST"
+        message:
+          type: string
+          example: "リクエストパラメータが不正です"
+        details:
+          type: object
+          additionalProperties: true
+
+    # 認証関連
+    ExhibitorRegisterRequest:
+      type: object
+      required:
+        - name
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "イタリア料理研究会"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 100
+          format: password
+          example: "SecurePass123!"
+
+    ExhibitorLoginRequest:
+      type: object
+      required:
+        - name
+        - password
+      properties:
+        name:
+          type: string
+          example: "イタリア料理研究会"
+        password:
+          type: string
+          format: password
+          example: "SecurePass123!"
+
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - exhibitor
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        exhibitor:
+          $ref: '#/components/schemas/Exhibitor'
+
+    Exhibitor:
+      type: object
+      required:
+        - id
+        - name
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          example: "イタリア料理研究会"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-11-15T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-11-15T10:00:00Z"
+
+    # 出展情報
+    Exhibition:
+      type: object
+      required:
+        - id
+        - exhibitor_id
+        - is_draft
+        - is_published
+        - created_at
+        - updated_at
+      description: |
+        出展の全体管理情報
+        
+        **状態遷移:**
+        - 下書き: is_draft=true, is_published=false
+        - 公開: is_draft=false, is_published=true
+        - 非公開: is_draft=false, is_published=false
+        
+        **遷移ルール:**
+        - 下書き → 公開: PUT /exhibitions/{id}/publish
+        - 公開 → 非公開: PUT /exhibitions/{id}/unpublish
+        - 非公開 → 下書き: PUT /exhibitions/{id}/draft
+        - 公開 → 下書き: 直接不可（一度非公開にする必要がある）
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        exhibitor_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        exhibition_information_id:
+          type: string
+          format: uuid
+          nullable: true
+          example: "770e8400-e29b-41d4-a716-446655440002"
+          description: "出展情報ID（NULLの場合は情報未登録）"
+        exhibition_information:
+          allOf:
+            - $ref: '#/components/schemas/ExhibitionInformation'
+            - nullable: true
+          description: "出展情報の詳細（exhibition_information_idがNULLの場合はnull）"
+        is_draft:
+          type: boolean
+          example: true
+          description: "true: 下書き, false: 確定（DBでは1/0）"
+        is_published:
+          type: boolean
+          example: false
+          description: "false: 非公開, true: 公開（DBでは0/1）"
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-11-15T12:00:00Z"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-11-15T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-11-15T11:00:00Z"
+
+    ExhibitionInformation:
+      type: object
+      required:
+        - id
+        - exhibitor_id
+        - title
+        - category
+        - location
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        exhibitor_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          maxLength: 200
+          example: "マルゲリータピザ"
+        category:
+          type: string
+          enum: ["飲食", "展示", "体験", "ステージ"]
+          example: "飲食"
+        location:
+          type: string
+          maxLength: 100
+          example: "1号館 201"
+        price:
+          type: integer
+          nullable: true
+          minimum: 0
+          example: 500
+          description: "金額（円単位）。nullの場合は無料"
+        required_time:
+          type: integer
+          nullable: true
+          minimum: 1
+          example: 15
+          description: "所要時間（分単位）"
+        comment:
+          type: string
+          nullable: true
+          maxLength: 100
+          example: "本格窯焼きピザをお楽しみください"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-11-15T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-11-15T11:00:00Z"
+
+    ExhibitionInformationInput:
+      type: object
+      required:
+        - title
+        - category
+        - location
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          example: "マルゲリータピザ"
+        category:
+          type: string
+          enum: ["飲食", "展示", "体験", "ステージ"]
+          example: "飲食"
+        location:
+          type: string
+          maxLength: 100
+          example: "1号館 201"
+        price:
+          type: integer
+          nullable: true
+          minimum: 0
+          example: 500
+        required_time:
+          type: integer
+          nullable: true
+          minimum: 1
+          example: 15
+        comment:
+          type: string
+          nullable: true
+          maxLength: 100
+          example: "本格窯焼きピザをお楽しみください"
+
+    # 公開用出展情報
+    PublicExhibition:
+      type: object
+      required:
+        - id
+        - title
+        - category
+        - location
+        - exhibitor_name
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "660e8400-e29b-41d4-a716-446655440001"
+          description: "ExhibitionテーブルのID"
+        title:
+          type: string
+          example: "マルゲリータピザ"
+        category:
+          type: string
+          enum: ["飲食", "展示", "体験", "ステージ"]
+          example: "飲食"
+        exhibitor_name:
+          type: string
+          example: "イタリア料理研究会"
+          description: "ExhibitorテーブルからJOINして取得"
+        location:
+          type: string
+          example: "1号館 201"
+        price:
+          type: integer
+          nullable: true
+          example: 500
+        required_time:
+          type: integer
+          nullable: true
+          example: 15
+        comment:
+          type: string
+          nullable: true
+          example: "本格窯焼きピザをお楽しみください"
+
+    PublicExhibitionDetail:
+      $ref: '#/components/schemas/PublicExhibition'
+
+    CategoryCount:
+      type: object
+      required:
+        - category
+        - count
+      properties:
+        category:
+          type: string
+          enum: ["飲食", "展示", "体験", "ステージ"]
+          example: "飲食"
+        count:
+          type: integer
+          example: 28
+
+    # ページネーション
+    PaginationMeta:
+      type: object
+      required:
+        - total
+        - page
+        - per_page
+        - total_pages
+      properties:
+        total:
+          type: integer
+          example: 100
+          description: "総件数"
+        page:
+          type: integer
+          example: 1
+          description: "現在のページ番号"
+        per_page:
+          type: integer
+          example: 20
+          description: "1ページあたりの件数"
+        total_pages:
+          type: integer
+          example: 5
+          description: "総ページ数"
+
+paths:
+  # ==================== 認証 ====================
+  /exhibitors/register:
+    post:
+      tags:
+        - Authentication
+      summary: 出展者新規登録
+      description: 新しい出展者アカウントを作成します
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExhibitorRegisterRequest'
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 出展者名が既に存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /exhibitors/login:
+    post:
+      tags:
+        - Authentication
+      summary: 出展者ログイン
+      description: 出展者アカウントでログインしてトークンを取得します
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExhibitorLoginRequest'
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /exhibitors/logout:
+    post:
+      tags:
+        - Authentication
+      summary: 出展者ログアウト
+      description: 現在のセッションからログアウトします
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: ログアウト成功
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==================== 出展情報管理 ====================
+  /exhibitions:
+    post:
+      tags:
+        - Exhibition Management
+      summary: 出展情報の新規作成
+      description: |
+        新しい出展を下書きとして作成します。
+        出展基本情報（ExhibitionInformation）を同時に作成します。
+        作成後、is_draft=true（下書き）、is_published=false（非公開）の状態になります。
+        画像は別途 POST /exhibitions/{id}/information/image で登録してください。
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExhibitionInformationInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibition'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /exhibitions/{exhibition_id}:
+    get:
+      tags:
+        - Exhibition Management
+      summary: 出展情報の取得
+      description: 指定された出展情報を取得します（自分の出展のみ）
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibition'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Exhibition Management
+      summary: 出展の削除
+      description: |
+        指定された出展を削除します（物理削除）
+        
+        **削除対象:**
+        1. Exhibition レコード（必ず削除）
+        2. ExhibitionInformation レコード（exhibition_information_id が NULL でない場合のみ削除）
+        
+        **削除の流れ:**
+        ```
+        IF exhibition_information_id IS NOT NULL THEN
+          DELETE FROM ExhibitionInformation WHERE id = exhibition_information_id
+        END IF
+        DELETE FROM Exhibition WHERE id = exhibition_id
+        ```
+        
+        **注意事項:**
+        - この操作は取り消しできません
+        - 公開中（is_published=true）の出展も削除できます
+        - 削除後、公開APIからも即座に非表示になります
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '204':
+          description: 削除成功
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /exhibitions/{exhibition_id}/information:
+    put:
+      tags:
+        - Exhibition Management
+      summary: 基本情報の更新
+      description: |
+        出展の基本情報を更新します。
+        既存のExhibitionInformationを更新します。
+        画像は別途 POST /exhibitions/{id}/information/image で登録・更新してください。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExhibitionInformationInput'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExhibitionInformation'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /exhibitions/{exhibition_id}/draft:
+    put:
+      tags:
+        - Exhibition Management
+      summary: 下書きに戻す
+      description: |
+        出展を下書き状態に戻します（is_draft=true, is_published=false）
+        
+        **許可される遷移:**
+        - 非公開（is_draft=false, is_published=false） → 下書き
+        
+        **エラーになる遷移:**
+        - 公開中（is_published=true）の出展は下書きに戻せません
+        - 先に PUT /exhibitions/{id}/unpublish で非公開にしてください
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '200':
+          description: 保存成功（is_draft=true の状態で返されます）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibition'
+              example:
+                id: "660e8400-e29b-41d4-a716-446655440001"
+                exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
+                exhibition_information_id: "770e8400-e29b-41d4-a716-446655440002"
+                exhibition_information:
+                  id: "770e8400-e29b-41d4-a716-446655440002"
+                  exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
+                  title: "マルゲリータピザ"
+                  category: "飲食"
+                  location: "1号館 201"
+                  price: 500
+                  required_time: 15
+                  comment: "本格窯焼きピザをお楽しみください"
+                  created_at: "2025-11-15T10:00:00Z"
+                  updated_at: "2025-11-15T11:00:00Z"
+                is_draft: true
+                is_published: false
+                published_at: null
+                created_at: "2025-11-15T10:00:00Z"
+                updated_at: "2025-11-26T10:00:00Z"
+        '400':
+          description: 公開中の出展は下書きに戻せません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /exhibitions/{exhibition_id}/publish:
+    put:
+      tags:
+        - Exhibition Management
+      summary: 出展の公開
+      description: |
+        出展を公開します（is_published=true, is_draft=false）
+        
+        **公開条件:**
+        - exhibition_information_id が NULL でないこと（基本情報が登録済み）
+        - 画像は任意（なくても公開可能）
+        
+        **許可される遷移:**
+        - 下書き（is_draft=true） → 公開
+        - 非公開（is_published=false, is_draft=false） → 公開
+        
+        **状態変更:**
+        - is_draft を false に設定
+        - is_published を true に設定
+        - published_at に現在時刻を設定
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '200':
+          description: 公開成功（is_published=true, is_draft=false の状態で返されます）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibition'
+              example:
+                id: "660e8400-e29b-41d4-a716-446655440001"
+                exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
+                exhibition_information_id: "770e8400-e29b-41d4-a716-446655440002"
+                exhibition_information:
+                  id: "770e8400-e29b-41d4-a716-446655440002"
+                  exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
+                  title: "マルゲリータピザ"
+                  category: "飲食"
+                  location: "1号館 201"
+                  price: 500
+                  required_time: 15
+                  comment: "本格窯焼きピザをお楽しみください"
+                  created_at: "2025-11-15T10:00:00Z"
+                  updated_at: "2025-11-15T11:00:00Z"
+                is_draft: false
+                is_published: true
+                published_at: "2025-11-26T10:00:00Z"
+                created_at: "2025-11-15T10:00:00Z"
+                updated_at: "2025-11-26T10:00:00Z"
+        '400':
+          description: 必須情報が不足しています（exhibition_information_idがNULL）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /exhibitions/{exhibition_id}/unpublish:
+    put:
+      tags:
+        - Exhibition Management
+      summary: 出展の非公開
+      description: |
+        出展を非公開にします（is_published=false）
+        
+        **許可される遷移:**
+        - 公開（is_published=true） → 非公開
+        
+        **状態変更:**
+        - is_published を false に設定
+        - is_draft は変更しない（false のまま）
+        - published_at を null に設定
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '200':
+          description: 非公開成功（is_published=false の状態で返されます）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibition'
+              example:
+                id: "660e8400-e29b-41d4-a716-446655440001"
+                exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
+                exhibition_information_id: "770e8400-e29b-41d4-a716-446655440002"
+                exhibition_information:
+                  id: "770e8400-e29b-41d4-a716-446655440002"
+                  exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
+                  title: "マルゲリータピザ"
+                  category: "飲食"
+                  location: "1号館 201"
+                  price: 500
+                  required_time: 15
+                  comment: "本格窯焼きピザをお楽しみください"
+                  created_at: "2025-11-15T10:00:00Z"
+                  updated_at: "2025-11-15T11:00:00Z"
+                is_draft: false
+                is_published: false
+                published_at: null
+                created_at: "2025-11-15T10:00:00Z"
+                updated_at: "2025-11-26T10:00:00Z"
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /exhibitions/{exhibition_id}/information/image:
+    post:
+      tags:
+        - Exhibition Management
+      summary: 出展画像のアップロード
+      description: |
+        出展の画像をアップロードします。
+        画像はBLOB形式でExhibitionInformationテーブルのimageカラムに保存されます。
+        既に画像が存在する場合は上書きされます。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: "画像ファイル（PNG, JPG, GIF, 最大5MB）"
+      responses:
+        '200':
+          description: アップロード成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "画像が正常にアップロードされました"
+        '400':
+          description: バリデーションエラー（ファイルサイズ、形式など）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: ファイルサイズが大きすぎます
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags:
+        - Exhibition Management
+      summary: 出展画像の取得
+      description: |
+        出展の画像を取得します。
+        ExhibitionInformationテーブルのBLOBデータを返します。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '200':
+          description: 画像取得成功
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展または画像が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Exhibition Management
+      summary: 出展画像の削除
+      description: |
+        出展の画像を削除します。
+        ExhibitionInformationテーブルのimageカラムをNULLに設定します。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '204':
+          description: 削除成功
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 出展が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==================== 公開API（ユーザー向け） ====================
+  /public/exhibitions:
+    get:
+      tags:
+        - Public
+      summary: 出展一覧取得
+      description: |
+        公開されている出展の一覧を取得します。カテゴリでフィルタ可能です。
+        is_published=true かつ exhibition_information_id が NULL でない出展のみを返します。
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ["飲食", "展示", "体験", "ステージ"]
+          description: カテゴリでフィルタ
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: ページ番号
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: 1ページあたりの件数
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                  - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublicExhibition'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /public/exhibitions/{exhibition_id}:
+    get:
+      tags:
+        - Public
+      summary: 出展詳細情報取得
+      description: |
+        指定された出展の詳細情報を取得します。
+        is_published=true かつ exhibition_information_id が NULL でない出展のみアクセス可能です。
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicExhibitionDetail'
+        '404':
+          description: 出展が見つかりません、または非公開です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /public/exhibitions/{exhibition_id}/image:
+    get:
+      tags:
+        - Public
+      summary: 出展画像の取得（公開用）
+      description: |
+        公開されている出展の画像を取得します。
+        is_published=true の出展のみアクセス可能です。
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID（ExhibitionテーブルのID）
+      responses:
+        '200':
+          description: 画像取得成功
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: 出展または画像が見つかりません、または非公開です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /public/exhibitions/categories:
+    get:
+      tags:
+        - Public
+      summary: カテゴリ一覧取得
+      description: |
+        カテゴリごとの公開出展数を取得します。
+        is_published=true かつ exhibition_information_id が NULL でない出展をカウントします。
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - categories
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CategoryCount'
