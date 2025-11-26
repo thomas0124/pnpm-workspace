@@ -39,10 +39,10 @@ components:
       properties:
         error:
           type: string
-          example: "BAD_REQUEST"
+          example: 'BAD_REQUEST'
         message:
           type: string
-          example: "リクエストパラメータが不正です"
+          example: 'リクエストパラメータが不正です'
         details:
           type: object
           additionalProperties: true
@@ -58,13 +58,13 @@ components:
           type: string
           minLength: 1
           maxLength: 100
-          example: "イタリア料理研究会"
+          example: 'イタリア料理研究会'
         password:
           type: string
           minLength: 8
           maxLength: 100
           format: password
-          example: "SecurePass123!"
+          example: 'SecurePass123!'
 
     ExhibitorLoginRequest:
       type: object
@@ -74,11 +74,11 @@ components:
       properties:
         name:
           type: string
-          example: "イタリア料理研究会"
+          example: 'イタリア料理研究会'
         password:
           type: string
           format: password
-          example: "SecurePass123!"
+          example: 'SecurePass123!'
 
     AuthResponse:
       type: object
@@ -88,7 +88,7 @@ components:
       properties:
         token:
           type: string
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         exhibitor:
           $ref: '#/components/schemas/Exhibitor'
 
@@ -103,18 +103,18 @@ components:
         id:
           type: string
           format: uuid
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          example: '550e8400-e29b-41d4-a716-446655440000'
         name:
           type: string
-          example: "イタリア料理研究会"
+          example: 'イタリア料理研究会'
         created_at:
           type: string
           format: date-time
-          example: "2025-11-15T10:00:00Z"
+          example: '2025-11-15T10:00:00Z'
         updated_at:
           type: string
           format: date-time
-          example: "2025-11-15T10:00:00Z"
+          example: '2025-11-15T10:00:00Z'
 
     # 出展情報
     Exhibition:
@@ -128,12 +128,12 @@ components:
         - updated_at
       description: |
         出展の全体管理情報
-        
+
         **状態遷移:**
         - 下書き: is_draft=true, is_published=false
         - 公開: is_draft=false, is_published=true
         - 非公開: is_draft=false, is_published=false
-        
+
         **遷移ルール:**
         - 下書き → 公開: PUT /exhibitions/{id}/publish
         - 公開 → 非公開: PUT /exhibitions/{id}/unpublish
@@ -143,43 +143,43 @@ components:
         id:
           type: string
           format: uuid
-          example: "660e8400-e29b-41d4-a716-446655440001"
+          example: '660e8400-e29b-41d4-a716-446655440001'
         exhibitor_id:
           type: string
           format: uuid
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          example: '550e8400-e29b-41d4-a716-446655440000'
         exhibition_information_id:
           type: string
           format: uuid
           nullable: true
-          example: "770e8400-e29b-41d4-a716-446655440002"
-          description: "出展情報ID（NULLの場合は情報未登録）"
+          example: '770e8400-e29b-41d4-a716-446655440002'
+          description: '出展情報ID（NULLの場合は情報未登録）'
         exhibition_information:
           allOf:
             - $ref: '#/components/schemas/ExhibitionInformation'
             - nullable: true
-          description: "出展情報の詳細（exhibition_information_idがNULLの場合はnull）"
+          description: '出展情報の詳細（exhibition_information_idがNULLの場合はnull）'
         is_draft:
           type: boolean
           example: true
-          description: "true: 下書き, false: 確定（DBでは1/0）"
+          description: 'true: 下書き, false: 確定（DBでは1/0）'
         is_published:
           type: boolean
           example: false
-          description: "false: 非公開, true: 公開（DBでは0/1）"
+          description: 'false: 非公開, true: 公開（DBでは0/1）'
         published_at:
           type: string
           format: date-time
           nullable: true
-          example: "2025-11-15T12:00:00Z"
+          example: '2025-11-15T12:00:00Z'
         created_at:
           type: string
           format: date-time
-          example: "2025-11-15T10:00:00Z"
+          example: '2025-11-15T10:00:00Z'
         updated_at:
           type: string
           format: date-time
-          example: "2025-11-15T11:00:00Z"
+          example: '2025-11-15T11:00:00Z'
 
     ExhibitionInformation:
       type: object
@@ -195,48 +195,48 @@ components:
         id:
           type: string
           format: uuid
-          example: "770e8400-e29b-41d4-a716-446655440002"
+          example: '770e8400-e29b-41d4-a716-446655440002'
         exhibitor_id:
           type: string
           format: uuid
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          example: '550e8400-e29b-41d4-a716-446655440000'
         title:
           type: string
           maxLength: 200
-          example: "マルゲリータピザ"
+          example: 'マルゲリータピザ'
         category:
           type: string
-          enum: ["飲食", "展示", "体験", "ステージ"]
-          example: "飲食"
+          enum: ['飲食', '展示', '体験', 'ステージ']
+          example: '飲食'
         location:
           type: string
           maxLength: 100
-          example: "1号館 201"
+          example: '1号館 201'
         price:
           type: integer
           nullable: true
           minimum: 0
           example: 500
-          description: "金額（円単位）。nullの場合は無料"
+          description: '金額（円単位）。nullの場合は無料'
         required_time:
           type: integer
           nullable: true
           minimum: 1
           example: 15
-          description: "所要時間（分単位）"
+          description: '所要時間（分単位）'
         comment:
           type: string
           nullable: true
           maxLength: 100
-          example: "本格窯焼きピザをお楽しみください"
+          example: '本格窯焼きピザをお楽しみください'
         created_at:
           type: string
           format: date-time
-          example: "2025-11-15T10:00:00Z"
+          example: '2025-11-15T10:00:00Z'
         updated_at:
           type: string
           format: date-time
-          example: "2025-11-15T11:00:00Z"
+          example: '2025-11-15T11:00:00Z'
 
     ExhibitionInformationInput:
       type: object
@@ -248,15 +248,15 @@ components:
         title:
           type: string
           maxLength: 200
-          example: "マルゲリータピザ"
+          example: 'マルゲリータピザ'
         category:
           type: string
-          enum: ["飲食", "展示", "体験", "ステージ"]
-          example: "飲食"
+          enum: ['飲食', '展示', '体験', 'ステージ']
+          example: '飲食'
         location:
           type: string
           maxLength: 100
-          example: "1号館 201"
+          example: '1号館 201'
         price:
           type: integer
           nullable: true
@@ -271,7 +271,7 @@ components:
           type: string
           nullable: true
           maxLength: 100
-          example: "本格窯焼きピザをお楽しみください"
+          example: '本格窯焼きピザをお楽しみください'
 
     # 公開用出展情報
     PublicExhibition:
@@ -286,22 +286,22 @@ components:
         id:
           type: string
           format: uuid
-          example: "660e8400-e29b-41d4-a716-446655440001"
-          description: "ExhibitionテーブルのID"
+          example: '660e8400-e29b-41d4-a716-446655440001'
+          description: 'ExhibitionテーブルのID'
         title:
           type: string
-          example: "マルゲリータピザ"
+          example: 'マルゲリータピザ'
         category:
           type: string
-          enum: ["飲食", "展示", "体験", "ステージ"]
-          example: "飲食"
+          enum: ['飲食', '展示', '体験', 'ステージ']
+          example: '飲食'
         exhibitor_name:
           type: string
-          example: "イタリア料理研究会"
-          description: "ExhibitorテーブルからJOINして取得"
+          example: 'イタリア料理研究会'
+          description: 'ExhibitorテーブルからJOINして取得'
         location:
           type: string
-          example: "1号館 201"
+          example: '1号館 201'
         price:
           type: integer
           nullable: true
@@ -313,7 +313,7 @@ components:
         comment:
           type: string
           nullable: true
-          example: "本格窯焼きピザをお楽しみください"
+          example: '本格窯焼きピザをお楽しみください'
 
     PublicExhibitionDetail:
       $ref: '#/components/schemas/PublicExhibition'
@@ -326,8 +326,8 @@ components:
       properties:
         category:
           type: string
-          enum: ["飲食", "展示", "体験", "ステージ"]
-          example: "飲食"
+          enum: ['飲食', '展示', '体験', 'ステージ']
+          example: '飲食'
         count:
           type: integer
           example: 28
@@ -344,19 +344,19 @@ components:
         total:
           type: integer
           example: 100
-          description: "総件数"
+          description: '総件数'
         page:
           type: integer
           example: 1
-          description: "現在のページ番号"
+          description: '現在のページ番号'
         per_page:
           type: integer
           example: 20
-          description: "1ページあたりの件数"
+          description: '1ページあたりの件数'
         total_pages:
           type: integer
           example: 5
-          description: "総ページ数"
+          description: '総ページ数'
 
 paths:
   # ==================== 認証 ====================
@@ -523,11 +523,11 @@ paths:
       summary: 出展の削除
       description: |
         指定された出展を削除します（物理削除）
-        
+
         **削除対象:**
         1. Exhibition レコード（必ず削除）
         2. ExhibitionInformation レコード（exhibition_information_id が NULL でない場合のみ削除）
-        
+
         **削除の流れ:**
         ```
         IF exhibition_information_id IS NOT NULL THEN
@@ -535,7 +535,7 @@ paths:
         END IF
         DELETE FROM Exhibition WHERE id = exhibition_id
         ```
-        
+
         **注意事項:**
         - この操作は取り消しできません
         - 公開中（is_published=true）の出展も削除できます
@@ -636,10 +636,10 @@ paths:
       summary: 下書きに戻す
       description: |
         出展を下書き状態に戻します（is_draft=true, is_published=false）
-        
+
         **許可される遷移:**
         - 非公開（is_draft=false, is_published=false） → 下書き
-        
+
         **エラーになる遷移:**
         - 公開中（is_published=true）の出展は下書きに戻せません
         - 先に PUT /exhibitions/{id}/unpublish で非公開にしてください
@@ -661,25 +661,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/Exhibition'
               example:
-                id: "660e8400-e29b-41d4-a716-446655440001"
-                exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
-                exhibition_information_id: "770e8400-e29b-41d4-a716-446655440002"
+                id: '660e8400-e29b-41d4-a716-446655440001'
+                exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                exhibition_information_id: '770e8400-e29b-41d4-a716-446655440002'
                 exhibition_information:
-                  id: "770e8400-e29b-41d4-a716-446655440002"
-                  exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
-                  title: "マルゲリータピザ"
-                  category: "飲食"
-                  location: "1号館 201"
+                  id: '770e8400-e29b-41d4-a716-446655440002'
+                  exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                  title: 'マルゲリータピザ'
+                  category: '飲食'
+                  location: '1号館 201'
                   price: 500
                   required_time: 15
-                  comment: "本格窯焼きピザをお楽しみください"
-                  created_at: "2025-11-15T10:00:00Z"
-                  updated_at: "2025-11-15T11:00:00Z"
+                  comment: '本格窯焼きピザをお楽しみください'
+                  created_at: '2025-11-15T10:00:00Z'
+                  updated_at: '2025-11-15T11:00:00Z'
                 is_draft: true
                 is_published: false
                 published_at: null
-                created_at: "2025-11-15T10:00:00Z"
-                updated_at: "2025-11-26T10:00:00Z"
+                created_at: '2025-11-15T10:00:00Z'
+                updated_at: '2025-11-26T10:00:00Z'
         '400':
           description: 公開中の出展は下書きに戻せません
           content:
@@ -712,15 +712,15 @@ paths:
       summary: 出展の公開
       description: |
         出展を公開します（is_published=true, is_draft=false）
-        
+
         **公開条件:**
         - exhibition_information_id が NULL でないこと（基本情報が登録済み）
         - 画像は任意（なくても公開可能）
-        
+
         **許可される遷移:**
         - 下書き（is_draft=true） → 公開
         - 非公開（is_published=false, is_draft=false） → 公開
-        
+
         **状態変更:**
         - is_draft を false に設定
         - is_published を true に設定
@@ -743,25 +743,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/Exhibition'
               example:
-                id: "660e8400-e29b-41d4-a716-446655440001"
-                exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
-                exhibition_information_id: "770e8400-e29b-41d4-a716-446655440002"
+                id: '660e8400-e29b-41d4-a716-446655440001'
+                exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                exhibition_information_id: '770e8400-e29b-41d4-a716-446655440002'
                 exhibition_information:
-                  id: "770e8400-e29b-41d4-a716-446655440002"
-                  exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
-                  title: "マルゲリータピザ"
-                  category: "飲食"
-                  location: "1号館 201"
+                  id: '770e8400-e29b-41d4-a716-446655440002'
+                  exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                  title: 'マルゲリータピザ'
+                  category: '飲食'
+                  location: '1号館 201'
                   price: 500
                   required_time: 15
-                  comment: "本格窯焼きピザをお楽しみください"
-                  created_at: "2025-11-15T10:00:00Z"
-                  updated_at: "2025-11-15T11:00:00Z"
+                  comment: '本格窯焼きピザをお楽しみください'
+                  created_at: '2025-11-15T10:00:00Z'
+                  updated_at: '2025-11-15T11:00:00Z'
                 is_draft: false
                 is_published: true
-                published_at: "2025-11-26T10:00:00Z"
-                created_at: "2025-11-15T10:00:00Z"
-                updated_at: "2025-11-26T10:00:00Z"
+                published_at: '2025-11-26T10:00:00Z'
+                created_at: '2025-11-15T10:00:00Z'
+                updated_at: '2025-11-26T10:00:00Z'
         '400':
           description: 必須情報が不足しています（exhibition_information_idがNULL）
           content:
@@ -794,10 +794,10 @@ paths:
       summary: 出展の非公開
       description: |
         出展を非公開にします（is_published=false）
-        
+
         **許可される遷移:**
         - 公開（is_published=true） → 非公開
-        
+
         **状態変更:**
         - is_published を false に設定
         - is_draft は変更しない（false のまま）
@@ -820,25 +820,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/Exhibition'
               example:
-                id: "660e8400-e29b-41d4-a716-446655440001"
-                exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
-                exhibition_information_id: "770e8400-e29b-41d4-a716-446655440002"
+                id: '660e8400-e29b-41d4-a716-446655440001'
+                exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                exhibition_information_id: '770e8400-e29b-41d4-a716-446655440002'
                 exhibition_information:
-                  id: "770e8400-e29b-41d4-a716-446655440002"
-                  exhibitor_id: "550e8400-e29b-41d4-a716-446655440000"
-                  title: "マルゲリータピザ"
-                  category: "飲食"
-                  location: "1号館 201"
+                  id: '770e8400-e29b-41d4-a716-446655440002'
+                  exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                  title: 'マルゲリータピザ'
+                  category: '飲食'
+                  location: '1号館 201'
                   price: 500
                   required_time: 15
-                  comment: "本格窯焼きピザをお楽しみください"
-                  created_at: "2025-11-15T10:00:00Z"
-                  updated_at: "2025-11-15T11:00:00Z"
+                  comment: '本格窯焼きピザをお楽しみください'
+                  created_at: '2025-11-15T10:00:00Z'
+                  updated_at: '2025-11-15T11:00:00Z'
                 is_draft: false
                 is_published: false
                 published_at: null
-                created_at: "2025-11-15T10:00:00Z"
-                updated_at: "2025-11-26T10:00:00Z"
+                created_at: '2025-11-15T10:00:00Z'
+                updated_at: '2025-11-26T10:00:00Z'
         '401':
           description: 認証エラー
           content:
@@ -889,7 +889,7 @@ paths:
                 image:
                   type: string
                   format: binary
-                  description: "画像ファイル（PNG, JPG, GIF, 最大5MB）"
+                  description: '画像ファイル（PNG, JPG, GIF, 最大5MB）'
       responses:
         '200':
           description: アップロード成功
@@ -900,7 +900,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "画像が正常にアップロードされました"
+                    example: '画像が正常にアップロードされました'
         '400':
           description: バリデーションエラー（ファイルサイズ、形式など）
           content:
@@ -1038,7 +1038,7 @@ paths:
           required: false
           schema:
             type: string
-            enum: ["飲食", "展示", "体験", "ステージ"]
+            enum: ['飲食', '展示', '体験', 'ステージ']
           description: カテゴリでフィルタ
         - name: page
           in: query
