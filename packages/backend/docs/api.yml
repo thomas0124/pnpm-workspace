@@ -2,7 +2,7 @@ openapi: 3.0.3
 
 info:
   title: デジタルパンフレットAPI
-  description: 学園祭などのイベント向けデジタルパンフレットアプリケーションのAPI仕様（DB設計準拠版）
+  description: 学園祭などのイベント向けデジタルパンフレットアプリケーションのAPI仕様(DB設計準拠版)
   version: 1.0.1
   contact:
     name: API Support
@@ -17,9 +17,9 @@ tags:
   - name: Authentication
     description: 認証関連のエンドポイント
   - name: Exhibition Management
-    description: 出展情報管理（出展者向け）
+    description: 出展情報管理(出展者向け)
   - name: Public
-    description: 公開情報（ユーザー向け）
+    description: 公開情報(ユーザー向け)
 
 components:
   securitySchemes:
@@ -138,7 +138,7 @@ components:
         - 下書き → 公開: PUT /exhibitions/{id}/publish
         - 公開 → 非公開: PUT /exhibitions/{id}/unpublish
         - 非公開 → 下書き: PUT /exhibitions/{id}/draft
-        - 公開 → 下書き: 直接不可（一度非公開にする必要がある）
+        - 公開 → 下書き: 直接不可(一度非公開にする必要がある)
       properties:
         id:
           type: string
@@ -153,20 +153,20 @@ components:
           format: uuid
           nullable: true
           example: '770e8400-e29b-41d4-a716-446655440002'
-          description: '出展情報ID（NULLの場合は情報未登録）'
+          description: '出展情報ID(NULLの場合は情報未登録)'
         exhibition_information:
           allOf:
             - $ref: '#/components/schemas/ExhibitionInformation'
             - nullable: true
-          description: '出展情報の詳細（exhibition_information_idがNULLの場合はnull）'
+          description: '出展情報の詳細(exhibition_information_idがNULLの場合はnull)'
         is_draft:
           type: boolean
           example: true
-          description: 'true: 下書き, false: 確定（DBでは1/0）'
+          description: 'true: 下書き, false: 確定(DBでは1/0)'
         is_published:
           type: boolean
           example: false
-          description: 'false: 非公開, true: 公開（DBでは0/1）'
+          description: 'false: 非公開, true: 公開(DBでは0/1)'
         published_at:
           type: string
           format: date-time
@@ -217,13 +217,13 @@ components:
           nullable: true
           minimum: 0
           example: 500
-          description: '金額（円単位）。nullの場合は無料'
+          description: '金額(円単位)。nullの場合は無料'
         required_time:
           type: integer
           nullable: true
           minimum: 1
           example: 15
-          description: '所要時間（分単位）'
+          description: '所要時間(分単位)'
         comment:
           type: string
           nullable: true
@@ -314,9 +314,6 @@ components:
           type: string
           nullable: true
           example: '本格窯焼きピザをお楽しみください'
-
-    PublicExhibitionDetail:
-      $ref: '#/components/schemas/PublicExhibition'
 
     CategoryCount:
       type: object
@@ -444,8 +441,8 @@ paths:
       summary: 出展情報の新規作成
       description: |
         新しい出展を下書きとして作成します。
-        出展基本情報（ExhibitionInformation）を同時に作成します。
-        作成後、is_draft=true（下書き）、is_published=false（非公開）の状態になります。
+        出展基本情報(ExhibitionInformation)を同時に作成します。
+        作成後、is_draft=true(下書き)、is_published=false(非公開)の状態になります。
         画像は別途 POST /exhibitions/{id}/information/image で登録してください。
       security:
         - BearerAuth: []
@@ -480,7 +477,7 @@ paths:
       tags:
         - Exhibition Management
       summary: 出展情報の取得
-      description: 指定された出展情報を取得します（自分の出展のみ）
+      description: 指定された出展情報を取得します(自分の出展のみ)
       security:
         - BearerAuth: []
       parameters:
@@ -490,7 +487,7 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '200':
           description: 取得成功
@@ -522,11 +519,11 @@ paths:
         - Exhibition Management
       summary: 出展の削除
       description: |
-        指定された出展を削除します（物理削除）
+        指定された出展を削除します(物理削除)
 
         **削除対象:**
-        1. Exhibition レコード（必ず削除）
-        2. ExhibitionInformation レコード（exhibition_information_id が NULL でない場合のみ削除）
+        1. Exhibition レコード(必ず削除)
+        2. ExhibitionInformation レコード(exhibition_information_id が NULL でない場合のみ削除)
 
         **削除の流れ:**
         ```
@@ -538,7 +535,7 @@ paths:
 
         **注意事項:**
         - この操作は取り消しできません
-        - 公開中（is_published=true）の出展も削除できます
+        - 公開中(is_published=true)の出展も削除できます
         - 削除後、公開APIからも即座に非表示になります
       security:
         - BearerAuth: []
@@ -549,7 +546,7 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '204':
           description: 削除成功
@@ -590,7 +587,7 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       requestBody:
         required: true
         content:
@@ -635,13 +632,13 @@ paths:
         - Exhibition Management
       summary: 下書きに戻す
       description: |
-        出展を下書き状態に戻します（is_draft=true, is_published=false）
+        出展を下書き状態に戻します(is_draft=true, is_published=false)
 
         **許可される遷移:**
-        - 非公開（is_draft=false, is_published=false） → 下書き
+        - 非公開(is_draft=false, is_published=false) → 下書き
 
         **エラーになる遷移:**
-        - 公開中（is_published=true）の出展は下書きに戻せません
+        - 公開中(is_published=true)の出展は下書きに戻せません
         - 先に PUT /exhibitions/{id}/unpublish で非公開にしてください
       security:
         - BearerAuth: []
@@ -652,10 +649,10 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '200':
-          description: 保存成功（is_draft=true の状態で返されます）
+          description: 保存成功(is_draft=true の状態で返されます)
           content:
             application/json:
               schema:
@@ -711,15 +708,15 @@ paths:
         - Exhibition Management
       summary: 出展の公開
       description: |
-        出展を公開します（is_published=true, is_draft=false）
+        出展を公開します(is_published=true, is_draft=false)
 
         **公開条件:**
-        - exhibition_information_id が NULL でないこと（基本情報が登録済み）
-        - 画像は任意（なくても公開可能）
+        - exhibition_information_id が NULL でないこと(基本情報が登録済み)
+        - 画像は任意(なくても公開可能)
 
         **許可される遷移:**
-        - 下書き（is_draft=true） → 公開
-        - 非公開（is_published=false, is_draft=false） → 公開
+        - 下書き(is_draft=true) → 公開
+        - 非公開(is_published=false, is_draft=false) → 公開
 
         **状態変更:**
         - is_draft を false に設定
@@ -734,10 +731,10 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '200':
-          description: 公開成功（is_published=true, is_draft=false の状態で返されます）
+          description: 公開成功(is_published=true, is_draft=false の状態で返されます)
           content:
             application/json:
               schema:
@@ -763,7 +760,7 @@ paths:
                 created_at: '2025-11-15T10:00:00Z'
                 updated_at: '2025-11-26T10:00:00Z'
         '400':
-          description: 必須情報が不足しています（exhibition_information_idがNULL）
+          description: 必須情報が不足しています(exhibition_information_idがNULL)
           content:
             application/json:
               schema:
@@ -793,14 +790,14 @@ paths:
         - Exhibition Management
       summary: 出展の非公開
       description: |
-        出展を非公開にします（is_published=false）
+        出展を非公開にします(is_published=false)
 
         **許可される遷移:**
-        - 公開（is_published=true） → 非公開
+        - 公開(is_published=true) → 非公開
 
         **状態変更:**
         - is_published を false に設定
-        - is_draft は変更しない（false のまま）
+        - is_draft は変更しない(false のまま)
         - published_at を null に設定
       security:
         - BearerAuth: []
@@ -811,10 +808,10 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '200':
-          description: 非公開成功（is_published=false の状態で返されます）
+          description: 非公開成功(is_published=false の状態で返されます)
           content:
             application/json:
               schema:
@@ -876,7 +873,7 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       requestBody:
         required: true
         content:
@@ -889,7 +886,7 @@ paths:
                 image:
                   type: string
                   format: binary
-                  description: '画像ファイル（PNG, JPG, GIF, 最大5MB）'
+                  description: '画像ファイル(PNG, JPG, GIF, 最大5MB)'
       responses:
         '200':
           description: アップロード成功
@@ -902,7 +899,7 @@ paths:
                     type: string
                     example: '画像が正常にアップロードされました'
         '400':
-          description: バリデーションエラー（ファイルサイズ、形式など）
+          description: バリデーションエラー(ファイルサイズ、形式など)
           content:
             application/json:
               schema:
@@ -948,7 +945,7 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '200':
           description: 画像取得成功
@@ -1000,7 +997,7 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '204':
           description: 削除成功
@@ -1023,7 +1020,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  # ==================== 公開API（ユーザー向け） ====================
+  # ==================== 公開API(ユーザー向け) ====================
   /public/exhibitions:
     get:
       tags:
@@ -1096,14 +1093,14 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '200':
           description: 取得成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublicExhibitionDetail'
+                $ref: '#/components/schemas/PublicExhibition'
         '404':
           description: 出展が見つかりません、または非公開です
           content:
@@ -1115,7 +1112,7 @@ paths:
     get:
       tags:
         - Public
-      summary: 出展画像の取得（公開用）
+      summary: 出展画像の取得(公開用)
       description: |
         公開されている出展の画像を取得します。
         is_published=true の出展のみアクセス可能です。
@@ -1126,7 +1123,7 @@ paths:
           schema:
             type: string
             format: uuid
-          description: 出展ID（ExhibitionテーブルのID）
+          description: 出展ID(ExhibitionテーブルのID)
       responses:
         '200':
           description: 画像取得成功
