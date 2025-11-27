@@ -26,7 +26,8 @@
     "check": "pnpm run type-check && pnpm run lint:check && pnpm run format:check",
     "fix": "pnpm run lint:fix && pnpm run format:fix",
     "generate-types": "wrangler types",
-    "db:generate": "drizzle-kit generate",
+    "db:create": "wrangler d1 create ar-pamph-db",
+    "db:generate": "wrangler d1 migrations create ar-pamph-db init",
     "db:migrate:local": "wrangler d1 migrations apply ar-pamph-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply ar-pamph-db --remote",
     "db:migrate:remote:preview": "wrangler d1 migrations apply ar-pamph-db-preview --remote --env preview",
@@ -47,7 +48,7 @@
     "prettier": "^3.2.5",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "wrangler": "^3.0.0"
+    "wrangler": "^4.51.0"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
