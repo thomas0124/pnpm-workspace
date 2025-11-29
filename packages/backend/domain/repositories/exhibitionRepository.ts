@@ -1,5 +1,7 @@
 import type { Exhibition } from '../models/exhibition/exhibition'
 
+type ExhibitionCategory = '飲食' | '展示' | '体験' | 'ステージ'
+
 /**
  * ページネーション情報の型定義
  */
@@ -22,7 +24,7 @@ export type PaginatedResult<T> = {
  * 公開出展検索のパラメータ
  */
 export type FindPublishedParams = {
-  category?: '飲食' | '展示' | '体験' | 'ステージ'
+  category?: ExhibitionCategory
   page?: number
   perPage?: number
 }
