@@ -30,12 +30,6 @@ export function createExhibitor(name: string, passwordHash: string): Exhibitor {
  * @returns 再構築されたExhibitorエンティティ
  * @throws zodバリデーションエラー時
  */
-export function reconstructExhibitor(data: {
-  id: string
-  name: string
-  passwordHash: string
-  createdAt: Date
-  updatedAt: Date
-}): Exhibitor {
+export function reconstructExhibitor(data: Exhibitor): Exhibitor {
   return ExhibitorSchema.parse(data)
 }
