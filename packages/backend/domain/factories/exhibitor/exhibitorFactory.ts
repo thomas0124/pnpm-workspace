@@ -12,7 +12,7 @@ import { ExhibitorSchema } from '../../models/exhibitor/exhibitor.js'
  * @throws zodバリデーションエラー時
  */
 export function createExhibitor(name: string, passwordHash: string): Exhibitor {
-  const now = new Date()
+  const now = new Date().toISOString()
 
   return ExhibitorSchema.parse({
     id: uuidv4(),

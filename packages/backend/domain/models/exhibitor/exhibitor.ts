@@ -50,7 +50,7 @@ export function changeExhibitorName(exhibitor: Exhibitor, newName: string): Exhi
   return ExhibitorSchema.parse({
     ...exhibitor,
     name: newName,
-    updatedAt: new Date(),
+    updatedAt: new Date().toISOString(),
   })
 }
 
