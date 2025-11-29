@@ -26,13 +26,13 @@
     "check": "pnpm run type-check && pnpm run lint:check && pnpm run format:check",
     "fix": "pnpm run lint:fix && pnpm run format:fix",
     "generate-types": "wrangler types",
-    "db:create": "wrangler d1 create ar-pamph-db",
-    "db:generate": "wrangler d1 migrations create ar-pamph-db init",
+    "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply ar-pamph-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply ar-pamph-db --remote",
     "db:migrate:remote:preview": "wrangler d1 migrations apply ar-pamph-db-preview --remote --env preview",
     "db:migrate:remote:staging": "wrangler d1 migrations apply ar-pamph-db-staging --remote --env staging",
-    "db:migrate:remote:production": "wrangler d1 migrations apply ar-pamph-db-production --remote --env production"
+    "db:migrate:remote:production": "wrangler d1 migrations apply ar-pamph-db-production --remote --env production",
+    "db:studio": "drizzle-kit studio"
   },
   "keywords": [],
   "author": "",
@@ -40,7 +40,9 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251121.0",
     "@hono/eslint-config": "^1.0.3",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
+    "better-sqlite3": "^12.5.0",
     "drizzle-kit": "^0.31.7",
     "eslint": "^9",
     "eslint-config-prettier": "^9",
