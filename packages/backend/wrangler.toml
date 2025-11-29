@@ -4,9 +4,6 @@ name = "ar-pamph"
 main = "index.ts"
 compatibility_date = "2024-11-01"
 
-# マイグレーションディレクトリの設定
-migrations_dir = "infrastructure/persistence/drizzle/migrations"
-
 # Workers環境の設定
 
 # Preview環境（Pull Request用）
@@ -29,25 +26,28 @@ workers_dev = false
 binding = "DB"
 database_name = "ar-pamph-db"
 database_id = "ar-pamph-db"
-preview_database_id = "DB"
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
 
 # Preview環境用のD1データベース設定
 [[env.preview.d1_databases]]
 binding = "DB"
 database_name = "ar-pamph-db-preview"
 database_id = "" # GitHub Actionsで動的に設定されます
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
 
 # Staging環境用のD1データベース設定
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "ar-pamph-db-staging"
 database_id = "" # GitHub Actionsで動的に設定されます
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
 
 # Production環境用のD1データベース設定
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "ar-pamph-db-production"
 database_id = "" # GitHub Actionsで動的に設定されます
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
 
 # 環境変数設定
 [vars]
