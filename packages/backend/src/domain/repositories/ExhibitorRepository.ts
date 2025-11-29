@@ -1,4 +1,4 @@
-import { Exhibitor } from '../../models/Exhibitor/Exhibitor'
+import { Exhibitor } from '../models/Exhibitor/Exhibitor'
 export type ExhibitorRepository = {
   findByUsername(name: string): Promise<Exhibitor | null>
   save: (exhibitor: Exhibitor) => Promise<void>
