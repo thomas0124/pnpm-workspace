@@ -11,9 +11,9 @@ export const ExhibitorIdSchema = z.uuid('Invalid exhibitor ID format')
  */
 export const ExhibitorNameSchema = z
   .string()
+  .trim()
   .min(1, 'Name is required')
   .max(100, 'Name must be 100 characters or less')
-  .trim()
 
 /**
  * Password Hash スキーマ
