@@ -38,9 +38,6 @@ export type ExhibitionRepository = {
   findById: (id: string) => Promise<Exhibition | null>
   findByExhibitorId: (exhibitorId: string) => Promise<Exhibition[]>
   delete: (id: string) => Promise<void>
-  findPublished: (
-    params?: FindPublishedParams
-  ) => Promise<PaginatedResult<Exhibition>>
+  findPublished: (params?: FindPublishedParams) => Promise<PaginatedResult<Exhibition>>
   findPublishedById: (id: string) => Promise<Exhibition | null>
 }
-

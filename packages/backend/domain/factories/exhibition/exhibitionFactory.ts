@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import type {Exhibition} from '../../models/exhibition/exhibition';
+import type { Exhibition } from '../../models/exhibition/exhibition'
 import { ExhibitionSchema } from '../../models/exhibition/exhibition'
 
 // 新規Exhibitionを作成
@@ -47,9 +47,7 @@ export function reconstructExhibition(data: {
 export function publish(exhibition: Exhibition): Exhibition {
   // 公開条件: exhibitionInformationIdがnullでないこと
   if (exhibition.exhibitionInformationId === null) {
-    throw new Error(
-      '公開するには基本情報(exhibitionInformationId)が登録されている必要があります'
-    )
+    throw new Error('公開するには基本情報(exhibitionInformationId)が登録されている必要があります')
   }
 
   // 既に公開中の場合はエラー（直接的な状態遷移は不可）
@@ -104,9 +102,7 @@ export function unpublish(exhibition: Exhibition): Exhibition {
 export function draft(exhibition: Exhibition): Exhibition {
   // 公開中の場合はエラー（直接下書きに戻せない）
   if (exhibition.isPublished === 1) {
-    throw new Error(
-      '公開中の出展は下書きに戻せません。先に非公開にしてください'
-    )
+    throw new Error('公開中の出展は下書きに戻せません。先に非公開にしてください')
   }
 
   // 既に下書きの場合はそのまま返す
@@ -123,4 +119,3 @@ export function draft(exhibition: Exhibition): Exhibition {
     updatedAt: now,
   })
 }
-

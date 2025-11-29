@@ -61,4 +61,3 @@ export function canTransitionToUnpublished(exhibition: Exhibition): boolean {
 export function isOwnedBy(exhibition: Exhibition, exhibitorId: string): boolean {
   return exhibition.exhibitorId === exhibitorId
 }
-
