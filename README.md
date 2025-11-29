@@ -6,68 +6,149 @@
 
 - 概要
 - 前提
-- クイックスタート（Docker）
-- ローカル開発（pnpm）
+- 技術スタック
+- ローカル開発
 - プロジェクト構成
+- データベース
+- デプロイメント（CI/CD）
 - 貢献
 
 ## 概要
 
 このリポジトリは小規模なモノレポ構成の例です。フロント側は `packages/frontend`、バック側は `packages/backend` に分かれています。各パッケージの実装やスクリプトはそれぞれの `package.json` を確認してください。
 
+各パッケージの詳細な説明は以下のREADMEを参照してください：
+- [フロントエンド README](packages/frontend/README.md)
+- [バックエンド README](packages/backend/README.md)
+
 ## 前提
 
-- Docker / Docker Compose（Docker Desktop 推奨）
-- （ローカルで実行する場合）Node.js と pnpm
+- Node.js（推奨バージョン: 20以上）
+- pnpm（バージョン: >=9.15.0）
 
-## クイックスタート（Docker）
+## 技術スタック
 
-プロジェクトルートにある `compose.yml` を使ってコンテナをビルドし、起動します。
+### モノレポ管理
 
-```bash
-# イメージをビルド
-docker compose build
+- **Turbo**: ビルドシステムとタスクランナー
+- **pnpm workspace**: パッケージ管理とワークスペース機能
 
-# コンテナを起動
-docker compose up
-```
+### フロントエンド
 
-上記でサービスが起動します。サービス名や公開ポートは `compose.yml` を参照してください。
+- **Next.js 14**: Reactフレームワーク（App Router）
+- **React 18**: UIライブラリ
+- **TypeScript**: 型安全性
+- **Tailwind CSS**: スタイリング
+- **Radix UI**: アクセシブルなUIコンポーネント
 
-## ローカル開発（pnpm）
+### バックエンド
 
-ルートでワークスペースの依存をインストールし、個別パッケージで開発用コマンドを実行します。
+- **Cloudflare Workers**: エッジコンピューティングプラットフォーム
+- **Hono**: 軽量高速なWebフレームワーク
+- **Drizzle ORM**: 型安全で軽量なORM
+- **Cloudflare D1**: エッジで動くSQLiteデータベース
+- **TypeScript**: 型安全性
+- **DDD（ドメイン駆動設計）**: 4層アーキテクチャを採用
+
+## ローカル開発
+
+### セットアップ
 
 ```bash
 # ルートで依存をインストール
 pnpm install
-
-# 例: フロントをローカルで起動
-cd packages/frontend
-pnpm install
-pnpm dev
-
-# 例: バックのビルドやテスト
-cd ../backend
-pnpm install
-pnpm test
 ```
 
-各パッケージの `package.json` に `dev`, `build`, `test` などが定義されていれば、そのスクリプトを使って作業してください。
+### 開発サーバーの起動
 
-## プロジェクト構成（抜粋）
+Turboを使用して、すべてのパッケージを並行して開発できます：
+
+```bash
+# すべてのパッケージを同時に起動
+pnpm dev
+
+# フロントエンドのみ起動
+pnpm dev:frontend
+
+# バックエンドのみ起動
+pnpm dev:backend
+```
+
+### 個別パッケージでの開発
+
+各パッケージのディレクトリに移動して、個別にコマンドを実行することもできます：
+
+```bash
+# フロントエンド
+cd packages/frontend
+pnpm dev          # 開発サーバー起動
+pnpm build        # ビルド
+pnpm check        # 型チェック、リント、フォーマットチェック
+pnpm fix          # リントとフォーマットの自動修正
+
+# バックエンド
+cd packages/backend
+pnpm dev          # 開発サーバー起動（tsx watch）
+pnpm build        # ビルド
+pnpm check        # 型チェック、リント、フォーマットチェック
+pnpm fix          # リントとフォーマットの自動修正
+```
+
+### ビルド
+
+```bash
+# すべてのパッケージをビルド
+pnpm build
+```
+
+## プロジェクト構成
 
 ```
 .
-├─ compose.yml
-├─ package.json
-├─ pnpm-workspace.yaml
+├─ package.json              # ルートのpackage.json（Turbo設定含む）
+├─ pnpm-workspace.yaml      # pnpmワークスペース設定
+├─ turbo.json               # Turbo設定
 └─ packages/
-	 ├─ frontend/    # フロント（frontend）
-	 │  ├─ src/
-	 └─ backend/    # バック（backend）
-		└─ src/
+    ├─ frontend/    # フロント（frontend）
+    │  ├─ src/
+    └─ backend/    # バック（backend）
+         ├─ domain/
+         ├─ application/
+         ├─ infrastructure/
+         ├─ presentation/
+         └─ *.ts
 ```
+
+## データベース
+
+このプロジェクトは、**Cloudflare D1**（SQLiteベース）をデータベースとして使用し、**Drizzle ORM**でデータベースアクセスを管理しています。
+
+### Drizzle ORM
+
+- 型安全なORM
+- マイグレーション管理
+- SQLite（D1）対応
+
+### マイグレーション
+
+バックエンドパッケージで以下のコマンドを使用できます：
+
+```bash
+cd packages/backend
+
+# マイグレーションファイルの生成
+pnpm db:generate
+
+# ローカルD1にマイグレーション適用
+pnpm db:migrate:local
+
+# リモートD1にマイグレーション適用（環境別）
+pnpm db:migrate:remote:preview      # Preview環境
+pnpm db:migrate:remote:staging      # Staging環境
+pnpm db:migrate:remote:production   # Production環境
+```
+
+詳細は [バックエンド README](packages/backend/README.md) を参照してください。
 
 ## デプロイメント（CI/CD）
 
@@ -77,16 +158,19 @@ pnpm test
 
 | 環境 | トリガー | フロントエンド | バックエンド | データベース |
 |------|---------|--------------|------------|------------|
-| **Preview** | Pull Request作成時 | Cloudflare Pages | Cloudflare Workers | D1 (PR毎に作成) |
+| **Preview** | Pull Request作成時 | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
 | **Staging** | `develop`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
-| **Production** | `main`ブランチへのマージ | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
+| **Production** | `main`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
 
 ### デプロイフロー
 
 #### Preview環境（開発中の機能確認）
 1. Pull Requestを作成
 2. GitHub Actionsが自動的に実行
-3. PR専用の環境がデプロイされる（例: `preview-pr-123.ar-pamph.pages.dev`）
+3. PR専用の環境がデプロイされる
+   - Frontend: `https://preview-pr-{PR番号}.ar-pamph.pages.dev`
+   - Backend: `https://ar-pamph-preview.sekibun3109.workers.dev`
+   - Database: `ar-pamph-db-preview` (共有)
 4. PRにコメントでURLが通知される
 5. レビュー時に実際の動作を確認可能
 
@@ -95,15 +179,15 @@ pnpm test
 2. GitHub Actionsが自動的に実行
 3. Staging環境にデプロイ
    - Frontend: `https://ar-pamph-staging.pages.dev`
-   - Backend: `https://ar-pamph-staging.workers.dev`
+   - Backend: `https://ar-pamph-staging.sekibun3109.workers.dev`
    - Database: `ar-pamph-db-staging`
 
 #### Production環境（本番リリース）
-1. `main`ブランチにマージ
+1. `main`ブランチにpush
 2. GitHub Actionsが自動的に実行
 3. 本番環境にデプロイ
    - Frontend: `https://ar-pamph.pages.dev`
-   - Backend: `https://ar-pamph.workers.dev`
+   - Backend: `https://ar-pamph.sekibun3109.workers.dev`
    - Database: `ar-pamph-db-production`
 
 ### ブランチ戦略
@@ -128,7 +212,8 @@ main (本番環境)
 3. テスト・ビルドを通してから Pull Request を作成してください。
 
 PR 作成時の目安:
-- Docker またはローカルで動作確認済みであること
+- ローカルで動作確認済みであること
+- 型チェック、リント、フォーマットチェックが通ること（`pnpm check`）
 - 必要なテストが追加されていること
 - README の更新があれば反映すること
 

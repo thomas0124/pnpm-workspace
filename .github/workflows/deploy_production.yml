@@ -75,8 +75,20 @@ jobs:
           
           if [ -z "$DB_ID" ]; then
             echo "Creating new D1 database: $DB_NAME"
-            DB_CREATE=$(wrangler d1 create "$DB_NAME" --json)
-            DB_ID=$(echo "$DB_CREATE" | jq -r '.uuid')
+            wrangler d1 create "$DB_NAME"
+            # データベース作成の反映を待つ（最大5回リトライ、指数バックオフ）
+            for i in {1..5}; do
+              DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
+              if [ -n "$DB_ID" ]; then
+                break
+              fi
+              echo "Waiting for database to be available (attempt $i/5)..."
+              sleep $((2 ** i))
+            done
+            if [ -z "$DB_ID" ]; then
+              echo "Error: Failed to retrieve database ID after creation"
+              exit 1
+            fi
             echo "✅ Created database with ID: $DB_ID"
           else
             echo "✅ Using existing D1 database: $DB_NAME (ID: $DB_ID)"
@@ -134,6 +146,23 @@ jobs:
           echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
           pnpm run build
 
+      - name: Create Cloudflare Pages project if not exists
+        working-directory: packages/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 既存のプロジェクトを確認
+          PROJECTS=$(wrangler pages project list 2>/dev/null || echo "")
+          PROJECT_EXISTS=$(echo "$PROJECTS" | grep -q "ar-pamph" && echo "exists" || echo "")
+          
+          if [ -z "$PROJECT_EXISTS" ]; then
+            echo "Creating Cloudflare Pages project: ar-pamph"
+            wrangler pages project create ar-pamph --production-branch=main
+          else
+            echo "Project ar-pamph already exists"
+          fi
+
       - name: Deploy Frontend to Cloudflare Pages (Production)
         id: deploy-frontend
         working-directory: packages/frontend
@@ -141,9 +170,9 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Cloudflare Pagesにデプロイ（production環境）
-          npx wrangler pages deploy .next --project-name=ar-pamph --branch=main
-          
+          # Cloudflare Pagesにデプロイ（静的エクスポートされたoutディレクトリをデプロイ）
+          wrangler pages deploy out --project-name=ar-pamph --branch=main
+
           # デプロイされたURLを生成
           PAGES_URL="https://ar-pamph.pages.dev"
           echo "PAGES_URL=$PAGES_URL" >> $GITHUB_OUTPUT

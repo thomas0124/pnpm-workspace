@@ -3,8 +3,6 @@ name: Deploy Preview Environment
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - main
 
 env:
   PNPM_VERSION: "9.15.5"
@@ -74,9 +72,21 @@ jobs:
 
           if [ -z "$DB_ID" ]; then
             echo "Creating new D1 database: $DB_NAME"
-            DB_CREATE=$(wrangler d1 create "$DB_NAME" --json)
-            DB_ID=$(echo "$DB_CREATE" | jq -r '.uuid')
-            echo "Created database with ID: $DB_ID"
+            wrangler d1 create "$DB_NAME"
+            # データベース作成の反映を待つ（リトライ＋指数バックオフ）
+            for i in {1..5}; do
+              DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
+              if [ -n "$DB_ID" ]; then
+                echo "Created database with ID: $DB_ID"
+                break
+              fi
+              echo "Waiting for database to be available (attempt $i/5)..."
+              sleep $((2 ** i))
+            done
+            if [ -z "$DB_ID" ]; then
+              echo "Error: Failed to retrieve database ID after creation"
+              exit 1
+            fi
           else
             echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
           fi
@@ -86,8 +96,16 @@ jobs:
       - name: Update wrangler.toml with D1 database ID
         working-directory: packages/backend
         run: |
-          # Preview環境のdatabase_idを動的に設定
-          sed -i 's/database_id = ""/database_id = "${{ steps.d1-setup.outputs.DB_ID }}"/' wrangler.toml
+          # Preview環境のdatabase_nameとdatabase_idを動的に設定
+          DB_NAME="${{ steps.d1-setup.outputs.DB_NAME }}"
+          DB_ID="${{ steps.d1-setup.outputs.DB_ID }}"
+          
+          # env.preview.d1_databasesセクション内のdatabase_nameを更新
+          sed -i "s|database_name = \"ar-pamph-db-preview\"|database_name = \"$DB_NAME\"|" wrangler.toml
+          
+          # env.preview.d1_databasesセクション内のdatabase_idを更新
+          # [[env.preview.d1_databases]]から次のセクションまでの範囲でdatabase_idを置換
+          sed -i "/\[\[env\.preview\.d1_databases\]\]/,/^\[\[/ s|database_id = \"\"|database_id = \"$DB_ID\"|" wrangler.toml
           cat wrangler.toml
 
       - name: Run D1 Database Migrations
@@ -128,7 +146,25 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
         run: |
+          echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
           pnpm run build
+
+      - name: Create Cloudflare Pages project if not exists
+        working-directory: packages/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 既存のプロジェクトを確認
+          PROJECTS=$(wrangler pages project list 2>/dev/null || echo "")
+          PROJECT_EXISTS=$(echo "$PROJECTS" | grep -q "ar-pamph" && echo "exists" || echo "")
+          
+          if [ -z "$PROJECT_EXISTS" ]; then
+            echo "Creating Cloudflare Pages project: ar-pamph"
+            wrangler pages project create ar-pamph --production-branch=main
+          else
+            echo "Project ar-pamph already exists"
+          fi
 
       - name: Deploy Frontend to Cloudflare Pages
         id: deploy-frontend
@@ -137,13 +173,13 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Cloudflare Pagesにデプロイ
-          npx wrangler pages deploy .next --project-name=ar-pamph --branch=preview-pr-${{ github.event.pull_request.number }}
+          # Cloudflare Pagesにデプロイ（静的エクスポートされたoutディレクトリをデプロイ）
+          wrangler pages deploy out --project-name=ar-pamph --branch=preview-pr-${{ github.event.pull_request.number }}
 
           # デプロイされたURLを生成
           PAGES_URL="https://preview-pr-${{ github.event.pull_request.number }}.ar-pamph.pages.dev"
           echo "PAGES_URL=$PAGES_URL" >> $GITHUB_OUTPUT
-          echo "Frontend deployed to: $PAGES_URL"
+          echo "✅ Frontend deployed to: $PAGES_URL"
 
       - name: Comment PR with deployment URLs
         uses: actions/github-script@v7
