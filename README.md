@@ -112,13 +112,11 @@ pnpm build
     ├─ frontend/    # フロント（frontend）
     │  ├─ src/
     └─ backend/    # バック（backend）
-      |   ├─ domain/
-      |   ├─ application/
-      |   ├─ infrastructure/
-      |   ├─ presentation/
-      |   ├─ drizzle.config.ts
-      |   ├─ index.ts
-      |   └─ server.ts
+         ├─ domain/
+         ├─ application/
+         ├─ infrastructure/
+         ├─ presentation/
+         └─ *.ts
 ```
 
 ## データベース
