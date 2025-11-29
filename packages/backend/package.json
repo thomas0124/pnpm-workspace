@@ -31,7 +31,8 @@
     "db:migrate:remote": "wrangler d1 migrations apply ar-pamph-db --remote",
     "db:migrate:remote:preview": "wrangler d1 migrations apply ar-pamph-db-preview --remote --env preview",
     "db:migrate:remote:staging": "wrangler d1 migrations apply ar-pamph-db-staging --remote --env staging",
-    "db:migrate:remote:production": "wrangler d1 migrations apply ar-pamph-db-production --remote --env production"
+    "db:migrate:remote:production": "wrangler d1 migrations apply ar-pamph-db-production --remote --env production",
+    "db:studio": "drizzle-kit studio"
   },
   "keywords": [],
   "author": "",
@@ -39,7 +40,9 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251121.0",
     "@hono/eslint-config": "^1.0.3",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
+    "better-sqlite3": "^12.5.0",
     "drizzle-kit": "^0.31.7",
     "eslint": "^9",
     "eslint-config-prettier": "^9",
@@ -47,7 +50,7 @@
     "prettier": "^3.2.5",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "wrangler": "^3.0.0"
+    "wrangler": "^4.51.0"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
