@@ -52,9 +52,9 @@ jobs:
           pnpm run db:generate
           
           # 生成されたマイグレーションファイルを確認
-          if [ -d "drizzle/migrations" ] && [ "$(ls -A drizzle/migrations/*.sql 2>/dev/null)" ]; then
+          if [ -d "infrastructure/persistence/drizzle/migrations" ] && [ "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
             echo "✅ Migrations generated/updated"
-            ls -la drizzle/migrations/
+            ls -la infrastructure/persistence/drizzle/migrations/
           else
             echo "⚠️ No migrations generated (schema may be unchanged)"
           fi
@@ -111,7 +111,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # マイグレーションファイルが存在するかチェック
-          if [ -d "drizzle/migrations" ] && [ "$(ls -A drizzle/migrations/*.sql 2>/dev/null)" ]; then
+          if [ -d "infrastructure/persistence/drizzle/migrations" ] && [ "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
             echo "📦 Applying database migrations..."
             wrangler d1 migrations apply ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env production
             echo "✅ Migrations applied successfully"
