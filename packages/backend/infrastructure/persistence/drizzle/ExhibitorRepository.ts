@@ -14,8 +14,7 @@ function mapToDomain(data: DbExhibitor): Exhibitor {
 
 
 export function createExhibitorRepository(d1: D1Database): ExhibitorRepository {
-  const repository = new DrizzleExhibitorRepository(d1);
-  return repository;
+  return new DrizzleExhibitorRepository(d1);
 }
 
 export class DrizzleExhibitorRepository implements ExhibitorRepository {
