@@ -30,11 +30,16 @@ function getLatestLocalD1Path(): string {
   return files[0].path
 }
 
+// CI環境チェック
+const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true'
+
 export default defineConfig({
   out: './infrastructure/persistence/drizzle/migrations',
-  schema: './infrastructure/persistence/drizzle/schema/*.ts', // 実際のパスに
+  schema: './infrastructure/persistence/drizzle/schema/*.ts',
   dialect: 'sqlite',
   dbCredentials: {
-    url: getLatestLocalD1Path(),
+    // ローカル開発環境でのみローカルD1を使用
+    // CI環境では使用されない（マイグレーション生成はローカルで実施）
+    url: isCI ? ':memory:' : getLatestLocalD1Path(),
   },
 })
