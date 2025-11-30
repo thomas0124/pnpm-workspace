@@ -10,23 +10,19 @@ import * as drizzleExhibitorRepo from '../persistence/drizzle/drizzleExhibitorRe
  * Cloudflare WorkersではD1DatabaseはリクエストごとにBindingから取得するため、
  * ここではリポジトリ関数のみを提供するよ
  */
-export const container = {
-  /**
-   * 出展者リポジトリ
-   *
-   * 注意: Drizzleの関数はD1Databaseを引数に取るため、
-   * 実際の使用時にはBindingからD1を渡す必要があるよ
-   */
-  get exhibitorRepository() {
-    return {
-      save: drizzleExhibitorRepo.save,
-      findById: drizzleExhibitorRepo.findById,
-      findByName: drizzleExhibitorRepo.findByName,
-      existsByName: drizzleExhibitorRepo.existsByName,
-      delete: drizzleExhibitorRepo.deleteExhibitor,
-      findAll: drizzleExhibitorRepo.findAll,
-    }
-  },
+export const createContainer = (d1: D1Database) => {
+  const exhibitorRepository: ExhibitorRepository = {
+    save: (exhibitor) => drizzleExhibitorRepo.save(exhibitor, d1),
+    findById: (id) => drizzleExhibitorRepo.findById(id, d1),
+    findByName: (name) => drizzleExhibitorRepo.findByName(name, d1),
+    existsByName: (name) => drizzleExhibitorRepo.existsByName(name, d1),
+    delete: (id) => drizzleExhibitorRepo.deleteExhibitor(id, d1),
+    findAll: () => drizzleExhibitorRepo.findAll(d1),
+  }
+
+  return {
+    exhibitorRepository,
+  }
 }
 
-export type Container = typeof container
+export type Container = ReturnType<typeof createContainer>
