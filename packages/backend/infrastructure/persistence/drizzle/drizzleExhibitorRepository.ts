@@ -18,6 +18,19 @@ function toISOString(timestamp: number): string {
   return new Date(timestamp * 1000).toISOString()
 }
 
+// DBモデルの型を定義
+type DbExhibitor = typeof exhibitorSchema.exhibitor.$inferSelect
+
+function mapToDomain(data: DbExhibitor): Exhibitor {
+  return reconstructExhibitor({
+    id: data.id,
+    name: data.name,
+    passwordHash: data.passwordHash,
+    createdAt: toISOString(data.createdAt),
+    updatedAt: toISOString(data.updatedAt),
+  })
+}
+
 /**
  * 出展者を保存（作成または更新）
  */
@@ -58,13 +71,7 @@ export async function findById(id: string, d1: D1Database): Promise<Exhibitor | 
 
   if (!exhibitorData) return null
 
-  return reconstructExhibitor({
-    id: exhibitorData.id,
-    name: exhibitorData.name,
-    passwordHash: exhibitorData.passwordHash,
-    createdAt: toISOString(exhibitorData.createdAt),
-    updatedAt: toISOString(exhibitorData.updatedAt),
-  })
+  return mapToDomain(exhibitorData)
 }
 
 /**
@@ -81,13 +88,7 @@ export async function findByName(name: string, d1: D1Database): Promise<Exhibito
 
   if (!exhibitorData) return null
 
-  return reconstructExhibitor({
-    id: exhibitorData.id,
-    name: exhibitorData.name,
-    passwordHash: exhibitorData.passwordHash,
-    createdAt: toISOString(exhibitorData.createdAt),
-    updatedAt: toISOString(exhibitorData.updatedAt),
-  })
+  return mapToDomain(exhibitorData)
 }
 
 /**
@@ -122,13 +123,5 @@ export async function findAll(d1: D1Database): Promise<Exhibitor[]> {
 
   const exhibitorsData = await db.select().from(exhibitorSchema.exhibitor).all()
 
-  return exhibitorsData.map((data) =>
-    reconstructExhibitor({
-      id: data.id,
-      name: data.name,
-      passwordHash: data.passwordHash,
-      createdAt: toISOString(data.createdAt),
-      updatedAt: toISOString(data.updatedAt),
-    })
-  )
-}
+  return exhibitorsData.map((data) => mapToDomain(data))
+  }
