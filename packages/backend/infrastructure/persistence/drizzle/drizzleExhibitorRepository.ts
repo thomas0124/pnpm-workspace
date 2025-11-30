@@ -24,32 +24,24 @@ function toISOString(timestamp: number): string {
 export async function save(exhibitor: Exhibitor, d1: D1Database): Promise<void> {
   const db = getDb(d1)
 
-  const existing = await db
-    .select()
-    .from(exhibitorSchema.exhibitor)
-    .where(eq(exhibitorSchema.exhibitor.id, exhibitor.id))
-    .get()
-
-  if (existing) {
-    // 更新
-    await db
-      .update(exhibitorSchema.exhibitor)
-      .set({
-        name: exhibitor.name,
-        passwordHash: exhibitor.passwordHash,
-        updatedAt: toUnixTimestamp(exhibitor.updatedAt),
-      })
-      .where(eq(exhibitorSchema.exhibitor.id, exhibitor.id))
-  } else {
-    // 新規作成
-    await db.insert(exhibitorSchema.exhibitor).values({
+  await db
+    .insert(exhibitorSchema.exhibitor)
+    .values({
       id: exhibitor.id,
       name: exhibitor.name,
       passwordHash: exhibitor.passwordHash,
       createdAt: toUnixTimestamp(exhibitor.createdAt),
       updatedAt: toUnixTimestamp(exhibitor.updatedAt),
     })
-  }
+    .onConflictDoUpdate({
+      target: exhibitorSchema.exhibitor.id,
+      set: {
+        name: exhibitor.name,
+        passwordHash: exhibitor.passwordHash,
+        updatedAt: toUnixTimestamp(exhibitor.updatedAt),
+      },
+    })
+  
 }
 
 /**
