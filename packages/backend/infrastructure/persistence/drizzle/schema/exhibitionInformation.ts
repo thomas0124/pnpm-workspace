@@ -15,6 +15,7 @@ export const exhibitionInformation = sqliteTable(
       .references(() => exhibitor.id)
       .notNull(),
     exhibitionArDesignId: text('exhibition_ar_design_id').references(() => exhibitionArDesign.id),
+    exhibitor: text('exhibitor').notNull(),
     title: text('title').notNull(),
     category: text('category', {
       enum: ['飲食', '展示', '体験', 'ステージ'],
