@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm'
-import { getDb } from './client.js'
-import { exhibitorSchema } from './client.js'
-import { reconstructExhibitor } from '../../../domain/factories/exhibitor/exhibitorFactory.js'
-import type { Exhibitor } from '../../../domain/models/exhibitor/exhibitor.js'
-import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository.js'
+import { getDb } from './client'
+import { exhibitorSchema } from './client'
+import { reconstructExhibitor } from '../../../domain/factories/exhibitor/exhibitorFactory'
+import type { Exhibitor } from '../../../domain/models/exhibitor/exhibitor'
+import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
 
 
 
