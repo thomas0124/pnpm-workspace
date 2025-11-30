@@ -1,5 +1,5 @@
 import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository.js'
-import * as drizzleExhibitorRepo from '../persistence/drizzle/drizzleExhibitorRepository.js'
+import * as drizzleExhibitorRepo from '../persistence/drizzle/ExhibitorRepository.js'
 
 /**
  * シンプルなDIコンテナ
