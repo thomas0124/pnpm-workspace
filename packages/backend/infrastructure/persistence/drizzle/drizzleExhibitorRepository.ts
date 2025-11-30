@@ -54,6 +54,7 @@ export async function save(exhibitor: Exhibitor, d1: D1Database): Promise<void> 
         updatedAt: toUnixTimestamp(exhibitor.updatedAt),
       },
     })
+    .run()
   
 }
 
