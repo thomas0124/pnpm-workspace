@@ -24,7 +24,7 @@ export function createExhibitorRepository(d1: D1Database): ExhibitorRepository {
 }
 
 export class DrizzleExhibitorRepository implements ExhibitorRepository {
-  private db;
+  private db: ReturnType<typeof getDb>;
 
   constructor(d1: D1Database) {
     this.db = getDb(d1);
