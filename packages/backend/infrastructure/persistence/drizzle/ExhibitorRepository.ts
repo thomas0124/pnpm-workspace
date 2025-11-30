@@ -5,19 +5,7 @@ import { reconstructExhibitor } from '../../../domain/factories/exhibitor/exhibi
 import type { Exhibitor } from '../../../domain/models/exhibitor/exhibitor.js'
 import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository.js'
 
-/**
- * ISO datetime文字列をUnixタイムスタンプ（秒）に変換
- */
-function toUnixTimestamp(isoString: string): number {
-  return Math.floor(new Date(isoString).getTime() / 1000)
-}
 
-/**
- * Unixタイムスタンプ（秒）をISO datetime文字列に変換
- */
-function toISOString(timestamp: number): string {
-  return new Date(timestamp * 1000).toISOString()
-}
 
 // DBモデルの型を定義
 type DbExhibitor = typeof exhibitorSchema.exhibitor.$inferSelect
@@ -27,8 +15,9 @@ function mapToDomain(data: DbExhibitor): Exhibitor {
     id: data.id,
     name: data.name,
     passwordHash: data.passwordHash,
-    createdAt: toISOString(data.createdAt),
-    updatedAt: toISOString(data.updatedAt),
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+
   })
 }
 
@@ -55,15 +44,17 @@ export async function save(exhibitor: Exhibitor, d1: D1Database): Promise<void> 
       id: exhibitor.id,
       name: exhibitor.name,
       passwordHash: exhibitor.passwordHash,
-      createdAt: toUnixTimestamp(exhibitor.createdAt),
-      updatedAt: toUnixTimestamp(exhibitor.updatedAt),
+      createdAt: exhibitor.createdAt,
+      updatedAt: exhibitor.updatedAt,
+
     })
     .onConflictDoUpdate({
       target: exhibitorSchema.exhibitor.id,
       set: {
         name: exhibitor.name,
         passwordHash: exhibitor.passwordHash,
-        updatedAt: toUnixTimestamp(exhibitor.updatedAt),
+        updatedAt: exhibitor.updatedAt,
+        
       },
     })
     .run()
