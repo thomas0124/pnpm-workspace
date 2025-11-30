@@ -21,9 +21,6 @@ export function createExhibitionArDesign(url: string | null = null): ExhibitionA
  * @returns 再構築されたExhibitionArDesignエンティティ
  * @throws zodバリデーションエラー時
  */
-export function reconstructExhibitionArDesign(data: {
-  id: string
-  url: string | null
-}): ExhibitionArDesign {
-  return ExhibitionArDesignSchema.parse({ id: data.id, url: data.url })
+export function reconstructExhibitionArDesign(data: ExhibitionArDesign): ExhibitionArDesign {
+  return ExhibitionArDesignSchema.parse(data)
 }

@@ -25,4 +25,3 @@ export type ExhibitionArDesignRepository = {
    */
   delete: (id: string) => Promise<void>
 }
-

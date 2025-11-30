@@ -14,9 +14,12 @@ export async function exhibitionArDesignExists(
   repository: ExhibitionArDesignRepository
 ): Promise<boolean> {
   // UUIDバリデーション
-  ExhibitionArDesignIdSchema.parse(id)
+
+  const result = ExhibitionArDesignIdSchema.safeParse(id)
+  if (!result.success) {
+    return false
+  }
 
   const exhibitionArDesign = await repository.findById(id)
   return exhibitionArDesign !== null
 }
-
