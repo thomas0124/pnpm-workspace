@@ -42,30 +42,6 @@ jobs:
       - name: Setup Cloudflare Wrangler
         run: pnpm add -g wrangler@3
 
-      - name: Generate database migrations
-        working-directory: packages/backend
-        run: |
-          echo "📝 Checking for schema changes and generating migrations..."
-          
-          # 既存のマイグレーションファイルを削除（既存DBを再利用するため、毎回新規生成）
-          if [ -d "infrastructure/persistence/drizzle/migrations" ]; then
-            echo "🗑️ Cleaning up existing migration files..."
-            rm -f infrastructure/persistence/drizzle/migrations/*.sql
-            rm -f infrastructure/persistence/drizzle/migrations/meta/*.json
-            echo "✅ Existing migration files removed"
-          fi
-          
-          # マイグレーションファイルを新規生成
-          pnpm run db:generate
-          
-          # 生成されたマイグレーションファイルを確認
-          if [ -d "infrastructure/persistence/drizzle/migrations" ] && [ "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
-            echo "✅ Migrations generated/updated"
-            ls -la infrastructure/persistence/drizzle/migrations/
-          else
-            echo "⚠️ No migrations generated (schema may be unchanged)"
-          fi
-
       - name: Create or get D1 database for Staging
         id: d1-setup
         working-directory: packages/backend
@@ -96,12 +72,33 @@ jobs:
               echo "Error: Failed to retrieve database ID after creation"
               exit 1
             fi
-            echo "✅ Created database with ID: $DB_ID"
+            # 新規作成フラグを設定
+            echo "IS_NEW_DB=true" >> $GITHUB_OUTPUT
+            echo "✅ New database created with ID: $DB_ID"
           else
             echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
+            # 既存DBフラグを設定
+            echo "IS_NEW_DB=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ Reusing existing database"
           fi
           
           echo "DB_ID=$DB_ID" >> $GITHUB_OUTPUT
+
+      - name: Generate database migrations
+        working-directory: packages/backend
+        run: |
+          echo "📝 Generating database migrations..."
+          
+          # マイグレーションファイルを生成（差分のみ）
+          pnpm run db:generate
+          
+          # 生成されたマイグレーションファイルを確認
+          if [ -d "infrastructure/persistence/drizzle/migrations" ] && [ "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
+            echo "✅ Migration files checked"
+            ls -la infrastructure/persistence/drizzle/migrations/
+          else
+            echo "ℹ️ No new migrations generated (schema unchanged)"
+          fi
 
       - name: Update wrangler.toml with D1 database ID
         working-directory: packages/backend
@@ -117,19 +114,35 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          IS_NEW_DB="${{ steps.d1-setup.outputs.IS_NEW_DB }}"
+          
           # マイグレーションファイルが存在するかチェック
           if [ -d "infrastructure/persistence/drizzle/migrations" ] && [ "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
             echo "📦 Applying database migrations..."
             
-            # マイグレーション適用（エラーハンドリング付き）
+            if [ "$IS_NEW_DB" = "true" ]; then
+              echo "🆕 New database detected - applying all migrations"
+            else
+              echo "♻️ Existing database detected - applying new migrations only"
+            fi
+            
+            # マイグレーション適用（wranglerが自動的に未適用のマイグレーションのみを実行）
             if wrangler d1 migrations apply ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env staging 2>&1 | tee /tmp/migration_output.log; then
               echo "✅ Migrations applied successfully"
             else
               MIGRATION_ERROR=$(cat /tmp/migration_output.log)
-              # table already exists エラーの場合は警告を出して続行
-              if echo "$MIGRATION_ERROR" | grep -q "already exists"; then
-                echo "⚠️ Warning: Some tables already exist. This is expected when reusing an existing database."
-                echo "⚠️ The migration may have been partially applied. Continuing deployment..."
+              
+              # 既存DBで「既に適用済み」のエラーの場合は警告として扱う
+              if echo "$MIGRATION_ERROR" | grep -q "already exists\|already applied"; then
+                if [ "$IS_NEW_DB" = "false" ]; then
+                  echo "ℹ️ All migrations already applied to existing database"
+                  echo "✅ Database is up to date"
+                  exit 0
+                else
+                  echo "⚠️ Warning: Unexpected 'already exists' error on new database"
+                  echo "$MIGRATION_ERROR"
+                  exit 1
+                fi
               else
                 echo "❌ Migration failed with error:"
                 echo "$MIGRATION_ERROR"
@@ -137,7 +150,7 @@ jobs:
               fi
             fi
           else
-            echo "⚠️ No migrations found, skipping..."
+            echo "ℹ️ No migrations found, skipping..."
           fi
 
       - name: Deploy Backend to Cloudflare Workers (Staging)
@@ -199,7 +212,14 @@ jobs:
           echo "✅ Frontend deployed to: $PAGES_URL"
 
       - name: Create deployment summary
+        env:
+          IS_NEW_DB: ${{ steps.d1-setup.outputs.IS_NEW_DB }}
         run: |
+          DB_STATUS="♻️ 既存DBを再利用"
+          if [ "$IS_NEW_DB" = "true" ]; then
+            DB_STATUS="🆕 新規作成"
+          fi
+          
           echo "## 🚀 Staging Environment Deployed!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📱 Frontend" >> $GITHUB_STEP_SUMMARY
@@ -209,8 +229,7 @@ jobs:
           echo "${{ steps.deploy-backend.outputs.WORKER_URL }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🗄️ Database" >> $GITHUB_STEP_SUMMARY
-          echo "D1 Database: \`${{ steps.d1-setup.outputs.DB_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "D1 Database: \`${{ steps.d1-setup.outputs.DB_NAME }}\` (${DB_STATUS})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "Deployed from: \`${{ github.ref }}\` @ \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-
