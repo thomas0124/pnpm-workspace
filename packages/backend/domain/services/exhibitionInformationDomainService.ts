@@ -34,17 +34,3 @@ export async function exhibitionInformationExists(
   const exhibitionInformation = await repository.findById(id)
   return exhibitionInformation !== null
 }
-
-/**
- * ExhibitionInformationが指定された出展者に属しているかチェック
- *
- * @param exhibitionInformation - チェック対象のExhibitionInformation
- * @param exhibitorId - 出展者ID
- * @returns 属している場合true
- */
-export function belongsToExhibitor(
-  exhibitionInformation: ExhibitionInformation,
-  exhibitorId: string
-): boolean {
-  return exhibitionInformation.exhibitorId === exhibitorId
-}
