@@ -2,8 +2,8 @@ openapi: 3.0.3
 
 info:
   title: デジタルパンフレットAPI
-  description: 学園祭などのイベント向けデジタルパンフレットアプリケーションのAPI仕様(DB設計準拠版)
-  version: 1.0.1
+  description: 学園祭などのイベント向けデジタルパンフレットアプリケーションのAPI仕様(ARデザインテーブル分離版)
+  version: 1.0.2
   contact:
     name: API Support
 
@@ -18,6 +18,8 @@ tags:
     description: 認証関連のエンドポイント
   - name: Exhibition Management
     description: 出展情報管理(出展者向け)
+  - name: AR Design
+    description: ARデザイン管理
   - name: Public
     description: 公開情報(ユーザー向け)
 
@@ -115,6 +117,23 @@ components:
           type: string
           format: date-time
           example: '2025-11-15T10:00:00Z'
+
+    # ARデザイン
+    ExhibitionArDesign:
+      type: object
+      required:
+        - id
+        - url
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '880e8400-e29b-41d4-a716-446655440003'
+        url:
+          type: string
+          format: uri
+          example: 'https://ar.example.com/designs/abc123'
+          description: 'ARのURL'
 
     # 出展情報
     Exhibition:
@@ -229,6 +248,11 @@ components:
           nullable: true
           maxLength: 100
           example: '本格窯焼きピザをお楽しみください'
+        ar_design:
+          allOf:
+            - $ref: '#/components/schemas/ExhibitionArDesign'
+            - nullable: true
+          description: 'ARデザイン情報(NULLの場合はARなし)'
         created_at:
           type: string
           format: date-time
@@ -272,6 +296,12 @@ components:
           nullable: true
           maxLength: 100
           example: '本格窯焼きピザをお楽しみください'
+        exhibition_ar_design_id:
+          type: string
+          format: uuid
+          nullable: true
+          example: '880e8400-e29b-41d4-a716-446655440003'
+          description: 'ARデザインID(NULLの場合はARなし)'
 
     # 公開用出展情報
     PublicExhibition:
@@ -314,6 +344,11 @@ components:
           type: string
           nullable: true
           example: '本格窯焼きピザをお楽しみください'
+        ar_design:
+          allOf:
+            - $ref: '#/components/schemas/ExhibitionArDesign'
+            - nullable: true
+          description: 'ARデザイン情報(NULLの場合はARなし)'
 
     CategoryCount:
       type: object
@@ -433,6 +468,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  # ==================== ARデザイン ====================
+  /ar-designs:
+    get:
+      tags:
+        - AR Design
+      summary: ARデザイン一覧取得
+      description: |
+        利用可能なARデザインの一覧を取得します。
+        出展者が出展情報作成・編集時にARデザインを選択するために使用します。
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExhibitionArDesign'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   # ==================== 出展情報管理 ====================
   /exhibitions:
     post:
@@ -526,12 +593,11 @@ paths:
         2. ExhibitionInformation レコード(exhibition_information_id が NULL でない場合のみ削除)
 
         **削除の流れ:**
-        ```
+
         IF exhibition_information_id IS NOT NULL THEN
           DELETE FROM ExhibitionInformation WHERE id = exhibition_information_id
         END IF
         DELETE FROM Exhibition WHERE id = exhibition_id
-        ```
 
         **注意事項:**
         - この操作は取り消しできません
@@ -575,7 +641,7 @@ paths:
         - Exhibition Management
       summary: 基本情報の更新
       description: |
-        出展の基本情報を更新します。
+        出展の基本情報(ARデザインIDを含む)を更新します。
         既存のExhibitionInformationを更新します。
         画像は別途 POST /exhibitions/{id}/information/image で登録・更新してください。
       security:
@@ -670,6 +736,9 @@ paths:
                   price: 500
                   required_time: 15
                   comment: '本格窯焼きピザをお楽しみください'
+                  ar_design:
+                    id: '880e8400-e29b-41d4-a716-446655440003'
+                    url: 'https://ar.example.com/designs/abc123'
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'
                 is_draft: true
@@ -712,7 +781,7 @@ paths:
 
         **公開条件:**
         - exhibition_information_id が NULL でないこと(基本情報が登録済み)
-        - 画像は任意(なくても公開可能)
+        - 画像、ARデザインは任意(なくても公開可能)
 
         **許可される遷移:**
         - 下書き(is_draft=true) → 公開
@@ -752,6 +821,9 @@ paths:
                   price: 500
                   required_time: 15
                   comment: '本格窯焼きピザをお楽しみください'
+                  ar_design:
+                    id: '880e8400-e29b-41d4-a716-446655440003'
+                    url: 'https://ar.example.com/designs/abc123'
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'
                 is_draft: false
@@ -829,6 +901,9 @@ paths:
                   price: 500
                   required_time: 15
                   comment: '本格窯焼きピザをお楽しみください'
+                  ar_design:
+                    id: '880e8400-e29b-41d4-a716-446655440003'
+                    url: 'https://ar.example.com/designs/abc123'
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'
                 is_draft: false
