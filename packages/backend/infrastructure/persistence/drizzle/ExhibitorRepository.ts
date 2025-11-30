@@ -1,11 +1,9 @@
 import { eq } from 'drizzle-orm'
-import { getDb } from './client'
-import { exhibitorSchema } from './client'
+
 import { reconstructExhibitor } from '../../../domain/factories/exhibitor/exhibitorFactory'
 import type { Exhibitor } from '../../../domain/models/exhibitor/exhibitor'
 import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
-
-
+import { exhibitorSchema, getDb } from './client'
 
 // DBモデルの型を定義
 type DbExhibitor = typeof exhibitorSchema.exhibitor.$inferSelect
@@ -17,7 +15,6 @@ function mapToDomain(data: DbExhibitor): Exhibitor {
     passwordHash: data.passwordHash,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
-
   })
 }
 
@@ -32,9 +29,6 @@ export function createExhibitorRepository(d1: D1Database): ExhibitorRepository {
   }
 }
 
-/**
- * 出展者を保存（作成または更新）
- */
 export async function save(exhibitor: Exhibitor, d1: D1Database): Promise<void> {
   const db = getDb(d1)
 
@@ -46,7 +40,6 @@ export async function save(exhibitor: Exhibitor, d1: D1Database): Promise<void> 
       passwordHash: exhibitor.passwordHash,
       createdAt: exhibitor.createdAt,
       updatedAt: exhibitor.updatedAt,
-
     })
     .onConflictDoUpdate({
       target: exhibitorSchema.exhibitor.id,
@@ -54,11 +47,9 @@ export async function save(exhibitor: Exhibitor, d1: D1Database): Promise<void> 
         name: exhibitor.name,
         passwordHash: exhibitor.passwordHash,
         updatedAt: exhibitor.updatedAt,
-        
       },
     })
     .run()
-  
 }
 
 /**
@@ -128,4 +119,4 @@ export async function findAll(d1: D1Database): Promise<Exhibitor[]> {
   const exhibitorsData = await db.select().from(exhibitorSchema.exhibitor).all()
 
   return exhibitorsData.map((data) => mapToDomain(data))
-  }
+}
