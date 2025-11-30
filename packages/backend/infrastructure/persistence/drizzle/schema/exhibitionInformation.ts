@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 import { blob, check, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 import { exhibitor } from './exhibitor'
+import { exhibitionArDesign } from './exhibitionArDesign'
 
 /**
  * 出展情報テーブル
@@ -13,6 +14,9 @@ export const exhibitionInformation = sqliteTable(
     exhibitorId: text('exhibitor_id')
       .references(() => exhibitor.id)
       .notNull(),
+    exhibitionArDesignId: text('exhibition_ar_design_id').references(
+      () => exhibitionArDesign.id
+    ),
     title: text('title').notNull(),
     category: text('category', {
       enum: ['飲食', '展示', '体験', 'ステージ'],
