@@ -1,15 +1,6 @@
-import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository.js'
-import * as drizzleExhibitorRepo from '../persistence/drizzle/ExhibitorRepository.js'
+import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository'
+import * as drizzleExhibitorRepo from '../persistence/drizzle/ExhibitorRepository'
 
-/**
- * シンプルなDIコンテナ
- *
- * 複雑なDIライブラリは不要だよ！
- * ただのオブジェクトで依存性を管理できるんだ。
- *
- * Cloudflare WorkersではD1DatabaseはリクエストごとにBindingから取得するため、
- * ここではリポジトリ関数のみを提供するよ
- */
 export const createContainer = (d1: D1Database) => {
   const exhibitorRepository: ExhibitorRepository = {
     save: (exhibitor) => drizzleExhibitorRepo.save(exhibitor, d1),
