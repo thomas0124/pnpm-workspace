@@ -86,22 +86,6 @@ jobs:
 
           echo "DB_ID=$DB_ID" >> $GITHUB_OUTPUT
 
-      - name: Generate database migrations
-        working-directory: packages/backend
-        run: |
-          echo "📝 Generating database migrations..."
-          
-          # マイグレーションファイルを生成（差分のみ）
-          pnpm run db:generate
-          
-          # 生成されたマイグレーションファイルを確認
-          if [ -d "infrastructure/persistence/drizzle/migrations" ] && [ "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
-            echo "✅ Migration files checked"
-            ls -la infrastructure/persistence/drizzle/migrations/
-          else
-            echo "ℹ️ No new migrations generated (schema unchanged)"
-          fi
-
       - name: Update wrangler.toml with D1 database ID
         working-directory: packages/backend
         run: |
