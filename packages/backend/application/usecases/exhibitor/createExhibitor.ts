@@ -21,7 +21,7 @@ export async function registerExhibitorUseCase(
   const exhibitor = createExhibitor(request.name, passwordHash)
 
   // 2. 重複チェック
-  const isDuplicate = await isDuplicateExhibitorName(exhibitor, repository)
+  const isDuplicate = await isDuplicateExhibitorName(exhibitor.name, repository)
   if (isDuplicate) {
     throw new Error('Exhibitor with this name already exists')
   }
