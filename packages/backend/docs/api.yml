@@ -215,7 +215,7 @@ components:
       required:
         - id
         - exhibitor_id
-        - exhibitor
+        - exhibitor_name
         - title
         - category
         - location
@@ -230,7 +230,7 @@ components:
           type: string
           format: uuid
           example: '550e8400-e29b-41d4-a716-446655440000'
-        exhibitor:
+        exhibitor_name:
           type: string
           maxLength: 100
           example: 'イタリア料理研究会'
@@ -281,12 +281,12 @@ components:
     ExhibitionInformationInput:
       type: object
       required:
-        - exhibitor
+        - exhibitor_name
         - title
         - category
         - location
       properties:
-        exhibitor:
+        exhibitor_name:
           type: string
           maxLength: 100
           example: 'イタリア料理研究会'

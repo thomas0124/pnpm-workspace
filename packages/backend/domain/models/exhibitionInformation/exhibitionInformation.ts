@@ -74,7 +74,7 @@ export const ExhibitionArDesignIdSchema = z.uuid('Invalid AR design ID format').
  * Exhibitor スキーマ
  * 出展者名（1-100文字）
  */
-export const ExhibitorSchema = z
+export const ExhibitorNameSchema = z
   .string()
   .trim()
   .min(1, 'Exhibitor name is required')
@@ -87,7 +87,7 @@ export const ExhibitionInformationSchema = z.object({
   id: ExhibitionInformationIdSchema,
   exhibitorId: z.uuid('Invalid exhibitor ID format'),
   exhibitionArDesignId: ExhibitionArDesignIdSchema,
-  exhibitor: ExhibitorSchema,
+  exhibitorName: ExhibitorNameSchema,
   title: TitleSchema,
   category: CategorySchema,
   location: LocationSchema,
