@@ -76,9 +76,7 @@ async findById(id: string): Promise<Exhibitor | null> {
  * 名前の存在確認
  */
   async existsByName(name: string): Promise<boolean> {
-  const db = this.db;
-
-  const result = await db
+  const result = await this.db
     .select({ id: exhibitorSchema.exhibitor.id })
     .from(exhibitorSchema.exhibitor)
     .where(eq(exhibitorSchema.exhibitor.name, name))
