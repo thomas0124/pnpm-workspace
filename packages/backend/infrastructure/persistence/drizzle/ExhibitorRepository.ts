@@ -89,9 +89,7 @@ async findById(id: string): Promise<Exhibitor | null> {
  * 出展者を削除
  */
   async delete(id: string): Promise<void> {
-  const db = this.db;
-
-  await db.delete(exhibitorSchema.exhibitor).where(eq(exhibitorSchema.exhibitor.id, id)).run()
+  await this.db.delete(exhibitorSchema.exhibitor).where(eq(exhibitorSchema.exhibitor.id, id)).run()
 }
 
 /**
