@@ -110,7 +110,7 @@ export async function existsByName(name: string, d1: D1Database): Promise<boolea
     .where(eq(exhibitorSchema.exhibitor.name, name))
     .get()
 
-  return result !== null
+  return result !== undefined
 }
 
 /**
