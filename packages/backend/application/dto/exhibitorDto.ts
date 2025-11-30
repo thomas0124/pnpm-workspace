@@ -3,7 +3,7 @@ import { z } from 'zod'
 // 出展者登録リクエスト
 export const ExhibitorRegisterRequestSchema = z.object({
   name: z.string().min(1).max(100).trim(),
-  password: z.string().min(8).max(100),
+  password: z.string().min(8).max(100).trim(),
 })
 
 export type ExhibitorRegisterRequest = z.infer<typeof ExhibitorRegisterRequestSchema>
@@ -18,10 +18,10 @@ export type ExhibitorLoginRequest = z.infer<typeof ExhibitorLoginRequestSchema>
 
 // 出展者レスポンスDTO
 export const ExhibitorDtoSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 })
 
 export type ExhibitorDto = z.infer<typeof ExhibitorDtoSchema>
