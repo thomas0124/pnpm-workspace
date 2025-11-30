@@ -1,6 +1,6 @@
-import type { Exhibitor } from '../models/exhibitor.js'
-import { ExhibitorIdSchema, ExhibitorNameSchema } from '../models/exhibitor.js'
-import type { ExhibitorRepository } from '../repositories/exhibitorRepository.js'
+import type { Exhibitor } from '../models/exhibitor'
+import { ExhibitorIdSchema, ExhibitorNameSchema } from '../models/exhibitor'
+import type { ExhibitorRepository } from '../repositories/exhibitorRepository'
 
 /**
  * 出展者名の重複チェック

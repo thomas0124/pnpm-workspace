@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import type { Exhibitor } from '../models/exhibitor.js'
-import { ExhibitorSchema } from '../models/exhibitor.js'
+import type { Exhibitor } from '../models/exhibitor'
+import { ExhibitorSchema } from '../models/exhibitor'
 
 /**
  * 新規Exhibitorを作成
