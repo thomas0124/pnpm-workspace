@@ -113,7 +113,7 @@ export async function existsByName(name: string, d1: D1Database): Promise<boolea
 export async function deleteExhibitor(id: string, d1: D1Database): Promise<void> {
   const db = getDb(d1)
 
-  await db.delete(exhibitorSchema.exhibitor).where(eq(exhibitorSchema.exhibitor.id, id))
+  await db.delete(exhibitorSchema.exhibitor).where(eq(exhibitorSchema.exhibitor.id, id)).run()
 }
 
 /**
