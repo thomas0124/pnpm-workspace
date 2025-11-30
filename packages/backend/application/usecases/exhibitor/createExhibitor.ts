@@ -1,8 +1,8 @@
-import { createExhibitor } from '../../../domain/factories/exhibitor/exhibitorFactory'
+import { createExhibitor } from '../../../domain/factories/exhibitor'
 import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
-import { isDuplicateExhibitorName } from '../../../domain/services/exhibitorDomainService'
-import type { ExhibitorDto, ExhibitorRegisterRequest } from '../../dto/exhibitorDto'
-import { ExhibitorDtoSchema } from '../../dto/exhibitorDto'
+import { isDuplicateExhibitorName } from '../../../domain/services/exhibitor'
+import type { ExhibitorDto, ExhibitorRegisterRequest } from '../../dto/exhibitor'
+import { ExhibitorDtoSchema } from '../../dto/exhibitor'
 /**
  * 出展者登録ユースケース
  *

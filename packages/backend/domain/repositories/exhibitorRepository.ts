@@ -1,4 +1,4 @@
-import type { Exhibitor } from '../models/exhibitor/exhibitor.js'
+import type { Exhibitor } from '../models/exhibitor.js'
 
 /**
  * Exhibitorリポジトリの型定義

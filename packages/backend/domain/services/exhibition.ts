@@ -1,4 +1,4 @@
-import type { Exhibition } from '../models/exhibition/exhibition'
+import type { Exhibition } from '../models/exhibition'
 
 /**
  * Exhibitionが公開可能かチェック

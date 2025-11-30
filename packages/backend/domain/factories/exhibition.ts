@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import type { Exhibition } from '../../models/exhibition/exhibition'
-import { ExhibitionSchema } from '../../models/exhibition/exhibition'
+import type { Exhibition } from '../models/exhibition'
+import { ExhibitionSchema } from '../models/exhibition'
 
 // 新規Exhibitionを作成
 export function createExhibition(

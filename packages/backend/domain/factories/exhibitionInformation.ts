@@ -1,10 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import type {
-  Category,
-  ExhibitionInformation,
-} from '../../models/exhibitionInformation/exhibitionInformation'
-import { ExhibitionInformationSchema } from '../../models/exhibitionInformation/exhibitionInformation'
+import type { Category, ExhibitionInformation } from '../models/exhibitionInformation'
+import { ExhibitionInformationSchema } from '../models/exhibitionInformation'
 
 /**
  * 新規ExhibitionInformationを作成

@@ -1,4 +1,4 @@
-import type { ExhibitionInformation } from '../models/exhibitionInformation/exhibitionInformation'
+import type { ExhibitionInformation } from '../models/exhibitionInformation'
 
 /**
  * ExhibitionInformationリポジトリの型定義
