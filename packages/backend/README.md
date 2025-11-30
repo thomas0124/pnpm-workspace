@@ -245,7 +245,7 @@ export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>
 import { createUser } from '../../domain/factories/user'
 import { isDuplicateEmail } from '../../domain/services/user'
 import type { UserRepository } from '../../domain/repositories/user'
-import type { CreateUserRequest, UserDto } from '../../application/dto/user'
+import type { CreateUserRequest, UserDto } from '../../dto/user'
 
 /**
  * ユーザー作成ユースケース
@@ -490,8 +490,8 @@ export type Container = typeof container
 
 import type { Context } from 'hono'
 import { createUserUseCase } from '../application/usecases/user/createUser'
-import { CreateUserRequestSchema } from '../application/dto/user'
-import type { UserRepository } from '../domain/repositories/user'
+import { CreateUserRequestSchema } from '../../application/dto/user'
+import type { UserRepository } from '../../domain/repositories/user'
 
 /**
  * ユーザー作成ハンドラーだよ
@@ -523,7 +523,7 @@ export async function handleCreateUser(c: Context, userRepository: UserRepositor
 
 import { Hono } from 'hono'
 import { container } from '../infrastructure/di/container'
-import { handleCreateUser } from './handlers/user'
+import { handleCreateUser } from '../handlers/user'
 
 export const userRoutes = new Hono()
 
