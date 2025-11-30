@@ -1,16 +1,17 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import type { ExhibitionInformation } from '../../models/exhibitionInformation/exhibitionInformation'
+import type {
+  Category,
+  ExhibitionInformation,
+} from '../../models/exhibitionInformation/exhibitionInformation'
 import { ExhibitionInformationSchema } from '../../models/exhibitionInformation/exhibitionInformation'
-
-type Category = '飲食' | '展示' | '体験' | 'ステージ'
 
 /**
  * 新規ExhibitionInformationを作成
  *
  * @param exhibitorId 出展者ID
  * @param title タイトル（1-200文字）
- * @param category カテゴリ（'飲食', '展示', '体験', 'ステージ'）
+ * @param category カテゴリ（飲食, 展示, 体験, ステージ）
  * @param location 場所（1-100文字）
  * @param price 金額（円単位、nullの場合は無料）
  * @param requiredTime 所要時間（分単位、nullの場合は不明）

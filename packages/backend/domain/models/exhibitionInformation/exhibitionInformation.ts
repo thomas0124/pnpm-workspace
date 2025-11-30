@@ -17,11 +17,16 @@ export const TitleSchema = z
 
 /**
  * Category スキーマ
- * API仕様: '飲食', '展示', '体験', 'ステージ'
+ * API仕様: 飲食, 展示, 体験, ステージ
  */
 export const CategorySchema = z.enum(['飲食', '展示', '体験', 'ステージ'], {
   message: 'Category must be one of: 飲食, 展示, 体験, ステージ',
 })
+
+/**
+ * Category型
+ */
+export type Category = z.infer<typeof CategorySchema>
 
 /**
  * Location スキーマ
