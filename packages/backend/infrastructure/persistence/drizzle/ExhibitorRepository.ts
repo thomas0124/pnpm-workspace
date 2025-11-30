@@ -96,9 +96,7 @@ async findById(id: string): Promise<Exhibitor | null> {
  * すべての出展者を取得
  */
   async findAll(): Promise<Exhibitor[]> {
-  const db = this.db;
-
-  const exhibitorsData = await db.select().from(exhibitorSchema.exhibitor).all()
+  const exhibitorsData = await this.db.select().from(exhibitorSchema.exhibitor).all()
 
   return exhibitorsData.map((data) => mapToDomain(data))
 }}
