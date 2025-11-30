@@ -1,4 +1,4 @@
-import type { Exhibition } from '../models/exhibition/exhibition'
+import type { Exhibition } from '../models/exhibition'
 
 type ExhibitionCategory = '飲食' | '展示' | '体験' | 'ステージ'
 

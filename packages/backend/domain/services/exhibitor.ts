@@ -1,5 +1,5 @@
-import type { Exhibitor } from '../models/exhibitor/exhibitor.js'
-import { ExhibitorIdSchema, ExhibitorNameSchema } from '../models/exhibitor/exhibitor.js'
+import type { Exhibitor } from '../models/exhibitor.js'
+import { ExhibitorIdSchema, ExhibitorNameSchema } from '../models/exhibitor.js'
 import type { ExhibitorRepository } from '../repositories/exhibitorRepository.js'
 
 /**
