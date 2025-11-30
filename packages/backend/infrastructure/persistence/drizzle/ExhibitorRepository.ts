@@ -46,18 +46,16 @@ export class DrizzleExhibitorRepository implements ExhibitorRepository {
  * IDで出展者を検索
  */
 async findById(id: string): Promise<Exhibitor | null> {
-  const db = this.db;
+    const exhibitorData = await this.db
+      .select()
+      .from(exhibitorSchema.exhibitor)
+      .where(eq(exhibitorSchema.exhibitor.id, id))
+      .get()
 
-  const exhibitorData = await db
-    .select()
-    .from(exhibitorSchema.exhibitor)
-    .where(eq(exhibitorSchema.exhibitor.id, id))
-    .get()
+    if (!exhibitorData) return null
 
-  if (!exhibitorData) return null
-
-  return mapToDomain(exhibitorData)
-}
+    return mapToDomain(exhibitorData)
+  }
 
 /**
  * 名前で出展者を検索
