@@ -3,6 +3,7 @@ import { getDb } from './client.js'
 import { exhibitorSchema } from './client.js'
 import { reconstructExhibitor } from '../../../domain/factories/exhibitor/exhibitorFactory.js'
 import type { Exhibitor } from '../../../domain/models/exhibitor/exhibitor.js'
+import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository.js'
 
 /**
  * ISO datetime文字列をUnixタイムスタンプ（秒）に変換
@@ -29,6 +30,17 @@ function mapToDomain(data: DbExhibitor): Exhibitor {
     createdAt: toISOString(data.createdAt),
     updatedAt: toISOString(data.updatedAt),
   })
+}
+
+export function createExhibitorRepository(d1: D1Database): ExhibitorRepository {
+  return {
+    save: (exhibitor: Exhibitor) => save(exhibitor, d1),
+    findById: (id: string) => findById(id, d1),
+    findByName: (name: string) => findByName(name, d1),
+    existsByName: (name: string) => existsByName(name, d1),
+    delete: (id: string) => deleteExhibitor(id, d1),
+    findAll: () => findAll(d1),
+  }
 }
 
 /**
