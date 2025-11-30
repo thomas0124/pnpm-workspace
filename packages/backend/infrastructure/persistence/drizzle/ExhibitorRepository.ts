@@ -12,40 +12,41 @@ function mapToDomain(data: DbExhibitor): Exhibitor {
   return reconstructExhibitor(data)
 }
 
-
 export function createExhibitorRepository(d1: D1Database): ExhibitorRepository {
-  return new DrizzleExhibitorRepository(d1);
+  return new DrizzleExhibitorRepository(d1)
 }
 
 export class DrizzleExhibitorRepository implements ExhibitorRepository {
-  private db: ReturnType<typeof getDb>;
+  private db: ReturnType<typeof getDb>
 
   constructor(d1: D1Database) {
-    this.db = getDb(d1);
+    this.db = getDb(d1)
   }
   async save(exhibitor: Exhibitor): Promise<void> {
-    await this.db.insert(exhibitorSchema.exhibitor).values({
-      id: exhibitor.id,
-      name: exhibitor.name,
-      passwordHash: exhibitor.passwordHash,
-      createdAt: exhibitor.createdAt,
-      updatedAt: exhibitor.updatedAt,
-    })
-    .onConflictDoUpdate({
-      target: exhibitorSchema.exhibitor.id,
-      set: {
+    await this.db
+      .insert(exhibitorSchema.exhibitor)
+      .values({
+        id: exhibitor.id,
         name: exhibitor.name,
         passwordHash: exhibitor.passwordHash,
+        createdAt: exhibitor.createdAt,
         updatedAt: exhibitor.updatedAt,
-      },
-    })
-    .run()
-}
+      })
+      .onConflictDoUpdate({
+        target: exhibitorSchema.exhibitor.id,
+        set: {
+          name: exhibitor.name,
+          passwordHash: exhibitor.passwordHash,
+          updatedAt: exhibitor.updatedAt,
+        },
+      })
+      .run()
+  }
 
-/**
- * IDで出展者を検索
- */
-async findById(id: string): Promise<Exhibitor | null> {
+  /**
+   * IDで出展者を検索
+   */
+  async findById(id: string): Promise<Exhibitor | null> {
     const exhibitorData = await this.db
       .select()
       .from(exhibitorSchema.exhibitor)
@@ -57,46 +58,50 @@ async findById(id: string): Promise<Exhibitor | null> {
     return mapToDomain(exhibitorData)
   }
 
-/**
- * 名前で出展者を検索
- */
+  /**
+   * 名前で出展者を検索
+   */
   async findByName(name: string): Promise<Exhibitor | null> {
-  const exhibitorData = await this.db
-    .select()
-    .from(exhibitorSchema.exhibitor)
-    .where(eq(exhibitorSchema.exhibitor.name, name))
-    .get()
+    const exhibitorData = await this.db
+      .select()
+      .from(exhibitorSchema.exhibitor)
+      .where(eq(exhibitorSchema.exhibitor.name, name))
+      .get()
 
-  if (!exhibitorData) return null
+    if (!exhibitorData) return null
 
-  return mapToDomain(exhibitorData)
-}
+    return mapToDomain(exhibitorData)
+  }
 
-/**
- * 名前の存在確認
- */
+  /**
+   * 名前の存在確認
+   */
   async existsByName(name: string): Promise<boolean> {
-  const result = await this.db
-    .select({ id: exhibitorSchema.exhibitor.id })
-    .from(exhibitorSchema.exhibitor)
-    .where(eq(exhibitorSchema.exhibitor.name, name))
-    .get()
+    const result = await this.db
+      .select({ id: exhibitorSchema.exhibitor.id })
+      .from(exhibitorSchema.exhibitor)
+      .where(eq(exhibitorSchema.exhibitor.name, name))
+      .get()
 
-  return result !== undefined
-}
+    return result !== undefined
+  }
 
-/**
- * 出展者を削除
- */
+  /**
+   * 出展者を削除
+   */
   async delete(id: string): Promise<void> {
-  await this.db.delete(exhibitorSchema.exhibitor).where(eq(exhibitorSchema.exhibitor.id, id)).run()
-}
+    await this.db
+      .delete(exhibitorSchema.exhibitor)
+      .where(eq(exhibitorSchema.exhibitor.id, id))
+      .run()
+  }
 
-/**
- * すべての出展者を取得
- */
+  /**
+   * すべての出展者を取得
+   */
   async findAll(): Promise<Exhibitor[]> {
-  const exhibitorsData = await this.db.select().from(exhibitorSchema.exhibitor).all()
+    const exhibitorsData = await this.db.select().from(exhibitorSchema.exhibitor).all()
 
-  return exhibitorsData.map((data) => mapToDomain(data))
-}}
+    return exhibitorsData.map((data) => mapToDomain(data))
+  }
+}
