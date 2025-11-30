@@ -71,7 +71,7 @@ export const CommentSchema = z
 export const ExhibitionArDesignIdSchema = z.uuid('Invalid AR design ID format').nullable()
 
 /**
- * Exhibitor スキーマ
+ * ExhibitorName スキーマ
  * 出展者名（1-100文字）
  */
 export const ExhibitorNameSchema = z
