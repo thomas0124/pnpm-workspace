@@ -1,6 +1,6 @@
-import type { ExhibitionInformation } from '../models/exhibitionInformation/exhibitionInformation'
-import { ExhibitionInformationIdSchema } from '../models/exhibitionInformation/exhibitionInformation'
-import type { ExhibitionInformationRepository } from '../repositories/exhibitionInformationRepository'
+import type { ExhibitionInformation } from '../models/exhibitionInformation'
+import { ExhibitionInformationIdSchema } from '../models/exhibitionInformation'
+import type { ExhibitionInformationRepository } from '../repositories/exhibitionInformation'
 
 /**
  * ExhibitionInformationが指定された出展者に所有されているかチェック

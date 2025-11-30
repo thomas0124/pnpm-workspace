@@ -1,15 +1,13 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import type {
-  Category,
-  ExhibitionInformation,
-} from '../../models/exhibitionInformation/exhibitionInformation'
-import { ExhibitionInformationSchema } from '../../models/exhibitionInformation/exhibitionInformation'
+import type { Category, ExhibitionInformation } from '../models/exhibitionInformation'
+import { ExhibitionInformationSchema } from '../models/exhibitionInformation'
 
 /**
  * 新規ExhibitionInformationを作成
  *
  * @param exhibitorId 出展者ID
+ * @param exhibitorName 出展者名（1-100文字）
  * @param title タイトル（1-200文字）
  * @param category カテゴリ（飲食, 展示, 体験, ステージ）
  * @param location 場所（1-100文字）
@@ -22,6 +20,7 @@ import { ExhibitionInformationSchema } from '../../models/exhibitionInformation/
  */
 export function createExhibitionInformation(
   exhibitorId: string,
+  exhibitorName: string,
   title: string,
   category: Category,
   location: string,
@@ -36,6 +35,7 @@ export function createExhibitionInformation(
     id: uuidv4(),
     exhibitorId,
     exhibitionArDesignId,
+    exhibitorName,
     title,
     category,
     location,

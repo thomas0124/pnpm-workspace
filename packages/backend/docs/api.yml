@@ -123,7 +123,6 @@ components:
       type: object
       required:
         - id
-        - url
       properties:
         id:
           type: string
@@ -132,8 +131,9 @@ components:
         url:
           type: string
           format: uri
+          nullable: true
           example: 'https://ar.example.com/designs/abc123'
-          description: 'ARのURL'
+          description: 'ARのURL(NULLの場合はURLなし)'
 
     ArDesignListResponse:
       type: object
@@ -215,6 +215,7 @@ components:
       required:
         - id
         - exhibitor_id
+        - exhibitor_name
         - title
         - category
         - location
@@ -229,6 +230,11 @@ components:
           type: string
           format: uuid
           example: '550e8400-e29b-41d4-a716-446655440000'
+        exhibitor_name:
+          type: string
+          maxLength: 100
+          example: 'イタリア料理研究会'
+          description: '出展者名'
         title:
           type: string
           maxLength: 200
@@ -275,10 +281,16 @@ components:
     ExhibitionInformationInput:
       type: object
       required:
+        - exhibitor_name
         - title
         - category
         - location
       properties:
+        exhibitor_name:
+          type: string
+          maxLength: 100
+          example: 'イタリア料理研究会'
+          description: '出展者名'
         title:
           type: string
           maxLength: 200

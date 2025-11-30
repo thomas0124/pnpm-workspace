@@ -5,7 +5,7 @@ import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
  */
 export const exhibitionArDesign = sqliteTable('exhibition_ar_design', {
   id: text('id').primaryKey(),
-  url: text('url').notNull(),
+  url: text('url'),
 })
 
 export type ExhibitionArDesign = typeof exhibitionArDesign.$inferSelect

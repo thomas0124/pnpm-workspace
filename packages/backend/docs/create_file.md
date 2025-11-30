@@ -43,13 +43,13 @@ DDD × 関数型プログラミングの4層アーキテクチャで、新しい
 
 #### 1-1. 📋 モデル定義
 
-- **ファイル**: `domain/models/{domain}/{domain}.ts`
+- **ファイル**: `domain/models/{domain}.ts`
 - **何を書く？**: Zodスキーマでデータの形とルールを定義
 - **ここがポイント！**: バリデーションやビジネスルールをここで表現するよ
 
 #### 1-2. 🏭 ファクトリ関数
 
-- **ファイル**: `domain/factories/{domain}/{domain}Factory.ts`
+- **ファイル**: `domain/factories/{domain}.ts`
 - **何を書く？**:
   - `create{Domain}()` - ✨ 新しく作る
   - `reconstruct{Domain}()` - 🔄 DBから取ったデータを組み立て直す
@@ -58,14 +58,14 @@ DDD × 関数型プログラミングの4層アーキテクチャで、新しい
 
 #### 1-3. 📜 リポジトリ型定義
 
-- **ファイル**: `domain/repositories/{domain}Repository.ts`
+- **ファイル**: `domain/repositories/{domain}.ts`
 - **何を書く？**: データベース操作の「お約束」だけ（実装はまだ書かない）
 - **メソッド例**: `save`, `findById`, `findAll`, `delete`
 - **ここがポイント！**: 「こういう関数があるよ」って約束するだけ！
 
 #### 1-4. 🤝 ドメインサービス（必要な時だけ）
 
-- **ファイル**: `domain/services/{domain}DomainService.ts`
+- **ファイル**: `domain/services/{domain}.ts`
 - **何を書く？**: 1つのエンティティに収まらないビジネスロジック
 - **ここがポイント！**: 複数のデータをまたぐ処理はここに書くよ
 
@@ -79,7 +79,7 @@ DDD × 関数型プログラミングの4層アーキテクチャで、新しい
 
 #### 2-1. 💌 DTO定義
 
-- **ファイル**: `application/dto/{domain}Dto.ts`
+- **ファイル**: `application/dto/{domain}.ts`
 - **何を書く？**:
   - レスポンスDTO: `{Domain}Dto` - 📤 返す時の形
   - リクエストDTO: `Create{Domain}Request`, `Update{Domain}Request` - 📥 受け取る時の形
@@ -135,7 +135,7 @@ DDD × 関数型プログラミングの4層アーキテクチャで、新しい
 
 #### 3-2. 🗄️ Drizzleリポジトリ実装
 
-- **ファイル**: `infrastructure/persistence/drizzle/drizzle{Domain}Repository.ts`
+- **ファイル**: `infrastructure/persistence/drizzle/{domain}Repository.ts`
 - **何を書く？**: Drizzle ORMでデータベースとやり取りする実装
 - **メソッド**: `save`, `findById`, `findAll`, `delete` など
 - **ここがポイント！**:
@@ -159,7 +159,7 @@ DDD × 関数型プログラミングの4層アーキテクチャで、新しい
 
 #### 4-1. 🎯 ハンドラー関数
 
-- **ファイル**: `presentation/handlers/{domain}Handlers.ts`
+- **ファイル**: `presentation/handlers/{domain}.ts`
 - **何を書く？**: 各エンドポイントで何をするか
 - **作る関数たち**:
   - `handleCreate{Domain}` - ✨ 作成
