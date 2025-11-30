@@ -10,8 +10,8 @@ export type ExhibitorRegisterRequest = z.infer<typeof ExhibitorRegisterRequestSc
 
 // 出展者ログインリクエスト
 export const ExhibitorLoginRequestSchema = z.object({
-  name: z.string().trim(),
-  password: z.string(),
+  name: z.string().trim().min(1),
+  password: z.string().min(1),
 })
 
 export type ExhibitorLoginRequest = z.infer<typeof ExhibitorLoginRequestSchema>
@@ -28,7 +28,7 @@ export type ExhibitorDto = z.infer<typeof ExhibitorDtoSchema>
 
 // 認証レスポンス
 export const AuthResponseSchema = z.object({
-  token: z.string(),
+  token: z.string().min(1),
   exhibitor: ExhibitorDtoSchema,
 })
 

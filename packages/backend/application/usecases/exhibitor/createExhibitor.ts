@@ -1,8 +1,8 @@
-import { createExhibitor } from '../../../domain/factories/exhibitor/exhibitorFactory.js'
-import { isDuplicateExhibitorName } from '../../../domain/services/exhibitorDomainService.js'
-import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository.js'
-import type { ExhibitorRegisterRequest, ExhibitorDto } from '../../dto/exhibitorDto.js'
-
+import { createExhibitor } from '../../../domain/factories/exhibitor/exhibitorFactory'
+import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
+import { isDuplicateExhibitorName } from '../../../domain/services/exhibitorDomainService'
+import type { ExhibitorDto, ExhibitorRegisterRequest } from '../../dto/exhibitorDto'
+import { ExhibitorDtoSchema } from '../../dto/exhibitorDto'
 /**
  * 出展者登録ユースケース
  *
@@ -30,10 +30,10 @@ export async function registerExhibitorUseCase(
   await repository.save(exhibitor)
 
   // 4. DTOとして返す
-  return {
+  return ExhibitorDtoSchema.parse({
     id: exhibitor.id,
     name: exhibitor.name,
     createdAt: exhibitor.createdAt,
     updatedAt: exhibitor.updatedAt,
-  }
+  })
 }
