@@ -61,9 +61,7 @@ async findById(id: string): Promise<Exhibitor | null> {
  * 名前で出展者を検索
  */
   async findByName(name: string): Promise<Exhibitor | null> {
-  const db = this.db;
-
-  const exhibitorData = await db
+  const exhibitorData = await this.db
     .select()
     .from(exhibitorSchema.exhibitor)
     .where(eq(exhibitorSchema.exhibitor.name, name))
