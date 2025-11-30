@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/d1'
 
 import * as exhibitionSchema from './schema/exhibition'
 import * as exhibitionInformationSchema from './schema/exhibitionInformation'
+import * as exhibitionArDesignSchema from './schema/exhibitionArDesign'
 import * as exhibitorSchema from './schema/exhibitor'
 
 /**
@@ -14,10 +15,10 @@ import * as exhibitorSchema from './schema/exhibitor'
 export function getDb(
   d1: D1Database
 ): DrizzleD1Database<
-  typeof exhibitorSchema & typeof exhibitionSchema & typeof exhibitionInformationSchema
+  typeof exhibitorSchema & typeof exhibitionSchema & typeof exhibitionInformationSchema & typeof exhibitionArDesignSchema
 > {
   return drizzle(d1, {
-    schema: { ...exhibitorSchema, ...exhibitionSchema, ...exhibitionInformationSchema },
+    schema: { ...exhibitorSchema, ...exhibitionSchema, ...exhibitionInformationSchema, ...exhibitionArDesignSchema },
   })
 }
 
@@ -28,3 +29,4 @@ export type {
   ExhibitionInformation,
   NewExhibitionInformation,
 } from './schema/exhibitionInformation'
+export type { ExhibitionArDesign, NewExhibitionArDesign } from './schema/exhibitionArDesign'
