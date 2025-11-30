@@ -19,22 +19,19 @@ function mapToDomain(data: DbExhibitor): Exhibitor {
 }
 
 export function createExhibitorRepository(d1: D1Database): ExhibitorRepository {
-  return {
-    save: (exhibitor: Exhibitor) => save(exhibitor, d1),
-    findById: (id: string) => findById(id, d1),
-    findByName: (name: string) => findByName(name, d1),
-    existsByName: (name: string) => existsByName(name, d1),
-    delete: (id: string) => deleteExhibitor(id, d1),
-    findAll: () => findAll(d1),
-  }
+  const repository = new DrizzleExhibitorRepository(d1);
+  return repository;
 }
 
-export async function save(exhibitor: Exhibitor, d1: D1Database): Promise<void> {
-  const db = getDb(d1)
+export class DrizzleExhibitorRepository implements ExhibitorRepository {
+  private db;
 
-  await db
-    .insert(exhibitorSchema.exhibitor)
-    .values({
+  constructor(d1: D1Database) {
+    this.db = getDb(d1);
+  }
+  async save(exhibitor: Exhibitor): Promise<void> {
+    
+    await this.db.insert(exhibitorSchema.exhibitor).values({
       id: exhibitor.id,
       name: exhibitor.name,
       passwordHash: exhibitor.passwordHash,
@@ -55,8 +52,8 @@ export async function save(exhibitor: Exhibitor, d1: D1Database): Promise<void> 
 /**
  * IDで出展者を検索
  */
-export async function findById(id: string, d1: D1Database): Promise<Exhibitor | null> {
-  const db = getDb(d1)
+async findById(id: string): Promise<Exhibitor | null> {
+  const db = this.db;
 
   const exhibitorData = await db
     .select()
@@ -72,8 +69,8 @@ export async function findById(id: string, d1: D1Database): Promise<Exhibitor | 
 /**
  * 名前で出展者を検索
  */
-export async function findByName(name: string, d1: D1Database): Promise<Exhibitor | null> {
-  const db = getDb(d1)
+  async findByName(name: string): Promise<Exhibitor | null> {
+  const db = this.db;
 
   const exhibitorData = await db
     .select()
@@ -89,8 +86,8 @@ export async function findByName(name: string, d1: D1Database): Promise<Exhibito
 /**
  * 名前の存在確認
  */
-export async function existsByName(name: string, d1: D1Database): Promise<boolean> {
-  const db = getDb(d1)
+  async existsByName(name: string): Promise<boolean> {
+  const db = this.db;
 
   const result = await db
     .select({ id: exhibitorSchema.exhibitor.id })
@@ -104,8 +101,8 @@ export async function existsByName(name: string, d1: D1Database): Promise<boolea
 /**
  * 出展者を削除
  */
-export async function deleteExhibitor(id: string, d1: D1Database): Promise<void> {
-  const db = getDb(d1)
+  async delete(id: string): Promise<void> {
+  const db = this.db;
 
   await db.delete(exhibitorSchema.exhibitor).where(eq(exhibitorSchema.exhibitor.id, id)).run()
 }
@@ -113,10 +110,10 @@ export async function deleteExhibitor(id: string, d1: D1Database): Promise<void>
 /**
  * すべての出展者を取得
  */
-export async function findAll(d1: D1Database): Promise<Exhibitor[]> {
-  const db = getDb(d1)
+  async findAll(): Promise<Exhibitor[]> {
+  const db = this.db;
 
   const exhibitorsData = await db.select().from(exhibitorSchema.exhibitor).all()
 
   return exhibitorsData.map((data) => mapToDomain(data))
-}
+}}
