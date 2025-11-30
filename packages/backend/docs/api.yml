@@ -135,6 +135,16 @@ components:
           example: 'https://ar.example.com/designs/abc123'
           description: 'ARのURL'
 
+    ArDesignListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExhibitionArDesign'
+
     # 出展情報
     Exhibition:
       type: object
@@ -485,14 +495,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - data
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ExhibitionArDesign'
+                $ref: '#/components/schemas/ArDesignListResponse'
         '401':
           description: 認証エラー
           content:
