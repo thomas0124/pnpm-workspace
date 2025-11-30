@@ -24,7 +24,6 @@ export class DrizzleExhibitorRepository implements ExhibitorRepository {
     this.db = getDb(d1);
   }
   async save(exhibitor: Exhibitor): Promise<void> {
-    
     await this.db.insert(exhibitorSchema.exhibitor).values({
       id: exhibitor.id,
       name: exhibitor.name,
