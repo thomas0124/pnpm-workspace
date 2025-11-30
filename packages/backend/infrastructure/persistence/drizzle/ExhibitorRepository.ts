@@ -9,14 +9,9 @@ import { exhibitorSchema, getDb } from './client'
 type DbExhibitor = typeof exhibitorSchema.exhibitor.$inferSelect
 
 function mapToDomain(data: DbExhibitor): Exhibitor {
-  return reconstructExhibitor({
-    id: data.id,
-    name: data.name,
-    passwordHash: data.passwordHash,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-  })
+  return reconstructExhibitor(data)
 }
+
 
 export function createExhibitorRepository(d1: D1Database): ExhibitorRepository {
   const repository = new DrizzleExhibitorRepository(d1);
