@@ -46,6 +46,16 @@ jobs:
         working-directory: packages/backend
         run: |
           echo "📝 Checking for schema changes and generating migrations..."
+          
+          # 既存のマイグレーションファイルを削除（PR更新時に既存DBを再利用するため、毎回新規生成）
+          if [ -d "infrastructure/persistence/drizzle/migrations" ]; then
+            echo "🗑️ Cleaning up existing migration files..."
+            rm -f infrastructure/persistence/drizzle/migrations/*.sql
+            rm -f infrastructure/persistence/drizzle/migrations/meta/*.json
+            echo "✅ Existing migration files removed"
+          fi
+          
+          # マイグレーションファイルを新規生成
           pnpm run db:generate
           
           # 生成されたマイグレーションファイルを確認
@@ -118,8 +128,22 @@ jobs:
           # マイグレーションファイルが存在するかチェック
           if [ -d "infrastructure/persistence/drizzle/migrations" ] && [ "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
             echo "📦 Applying database migrations..."
-            wrangler d1 migrations apply ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env preview
-            echo "✅ Migrations applied successfully"
+            
+            # マイグレーション適用（エラーハンドリング付き）
+            if wrangler d1 migrations apply ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env preview 2>&1 | tee /tmp/migration_output.log; then
+              echo "✅ Migrations applied successfully"
+            else
+              MIGRATION_ERROR=$(cat /tmp/migration_output.log)
+              # table already exists エラーの場合は警告を出して続行
+              if echo "$MIGRATION_ERROR" | grep -q "already exists"; then
+                echo "⚠️ Warning: Some tables already exist. This is expected when reusing an existing database."
+                echo "⚠️ The migration may have been partially applied. Continuing deployment..."
+              else
+                echo "❌ Migration failed with error:"
+                echo "$MIGRATION_ERROR"
+                exit 1
+              fi
+            fi
           else
             echo "⚠️ No migrations found, skipping..."
           fi
