@@ -117,40 +117,50 @@ jobs:
           IS_NEW_DB="${{ steps.d1-setup.outputs.IS_NEW_DB }}"
           
           # マイグレーションファイルが存在するかチェック
-          if [ -d "infrastructure/persistence/drizzle/migrations" ] && [ "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
-            echo "📦 Applying database migrations..."
-            
-            if [ "$IS_NEW_DB" = "true" ]; then
-              echo "🆕 New database detected - applying all migrations"
-            else
-              echo "♻️ Existing database detected - applying new migrations only"
-            fi
-            
-            # マイグレーション適用（wranglerが自動的に未適用のマイグレーションのみを実行）
-            if wrangler d1 migrations apply ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env staging 2>&1 | tee /tmp/migration_output.log; then
-              echo "✅ Migrations applied successfully"
-            else
-              MIGRATION_ERROR=$(cat /tmp/migration_output.log)
-              
-              # 既存DBで「既に適用済み」のエラーの場合は警告として扱う
-              if echo "$MIGRATION_ERROR" | grep -q "already exists\|already applied"; then
-                if [ "$IS_NEW_DB" = "false" ]; then
-                  echo "ℹ️ All migrations already applied to existing database"
-                  echo "✅ Database is up to date"
-                  exit 0
-                else
-                  echo "⚠️ Warning: Unexpected 'already exists' error on new database"
-                  echo "$MIGRATION_ERROR"
-                  exit 1
-                fi
-              else
-                echo "❌ Migration failed with error:"
-                echo "$MIGRATION_ERROR"
-                exit 1
-              fi
-            fi
-          else
+          if [ ! -d "infrastructure/persistence/drizzle/migrations" ] || [ -z "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
             echo "ℹ️ No migrations found, skipping..."
+            exit 0
+          fi
+          
+          echo "📦 Checking database migrations..."
+          
+          if [ "$IS_NEW_DB" = "true" ]; then
+            echo "🆕 New database detected - applying all migrations"
+          else
+            echo "♻️ Existing database detected - checking for unapplied migrations"
+            
+            # 適用済みマイグレーションをリスト
+            APPLIED_MIGRATIONS=$(wrangler d1 migrations list ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env staging 2>/dev/null | grep -E "^\d{4}_" | awk '{print $1}' || echo "")
+            
+            # ローカルのマイグレーションファイルをリスト
+            LOCAL_MIGRATIONS=$(ls infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null | xargs -n 1 basename || echo "")
+            
+            # 未適用のマイグレーションがあるかチェック
+            UNAPPLIED_COUNT=0
+            for migration in $LOCAL_MIGRATIONS; do
+              if ! echo "$APPLIED_MIGRATIONS" | grep -q "^${migration}$"; then
+                UNAPPLIED_COUNT=$((UNAPPLIED_COUNT + 1))
+                echo "  ⏳ Unapplied: $migration"
+              fi
+            done
+            
+            if [ $UNAPPLIED_COUNT -eq 0 ]; then
+              echo "✅ All migrations already applied - database is up to date"
+              exit 0
+            fi
+            
+            echo "📝 Found $UNAPPLIED_COUNT unapplied migration(s)"
+          fi
+          
+          # マイグレーション適用
+          echo "🚀 Applying migrations..."
+          if wrangler d1 migrations apply ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env staging 2>&1 | tee /tmp/migration_output.log; then
+            echo "✅ Migrations applied successfully"
+          else
+            MIGRATION_ERROR=$(cat /tmp/migration_output.log)
+            echo "❌ Migration failed with error:"
+            echo "$MIGRATION_ERROR"
+            exit 1
           fi
 
       - name: Deploy Backend to Cloudflare Workers (Staging)
