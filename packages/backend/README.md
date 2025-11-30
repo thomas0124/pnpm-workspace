@@ -20,22 +20,20 @@
 backend/
 ├── domain/              # ドメイン層
 │   ├── models/         # 値オブジェクト・エンティティ
-│   │   └── user/
-│   │       └── user.ts           # ユーザーの型とスキーマ
+│   │   └── user.ts           # ユーザーの型とスキーマ
 │   ├── factories/      # ファクトリ関数
-│   │   └── user/
-│   │       └── userFactory.ts    # ユーザー生成関数
+│   │   └── user.ts    # ユーザー生成関数
 │   ├── services/       # ドメインサービス
-│   │   └── userDomainService.ts
+│   │   └── user.ts
 │   └── repositories/   # リポジトリ型定義（インターフェース）
-│       └── userRepository.ts
+│       └── user.ts
 │
 ├── application/        # アプリケーション層
 │   ├── usecases/      # ユースケース
 │   │   └── user/
 │   │       └── createUser.ts    # ユーザー作成
 │   └── dto/           # DTO定義
-│       └── userDto.ts
+│       └── user.ts
 │
 ├── infrastructure/     # インフラストラクチャ層
 │   ├── di/            # 依存性注入
@@ -48,7 +46,7 @@ backend/
 │   │       │   ├── 0000_xxx.sql
 │   │       │   └── meta/
 │   │       ├── client.ts        # Drizzleクライアント
-│   │       └── drizzleUserRepository.ts  # Drizzle実装（関数群）
+│   │       └── userRepository.ts  # Drizzle実装（関数群）
 │   └── external/      # 外部API連携
 │       └── emailService.ts
 │
@@ -59,7 +57,7 @@ backend/
 │   ├── middlewares/   # ミドルウェア
 │   │   └── errorHandler.ts
 │   └── handlers/      # ハンドラー関数
-│       └── userHandlers.ts
+│       └── user.ts
 │
 ├── drizzle.config.ts  # Drizzle設定ファイル
 ├── index.ts           # エントリポイント
@@ -92,7 +90,7 @@ backend/
 ##### 💎 モデル定義
 
 ```typescript
-// domain/models/user/user.ts
+// domain/models/user.ts
 
 import { z } from 'zod'
 
@@ -123,10 +121,10 @@ export type User = z.infer<typeof UserSchema>
 ##### 🏭 ファクトリ関数
 
 ```typescript
-// domain/factories/user/userFactory.ts
+// domain/factories/user.ts
 
 import { v4 as uuidv4 } from 'uuid'
-import { UserSchema, type User } from '../../models/user/user'
+import { UserSchema, type User } from '../../models/user'
 
 // 新規ユーザーを作成
 export function createUser(name: string, email: string): User {
@@ -156,9 +154,9 @@ export function reconstructUser(data: {
 ##### 📜 リポジトリ型定義（インターフェース）
 
 ```typescript
-// domain/repositories/userRepository.ts
+// domain/repositories/user.ts
 
-import type { User } from '../models/user/user'
+import type { User } from '../models/user'
 
 /**
  * ユーザーリポジトリの型定義
@@ -178,10 +176,10 @@ export type UserRepository = {
 ##### 🤝 ドメインサービス
 
 ```typescript
-// domain/services/userDomainService.ts
+// domain/services/user.ts
 
-import type { User } from '../models/user/user'
-import type { UserRepository } from '../repositories/userRepository'
+import type { User } from '../models/user'
+import type { UserRepository } from '../repositories/user'
 
 /**
  * メールアドレスの重複チェック
@@ -215,7 +213,7 @@ export async function isDuplicateEmail(user: User, repository: UserRepository): 
 ##### 💌 DTO定義
 
 ```typescript
-// application/dto/userDto.ts
+// application/dto/user.ts
 
 import { z } from 'zod'
 
@@ -244,10 +242,10 @@ export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>
 ```typescript
 // application/usecases/user/createUser.ts
 
-import { createUser } from '../../domain/factories/user/userFactory'
-import { isDuplicateEmail } from '../../domain/services/userDomainService'
-import type { UserRepository } from '../../domain/repositories/userRepository'
-import type { CreateUserRequest, UserDto } from '../dto/userDto'
+import { createUser } from '../../domain/factories/user'
+import { isDuplicateEmail } from '../../domain/services/user'
+import type { UserRepository } from '../../domain/repositories/user'
+import type { CreateUserRequest, UserDto } from '../../application/dto/user'
 
 /**
  * ユーザー作成ユースケース
@@ -344,13 +342,13 @@ export function getDb(d1: D1Database): DrizzleD1Database<typeof schema> {
 ##### 🗄️ Drizzleリポジトリ実装
 
 ```typescript
-// infrastructure/persistence/drizzle/drizzleUserRepository.ts
+// infrastructure/persistence/drizzle/userRepository.ts
 
 import { eq } from 'drizzle-orm'
 import { getDb } from './client'
 import { users } from './schema/user'
-import { reconstructUser } from '../../domain/factories/user/userFactory'
-import type { User } from '../../domain/models/user/user'
+import { reconstructUser } from '../../domain/factories/user'
+import type { User } from '../../domain/models/user'
 
 /**
  * ユーザーを保存するよ（作成または更新）
@@ -432,8 +430,8 @@ export async function deleteUser(id: string, d1: D1Database): Promise<void> {
 ```typescript
 // infrastructure/di/container.ts
 
-import type { UserRepository } from '../../domain/repositories/userRepository'
-import * as drizzleUserRepo from '../persistence/drizzle/drizzleUserRepository'
+import type { UserRepository } from '../../domain/repositories/user'
+import * as drizzleUserRepo from '../persistence/drizzle/userRepository'
 
 /**
  * シンプルなDIコンテナ
@@ -488,12 +486,12 @@ export type Container = typeof container
 ##### 🎯 ハンドラー関数
 
 ```typescript
-// presentation/handlers/userHandlers.ts
+// presentation/handlers/user.ts
 
 import type { Context } from 'hono'
 import { createUserUseCase } from '../application/usecases/user/createUser'
-import { CreateUserRequestSchema } from '../application/dto/userDto'
-import type { UserRepository } from '../domain/repositories/userRepository'
+import { CreateUserRequestSchema } from '../application/dto/user'
+import type { UserRepository } from '../domain/repositories/user'
 
 /**
  * ユーザー作成ハンドラーだよ
@@ -525,7 +523,7 @@ export async function handleCreateUser(c: Context, userRepository: UserRepositor
 
 import { Hono } from 'hono'
 import { container } from '../infrastructure/di/container'
-import { handleCreateUser } from './handlers/userHandlers'
+import { handleCreateUser } from './handlers/user'
 
 export const userRoutes = new Hono()
 
@@ -626,12 +624,12 @@ DIコンテナがない場合、各ルーティングファイルで毎回イン
 ```typescript
 // DIコンテナなし - コードの重複
 // routes/user.ts
-import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository'
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/userRepository'
 const userRepository = drizzleUserRepo
 
 // routes/post.ts
-import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository' // 重複
-import * as drizzlePostRepo from '../infrastructure/persistence/drizzle/drizzlePostRepository'
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/userRepository' // 重複
+import * as drizzlePostRepo from '../infrastructure/persistence/drizzle/postRepository'
 const userRepository = drizzleUserRepo // 重複
 const postRepository = drizzlePostRepo
 ```
@@ -697,7 +695,7 @@ export const container = {
 ```typescript
 // infrastructure/di/container.ts
 
-import * as drizzleUserRepo from './persistence/drizzle/drizzleUserRepository'
+import * as drizzleUserRepo from './persistence/drizzle/userRepository'
 
 export const container = {
   get userRepository() {
@@ -721,7 +719,7 @@ export const container = {
 // presentation/routes/user.ts
 
 import { container } from '../infrastructure/di/container'
-import { handleCreateUser } from './handlers/userHandlers'
+import { handleCreateUser } from './handlers/user'
 
 export const userRoutes = new Hono()
 
@@ -734,7 +732,7 @@ userRoutes.post('/users', (c) => handleCreateUser(c, userRepository))
 #### 🎯 ハンドラーで使用
 
 ```typescript
-// presentation/handlers/userHandlers.ts
+// presentation/handlers/user.ts
 
 export async function handleCreateUser(
   c: Context,
@@ -755,7 +753,7 @@ export async function handleCreateUser(
 ```typescript
 // presentation/routes/user.ts
 
-import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/drizzleUserRepository'
+import * as drizzleUserRepo from '../infrastructure/persistence/drizzle/userRepository'
 
 const userRepository = {
   save: drizzleUserRepo.save,
@@ -787,7 +785,7 @@ Repository型定義は**契約（Contract）**として機能するよ！実装�
 ```typescript
 // application/usecases/user/createUser.ts
 
-import type { UserRepository } from '../../domain/repositories/userRepository'
+import type { UserRepository } from '../../domain/repositories/user'
 
 // 引数の型として UserRepository を指定
 export async function createUserUseCase(
@@ -811,9 +809,9 @@ export async function createUserUseCase(
 実装が型定義を満たしているか確認できるよ：
 
 ```typescript
-// infrastructure/persistence/drizzle/drizzleUserRepository.ts
+// infrastructure/persistence/drizzle/userRepository.ts
 
-import type { UserRepository } from '../../domain/repositories/userRepository';
+import type { UserRepository } from '../../domain/repositories/user';
 
 export async function save(user: User, d1: D1Database): Promise<void> { ... }
 export async function findById(id: string, d1: D1Database): Promise<User | null> { ... }
@@ -879,8 +877,8 @@ Presentation → Application → Domain ← Infrastructure
 import type { Config } from 'drizzle-kit'
 
 export default {
-  schema: './src/infrastructure/persistence/drizzle/schema/*.ts',
-  out: './src/infrastructure/persistence/drizzle/migrations',
+  schema: './infrastructure/persistence/drizzle/schema/*.ts',
+  out: './infrastructure/persistence/drizzle/migrations',
   driver: 'd1',
   dbCredentials: {
     wranglerConfigPath: './wrangler.toml',
