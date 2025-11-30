@@ -265,7 +265,7 @@ jobs:
           else
             echo "Found database: $DB_NAME (ID: $DB_ID)"
             echo "Deleting database..."
-            if wrangler d1 delete "$DB_NAME" --force; then
+            if wrangler d1 delete "$DB_NAME" -y; then
               echo "✅ Successfully deleted database: $DB_NAME"
             else
               echo "⚠️ Failed to delete database: $DB_NAME"
