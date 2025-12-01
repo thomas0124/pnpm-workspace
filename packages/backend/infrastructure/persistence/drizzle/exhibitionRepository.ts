@@ -216,37 +216,4 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
       count: row.count,
     }))
   }
-
-  /**
-   * 公開中出展に紐づく画像BLOBを取得
-   */
-  async findPublishedImageById(id: string): Promise<Uint8Array | null> {
-    const row = await this.db
-      .select({
-        image: exhibitionInformation.image,
-      })
-      .from(exhibition)
-      .innerJoin(
-        exhibitionInformation,
-        eq(exhibition.exhibitionInformationId, exhibitionInformation.id)
-      )
-      .where(
-        and(
-          eq(exhibition.id, id),
-          eq(exhibition.isPublished, 1),
-          isNotNull(exhibition.exhibitionInformationId)
-        )
-      )
-      .get()
-
-    if (!row || row.image == null) return null
-
-    // Cloudflare D1のBLOB型はArrayBuffer/Uint8Array想定
-    if (row.image instanceof Uint8Array) {
-      return row.image
-    }
-
-    // フォールバック: ArrayBuffer などを Uint8Array に変換
-    return new Uint8Array(row.image as ArrayBuffer)
-  }
 }

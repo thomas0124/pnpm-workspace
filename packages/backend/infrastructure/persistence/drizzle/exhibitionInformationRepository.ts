@@ -9,7 +9,6 @@ import { exhibitionInformation } from './schema/exhibitionInformation'
 type DbExhibitionInformation = typeof exhibitionInformation.$inferSelect
 
 function mapToDomain(row: DbExhibitionInformation): DomainExhibitionInformation {
-  // imageカラムはドメインモデルには含めない
   return reconstructExhibitionInformation({
     id: row.id,
     exhibitorId: row.exhibitorId,
@@ -21,6 +20,7 @@ function mapToDomain(row: DbExhibitionInformation): DomainExhibitionInformation 
     price: row.price ?? null,
     requiredTime: row.requiredTime ?? null,
     comment: row.comment ?? null,
+    image: row.image ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   })
@@ -53,6 +53,7 @@ export class DrizzleExhibitionInformationRepository implements ExhibitionInforma
         price: info.price ?? undefined,
         requiredTime: info.requiredTime ?? undefined,
         comment: info.comment ?? undefined,
+        image: info.image ? Buffer.from(info.image) : null,
         createdAt: info.createdAt,
         updatedAt: info.updatedAt,
       })
@@ -68,6 +69,7 @@ export class DrizzleExhibitionInformationRepository implements ExhibitionInforma
           price: info.price ?? undefined,
           requiredTime: info.requiredTime ?? undefined,
           comment: info.comment ?? undefined,
+          image: info.image ? Buffer.from(info.image) : null,
           updatedAt: info.updatedAt,
         },
       })
