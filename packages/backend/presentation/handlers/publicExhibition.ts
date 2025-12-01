@@ -3,7 +3,6 @@ import { ZodError } from 'zod'
 
 import {
   getPublicExhibitionCategoryCountsUseCase,
-  getPublicExhibitionImageUseCase,
   getPublicExhibitionUseCase,
   listPublicExhibitionsUseCase,
 } from '../../application/usecases/exhibition/publicExhibition'
@@ -80,32 +79,6 @@ export async function handleGetPublicExhibition(c: PublicContext) {
   }
 
   return c.json(result, 200)
-}
-
-export async function handleGetPublicExhibitionImage(c: PublicContext) {
-  const env = c.env
-  const container = createContainer(env.DB)
-
-  const exhibitionId = c.req.param('exhibition_id')
-
-  const result = await getPublicExhibitionImageUseCase(exhibitionId, container.exhibitionRepository)
-
-  if (!result) {
-    return c.json(
-      {
-        error: 'NOT_FOUND',
-        message: '出展または画像が見つかりません、または非公開です',
-      },
-      404
-    )
-  }
-
-  return new Response(new Uint8Array(result.data).buffer, {
-    status: 200,
-    headers: {
-      'Content-Type': result.contentType,
-    },
-  })
 }
 
 export async function handleGetPublicExhibitionCategories(c: PublicContext) {

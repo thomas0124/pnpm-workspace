@@ -49,5 +49,4 @@ export type ExhibitionRepository = {
   findPublished: (params?: FindPublishedParams) => Promise<PaginatedResult<Exhibition>>
   findPublishedById: (id: string) => Promise<Exhibition | null>
   findCategoryCounts: () => Promise<CategoryCount[]>
-  findPublishedImageById: (id: string) => Promise<Uint8Array | null>
 }

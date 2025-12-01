@@ -20,6 +20,22 @@ import {
   PublicExhibitionSchema,
 } from '../../dto/exhibition'
 
+/**
+ * 画像BLOB(Uint8Array)をBase64文字列に変換
+ * DBに画像が存在しない場合はnullを返す
+ */
+function toBase64OrNull(blob: Uint8Array | null): string | null {
+  if (!blob) return null
+
+  let binary = ''
+  for (let i = 0; i < blob.length; i++) {
+    binary += String.fromCharCode(blob[i])
+  }
+
+  // Cloudflare Workers 環境では btoa が利用可能
+  return btoa(binary)
+}
+
 const ListQuerySchema = z.object({
   category: z.enum(['飲食', '展示', '体験', 'ステージ']).optional(),
   page: z.number().int().min(1).optional(),
@@ -71,6 +87,9 @@ export async function listPublicExhibitionsUseCase(
       }
     }
 
+    // ExhibitionInformationドメインエンティティが保持する画像BLOBをBase64エンコード
+    const image = toBase64OrNull(info.image)
+
     const publicExhibition = PublicExhibitionSchema.parse({
       id: ex.id,
       title: info.title,
@@ -81,6 +100,7 @@ export async function listPublicExhibitionsUseCase(
       required_time: info.requiredTime,
       comment: info.comment,
       ar_design: arDesign,
+      image,
     })
 
     data.push(publicExhibition)
@@ -123,6 +143,9 @@ export async function getPublicExhibitionUseCase(
     }
   }
 
+  // 詳細取得時もExhibitionInformationが保持する画像BLOBをBase64として含める
+  const image = toBase64OrNull(info.image)
+
   return PublicExhibitionSchema.parse({
     id: ex.id,
     title: info.title,
@@ -133,32 +156,8 @@ export async function getPublicExhibitionUseCase(
     required_time: info.requiredTime,
     comment: info.comment,
     ar_design: arDesign,
+    image,
   })
-}
-
-export type PublicExhibitionImageResult = {
-  data: Uint8Array
-  contentType: string
-} | null
-
-/**
- * 公開出展画像取得ユースケース
- */
-export async function getPublicExhibitionImageUseCase(
-  exhibitionId: string,
-  exhibitionRepository: ExhibitionRepository
-): Promise<PublicExhibitionImageResult> {
-  const ex = await exhibitionRepository.findPublishedById(exhibitionId)
-  if (!ex) return null
-
-  const blob = await exhibitionRepository.findPublishedImageById(exhibitionId)
-  if (!blob) return null
-
-  // 現状DBにMIMEタイプ情報がないため、PNGとして返す
-  return {
-    data: blob,
-    contentType: 'image/png',
-  }
 }
 
 /**

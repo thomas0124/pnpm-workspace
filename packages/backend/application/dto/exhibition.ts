@@ -40,6 +40,7 @@ export const PublicExhibitionSchema = z.object({
   required_time: z.number().int().nullable(),
   comment: z.string().nullable(),
   ar_design: PublicExhibitionArDesignSchema,
+  image: z.string().nullable(),
 })
 
 export type PublicExhibitionDto = z.infer<typeof PublicExhibitionSchema>
