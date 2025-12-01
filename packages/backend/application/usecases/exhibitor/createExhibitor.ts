@@ -3,12 +3,12 @@ import type { ExhibitorRepository } from '../../../domain/repositories/exhibitor
 import { isDuplicateExhibitorName } from '../../../domain/services/exhibitor'
 import type { ExhibitorDto, ExhibitorRegisterRequest } from '../../dto/exhibitor'
 import { ExhibitorDtoSchema } from '../../dto/exhibitor'
+import { hashPassword } from '../../../infrastructure/external/passwordService'
 /**
  * 出展者登録ユースケース
  *
  * @param request - 出展者登録リクエスト
  * @param repository - Exhibitorリポジトリ
- * @param passwordHash - ハッシュ化されたパスワード（外部サービスで事前にハッシュ化）
  * @returns 作成された出展者情報
  * @throws 出展者名が既に存在する場合
  */

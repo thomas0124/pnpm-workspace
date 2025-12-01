@@ -1,11 +1,13 @@
 import type { Context } from 'hono'
-import { registerExhibitorUseCase } from '../../application/usecases/exhibitor/createExhibitor.js'
+import { registerExhibitorUseCase } from '../../application/usecases/exhibitor/createExhibitor'
+import { loginExhibitorUseCase } from '../../application/usecases/exhibitor/loginExhibitor'
 import {
   AuthResponseSchema,
   ExhibitorLoginRequestSchema,
   ExhibitorRegisterRequestSchema,
-} from '../../application/dto/exhibitor.js'
-import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository.js'
+} from '../../application/dto/exhibitor'
+import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository'
+import { generateToken } from '../../infrastructure/external/jwtService'
 
 /**
  * 出展者登録ハンドラー
@@ -14,20 +16,11 @@ export async function handleRegister(c: Context, exhibitorRepository: ExhibitorR
   const body = await c.req.json()
   const request = ExhibitorRegisterRequestSchema.parse(body)
 
-  // TODO: パスワードハッシング機能を実装する必要があります
-  // 例: const hashedPassword = await hashPassword(request.password)
-  // 現在は平文で保存（セキュリティ上問題があるため、本番環境では使用不可）
-  const hashedPassword = await hashPassword(request.password) // 仮実装
+  // ユースケース内でパスワードハッシュ化を行う
+  const exhibitorDto = await registerExhibitorUseCase(request, exhibitorRepository)
 
-  const exhibitorDto = await registerExhibitorUseCase(
-    request,
-    exhibitorRepository,
-    hashedPassword
-  )
-
-  // TODO: JWT生成機能を実装する必要があります
-  // 例: const token = await generateToken({ exhibitorId: exhibitorDto.id })
-  const token = 'temporary-token-replace-with-jwt' // 仮実装
+  // JWTトークンを生成
+  const token = await generateToken({ exhibitorId: exhibitorDto.id })
 
   const response = AuthResponseSchema.parse({
     token,
@@ -44,34 +37,8 @@ export async function handleLogin(c: Context, exhibitorRepository: ExhibitorRepo
   const body = await c.req.json()
   const request = ExhibitorLoginRequestSchema.parse(body)
 
-  // TODO: ログインユースケースを実装する必要があります
-  // 例: const result = await loginExhibitorUseCase(request, exhibitorRepository)
-  
-  // 仮実装: 名前でユーザーを検索してパスワードを確認
-  const exhibitor = await exhibitorRepository.findByName(request.name)
-  
-  if (!exhibitor) {
-    throw new Error('認証に失敗しました')
-  }
-
-  // TODO: パスワード検証を実装する必要があります
-  // 例: const isValid = await verifyPassword(request.password, exhibitor.passwordHash)
-  if (exhibitor.passwordHash !== request.password) { // 仮実装
-    throw new Error('認証に失敗しました')
-  }
-
-  // TODO: JWT生成機能を実装する必要があります
-  const token = 'temporary-token-replace-with-jwt' // 仮実装
-
-  const response = AuthResponseSchema.parse({
-    token,
-    exhibitor: {
-      id: exhibitor.id,
-      name: exhibitor.name,
-      createdAt: exhibitor.createdAt,
-      updatedAt: exhibitor.updatedAt,
-    },
-  })
+  // ログインユースケースを実行
+  const response = await loginExhibitorUseCase(request, exhibitorRepository)
 
   return c.json(response, 200)
 }
