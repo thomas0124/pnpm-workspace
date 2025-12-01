@@ -1,12 +1,19 @@
-import type { Context } from 'hono'
 import { Hono } from 'hono'
 
-export const message = 'Hello from backend (Hono)'
+import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
 
-const app = new Hono()
+type Bindings = {
+  DB: D1Database
+}
 
-app.get('/message', (c: Context) => {
-  return c.json({ message })
+const app = new Hono<{ Bindings: Bindings }>()
+
+// ヘルスチェック
+app.get('/health', (c) => {
+  return c.json({ status: 'ok' })
 })
+
+// 公開出展API
+app.route('/', publicExhibitionRoutes)
 
 export default app
