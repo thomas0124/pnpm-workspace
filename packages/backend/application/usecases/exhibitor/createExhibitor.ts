@@ -15,10 +15,10 @@ import { ExhibitorDtoSchema } from '../../dto/exhibitor'
 export async function registerExhibitorUseCase(
   request: ExhibitorRegisterRequest,
   repository: ExhibitorRepository,
-  passwordHash: string
 ): Promise<ExhibitorDto> {
+    const hashedPassword = await hashPassword(request.password)
   // 1. 出展者を作成
-  const exhibitor = createExhibitor(request.name, passwordHash)
+  const exhibitor = createExhibitor(request.name, hashedPassword)
 
   // 2. 重複チェック
   const isDuplicate = await isDuplicateExhibitorName(exhibitor.name, repository)

@@ -17,7 +17,7 @@ export async function handleRegister(c: Context, exhibitorRepository: ExhibitorR
   // TODO: パスワードハッシング機能を実装する必要があります
   // 例: const hashedPassword = await hashPassword(request.password)
   // 現在は平文で保存（セキュリティ上問題があるため、本番環境では使用不可）
-  const hashedPassword = request.password // 仮実装
+  const hashedPassword = await hashPassword(request.password) // 仮実装
 
   const exhibitorDto = await registerExhibitorUseCase(
     request,
