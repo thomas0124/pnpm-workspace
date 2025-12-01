@@ -1,4 +1,5 @@
 import { blob, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { v4 as uuidv4 } from 'uuid'
 
 import { exhibitionArDesign } from './exhibitionArDesign'
 import { exhibitor } from './exhibitor'
@@ -7,7 +8,9 @@ import { exhibitor } from './exhibitor'
  * 出展情報テーブル
  */
 export const exhibitionInformation = sqliteTable('exhibition_information', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv4()),
   exhibitorId: text('exhibitor_id')
     .references(() => exhibitor.id)
     .notNull(),
