@@ -25,24 +25,27 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
   const { exhibitionInformation } = exhibitionInformationSchema
   const { exhibition } = exhibitionSchema
 
-  // 固定ID（テストしやすいように決め打ち）
-  const exhibitorId = 'exhibitor-seed-1'
+  // 固定ID（テストしやすいように決め打ち・すべてUUID形式）
+  const exhibitorId = '7c64d3d8-2fe4-4042-bf3d-0c6840016f39'
 
-  const arDesignIds = ['ar-design-seed-1', 'ar-design-seed-2'] as const
+  const arDesignIds = [
+    '53486767-131a-402f-92b2-629a7915765d',
+    '35039280-460a-412a-9104-2716738437e4',
+  ]
 
   const exhibitionInformationIds = [
-    'exhibition-information-seed-1',
-    'exhibition-information-seed-2',
-    'exhibition-information-seed-3',
-    'exhibition-information-seed-draft-1',
-  ] as const
+    '2b5d3536-9646-439f-8933-42803898c043',
+    '39204500-3255-44a8-979f-195216201943',
+    '72258994-75e2-493e-a766-134a10289512',
+    'f4584736-71e9-435a-882e-876892601900',
+  ]
 
   const exhibitionIds = [
-    'exhibition-seed-1',
-    'exhibition-seed-2',
-    'exhibition-seed-3',
-    'exhibition-seed-draft-1',
-  ] as const
+    '52097100-d270-4e17-8744-211c206f1327',
+    '89761862-4706-4051-899e-a50e63989064',
+    '07779520-190c-4e0f-8799-843355204935',
+    '39204500-3255-44a8-979f-195216201943',
+  ]
 
   const now = new Date().toISOString()
 
