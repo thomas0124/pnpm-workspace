@@ -32,7 +32,8 @@
     "db:migrate:remote:preview": "wrangler d1 migrations apply ar-pamph-db-preview --remote --env preview",
     "db:migrate:remote:staging": "wrangler d1 migrations apply ar-pamph-db-staging --remote --env staging",
     "db:migrate:remote:production": "wrangler d1 migrations apply ar-pamph-db-production --remote --env production",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx ./infrastructure/persistence/drizzle/seeds/index.ts"
   },
   "keywords": [],
   "author": "",
