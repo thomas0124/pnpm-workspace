@@ -191,10 +191,15 @@ jobs:
               
               if [ -n "$LATEST_DB" ]; then
                 echo "📦 Extracting seed data..."
-              sqlite3 "$LATEST_DB" .dump | \
-                grep "^INSERT" | \
-                grep -v "d1_migrations" | \
-                grep -v "_cf_" > full-dump.sql
+                # 外部キー制約を無効化
+                echo "PRAGMA foreign_keys=OFF;" > full-dump.sql
+                # データのみダンプ（内部テーブル除外）
+                sqlite3 "$LATEST_DB" .dump | \
+                  grep "^INSERT" | \
+                  grep -v "d1_migrations" | \
+                  grep -v "_cf_" >> full-dump.sql
+                # 外部キー制約を再度有効化
+                echo "PRAGMA foreign_keys=ON;" >> full-dump.sql
                 
                 # リモートD1に適用
                 echo "📤 Seeding remote D1..."
