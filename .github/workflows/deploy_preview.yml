@@ -66,33 +66,36 @@ jobs:
           DB_LIST=$(wrangler d1 list --json || echo "[]")
           DB_ID=$(echo "$DB_LIST" | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid" || echo "")
 
-          if [ -z "$DB_ID" ]; then
-            echo "Creating new D1 database: $DB_NAME"
-            wrangler d1 create "$DB_NAME"
-            # データベース作成の反映を待つ（リトライ＋指数バックオフ）
-            for i in {1..5}; do
-              DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
-              if [ -n "$DB_ID" ]; then
-                echo "Created database with ID: $DB_ID"
-                break
-              fi
-              echo "Waiting for database to be available (attempt $i/5)..."
-              sleep $((2 ** i))
-            done
-            if [ -z "$DB_ID" ]; then
-              echo "Error: Failed to retrieve database ID after creation"
-              exit 1
-            fi
-            # 新規作成フラグを設定
-            echo "IS_NEW_DB=true" >> $GITHUB_OUTPUT
-            echo "✅ New database created"
-          else
-            echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
-            # 既存DBフラグを設定
-            echo "IS_NEW_DB=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ Reusing existing database"
+          # 既存DBが存在する場合は削除
+          if [ -n "$DB_ID" ]; then
+            echo "🗑️ Deleting existing database: $DB_NAME (ID: $DB_ID)"
+            wrangler d1 delete "$DB_NAME" -y
+            echo "✅ Existing database deleted"
           fi
 
+          # 新規データベースを作成
+          echo "Creating new D1 database: $DB_NAME"
+          wrangler d1 create "$DB_NAME"
+          
+          # データベース作成の反映を待つ（リトライ＋指数バックオフ）
+          for i in {1..5}; do
+            DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
+            if [ -n "$DB_ID" ]; then
+              echo "Created database with ID: $DB_ID"
+              break
+            fi
+            echo "Waiting for database to be available (attempt $i/5)..."
+            sleep $((2 ** i))
+          done
+          
+          if [ -z "$DB_ID" ]; then
+            echo "Error: Failed to retrieve database ID after creation"
+            exit 1
+          fi
+          
+          # 常に新規作成フラグを設定
+          echo "IS_NEW_DB=true" >> $GITHUB_OUTPUT
+          echo "✅ New database created"
           echo "DB_ID=$DB_ID" >> $GITHUB_OUTPUT
 
       - name: Update wrangler.toml with D1 database ID
@@ -277,16 +280,12 @@ jobs:
           FRONTEND_URL: ${{ steps.deploy-frontend.outputs.PAGES_URL }}
           BACKEND_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
           DB_NAME: ${{ steps.d1-setup.outputs.DB_NAME }}
-          IS_NEW_DB: ${{ steps.d1-setup.outputs.IS_NEW_DB }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const frontendUrl = process.env.FRONTEND_URL;
             const backendUrl = process.env.BACKEND_URL;
             const dbName = process.env.DB_NAME;
-            const isNewDb = process.env.IS_NEW_DB === 'true';
-
-            const dbStatus = isNewDb ? '🆕 新規作成' : '♻️ 既存DBを再利用';
 
             const comment = `## 🚀 Preview Environment Deployed!
 
@@ -297,7 +296,7 @@ jobs:
             ${backendUrl}
 
             ### 🗄️ Database
-            D1 Database: \`${dbName}\` (${dbStatus})
+            D1 Database: \`${dbName}\` (🆕 新規作成)
 
             ---
 
