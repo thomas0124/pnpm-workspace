@@ -1,6 +1,7 @@
 import { UnauthorizedError } from '../../../domain/errors'
 import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
 import { verifyExhibitorPassword } from '../../../domain/services/exhibitor'
+import type { PasswordService } from '../../../domain/services/password'
 import { generateToken } from '../../../infrastructure/external/jwtService'
 import type { AuthResponse, ExhibitorLoginRequest } from '../../dto/exhibitor'
 
@@ -10,13 +11,15 @@ import type { AuthResponse, ExhibitorLoginRequest } from '../../dto/exhibitor'
  * @param request - ログインリクエスト
  * @param repository - Exhibitorリポジトリ
  * @param jwtSecret - JWT署名用の秘密鍵
+ * @param passwordService - パスワード検証サービス
  * @returns 認証レスポンス（トークン + 出展者情報）
  * @throws UnauthorizedError 認証に失敗した場合
  */
 export async function loginExhibitorUseCase(
   request: ExhibitorLoginRequest,
   repository: ExhibitorRepository,
-  jwtSecret: string
+  jwtSecret: string,
+  passwordService: PasswordService
 ): Promise<AuthResponse> {
   // 1. 名前で出展者を検索
   const exhibitor = await repository.findByName(request.name)
@@ -26,7 +29,7 @@ export async function loginExhibitorUseCase(
   }
 
   // 2. パスワードを検証
-  const isValid = await verifyExhibitorPassword(exhibitor, request.password)
+  const isValid = await verifyExhibitorPassword(exhibitor, request.password, passwordService)
 
   if (!isValid) {
     throw new UnauthorizedError('認証に失敗しました')

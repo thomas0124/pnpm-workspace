@@ -12,13 +12,13 @@ export const exhibitorRoutes = new Hono<{ Bindings: Bindings }>()
 // 出展者登録
 exhibitorRoutes.post('/register', async (c) => {
   const container = createContainer(c.env.DB)
-  return handleRegister(c, container.exhibitorRepository)
+  return handleRegister(c, container.exhibitorRepository, container.passwordService)
 })
 
 // 出展者ログイン
 exhibitorRoutes.post('/login', async (c) => {
   const container = createContainer(c.env.DB)
-  return handleLogin(c, container.exhibitorRepository)
+  return handleLogin(c, container.exhibitorRepository, container.passwordService)
 })
 
 // 出展者ログアウト

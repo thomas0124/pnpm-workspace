@@ -1,15 +1,19 @@
 import bcrypt from 'bcryptjs'
 
-/**
- * パスワードをハッシュ化
- */
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10)
-}
+import type { PasswordService } from '../../domain/services/password'
 
 /**
- * パスワードを検証
+ * bcryptを使用したPasswordServiceの実装を作成
+ *
+ * @returns PasswordServiceの実装インスタンス
  */
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash)
+export function createBcryptPasswordService(): PasswordService {
+  return {
+    async hash(plain: string): Promise<string> {
+      return bcrypt.hash(plain, 10)
+    },
+    async verify(plain: string, hash: string): Promise<boolean> {
+      return bcrypt.compare(plain, hash)
+    },
+  }
 }

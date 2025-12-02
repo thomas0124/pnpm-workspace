@@ -1,8 +1,8 @@
-import { verifyPassword } from '../../infrastructure/external/passwordService'
 import { ConflictError } from '../errors'
 import type { Exhibitor } from '../models/exhibitor'
 import { ExhibitorIdSchema, ExhibitorNameSchema } from '../models/exhibitor'
 import type { ExhibitorRepository } from '../repositories/exhibitorRepository'
+import type { PasswordService } from './password'
 
 /**
  * 出展者名の重複チェック
@@ -67,12 +67,13 @@ export async function exhibitorExists(
  *
  * @param exhibitor 出展者エンティティ
  * @param password 平文パスワード
+ * @param passwordService パスワード検証サービス
  * @returns パスワードが一致する場合はtrue
  */
 export async function verifyExhibitorPassword(
   exhibitor: Exhibitor,
-  password: string
+  password: string,
+  passwordService: PasswordService
 ): Promise<boolean> {
-  // インフラ層のハッシュ検証に委譲する
-  return verifyPassword(password, exhibitor.passwordHash)
+  return passwordService.verify(password, exhibitor.passwordHash)
 }

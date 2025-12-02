@@ -1,7 +1,7 @@
 import { createExhibitor } from '../../../domain/factories/exhibitor'
 import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
 import { checkExhibitorNameAvailability } from '../../../domain/services/exhibitor'
-import { hashPassword } from '../../../infrastructure/external/passwordService'
+import type { PasswordService } from '../../../domain/services/password'
 import type { ExhibitorDto, ExhibitorRegisterRequest } from '../../dto/exhibitor'
 import { ExhibitorDtoSchema } from '../../dto/exhibitor'
 
@@ -10,14 +10,16 @@ import { ExhibitorDtoSchema } from '../../dto/exhibitor'
  *
  * @param request - 出展者登録リクエスト
  * @param repository - Exhibitorリポジトリ
+ * @param passwordService - パスワードハッシュ化サービス
  * @returns 作成された出展者情報
  * @throws ConflictError 出展者名が既に存在する場合
  */
 export async function registerExhibitorUseCase(
   request: ExhibitorRegisterRequest,
-  repository: ExhibitorRepository
+  repository: ExhibitorRepository,
+  passwordService: PasswordService
 ): Promise<ExhibitorDto> {
-  const hashedPassword = await hashPassword(request.password)
+  const hashedPassword = await passwordService.hash(request.password)
   // 1. 出展者を作成
   const exhibitor = createExhibitor(request.name, hashedPassword)
 
