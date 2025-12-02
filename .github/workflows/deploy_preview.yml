@@ -191,9 +191,10 @@ jobs:
               
               if [ -n "$LATEST_DB" ]; then
                 echo "📦 Extracting seed data..."
-                # スキーマとトランザクション文を除去してデータのみダンプ
+                # スキーマとトランザクション文を除去し、d1_migrationsを除外してデータのみダンプ
                 sqlite3 "$LATEST_DB" .dump | \
-                  grep "^INSERT" > full-dump.sql
+                  grep "^INSERT" | \
+                  grep -v "d1_migrations" > full-dump.sql
                 
                 # リモートD1に適用
                 echo "📤 Seeding remote D1..."
