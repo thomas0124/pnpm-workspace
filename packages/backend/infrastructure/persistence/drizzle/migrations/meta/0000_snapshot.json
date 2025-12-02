@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "37f3920f-5370-41c7-a742-9ba38c262536",
+  "id": "30cc481a-9eab-463b-a000-9e332923ce31",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "exhibition": {
@@ -108,6 +108,30 @@
         }
       }
     },
+    "exhibition_ar_design": {
+      "name": "exhibition_ar_design",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "exhibition_information": {
       "name": "exhibition_information",
       "columns": {
@@ -120,6 +144,20 @@
         },
         "exhibitor_id": {
           "name": "exhibitor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "exhibition_ar_design_id": {
+          "name": "exhibition_ar_design_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "exhibitor_name": {
+          "name": "exhibitor_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -203,16 +241,24 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "exhibition_information_exhibition_ar_design_id_exhibition_ar_design_id_fk": {
+          "name": "exhibition_information_exhibition_ar_design_id_exhibition_ar_design_id_fk",
+          "tableFrom": "exhibition_information",
+          "tableTo": "exhibition_ar_design",
+          "columnsFrom": [
+            "exhibition_ar_design_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "category_in_allowed_values": {
-          "name": "category_in_allowed_values",
-          "value": "\"exhibition_information\".\"category\" IN ('飲食', '展示', '体験', 'ステージ')"
-        }
-      }
+      "checkConstraints": {}
     },
     "exhibitor": {
       "name": "exhibitor",
@@ -240,20 +286,28 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "exhibitor_name_unique": {
+          "name": "exhibitor_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

@@ -1,6 +1,6 @@
 import type { Exhibition } from '../models/exhibition'
 
-type ExhibitionCategory = '飲食' | '展示' | '体験' | 'ステージ'
+export type ExhibitionCategory = '飲食' | '展示' | '体験' | 'ステージ'
 
 /**
  * ページネーション情報の型定義
@@ -18,6 +18,14 @@ export type PaginationMeta = {
 export type PaginatedResult<T> = {
   data: T[]
   meta: PaginationMeta
+}
+
+/**
+ * 公開出展のカテゴリ別件数
+ */
+export type CategoryCount = {
+  category: ExhibitionCategory
+  count: number
 }
 
 /**
@@ -40,4 +48,5 @@ export type ExhibitionRepository = {
   delete: (id: string) => Promise<void>
   findPublished: (params?: FindPublishedParams) => Promise<PaginatedResult<Exhibition>>
   findPublishedById: (id: string) => Promise<Exhibition | null>
+  findCategoryCounts: () => Promise<CategoryCount[]>
 }

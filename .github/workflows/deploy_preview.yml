@@ -8,6 +8,7 @@ env:
   PNPM_VERSION: "9.15.5"
   NODE_VERSION: "20"
   CLOUDFLARE_WORKERS_SUBDOMAIN: "sekibun3109"
+  WRANGLER_VERSION: "4.51.0"
 
 jobs:
   deploy-preview:
@@ -36,11 +37,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Clean build cache
+        run: |
+          echo "🧹 Cleaning build cache..."
+          rm -rf packages/backend/dist
+          rm -rf packages/frontend/.next
+          rm -rf packages/frontend/out
+          echo "✅ Cache cleaned"
+
       - name: Build packages
         run: pnpm run build
 
       - name: Setup Cloudflare Wrangler
-        run: pnpm add -g wrangler@3
+        run: pnpm add -g wrangler@${{ env.WRANGLER_VERSION }}
 
       - name: Create or get D1 database
         id: d1-setup
@@ -57,33 +66,36 @@ jobs:
           DB_LIST=$(wrangler d1 list --json || echo "[]")
           DB_ID=$(echo "$DB_LIST" | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid" || echo "")
 
-          if [ -z "$DB_ID" ]; then
-            echo "Creating new D1 database: $DB_NAME"
-            wrangler d1 create "$DB_NAME"
-            # データベース作成の反映を待つ（リトライ＋指数バックオフ）
-            for i in {1..5}; do
-              DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
-              if [ -n "$DB_ID" ]; then
-                echo "Created database with ID: $DB_ID"
-                break
-              fi
-              echo "Waiting for database to be available (attempt $i/5)..."
-              sleep $((2 ** i))
-            done
-            if [ -z "$DB_ID" ]; then
-              echo "Error: Failed to retrieve database ID after creation"
-              exit 1
-            fi
-            # 新規作成フラグを設定
-            echo "IS_NEW_DB=true" >> $GITHUB_OUTPUT
-            echo "✅ New database created"
-          else
-            echo "Using existing D1 database: $DB_NAME (ID: $DB_ID)"
-            # 既存DBフラグを設定
-            echo "IS_NEW_DB=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ Reusing existing database"
+          # 既存DBが存在する場合は削除
+          if [ -n "$DB_ID" ]; then
+            echo "🗑️ Deleting existing database: $DB_NAME (ID: $DB_ID)"
+            wrangler d1 delete "$DB_NAME" -y
+            echo "✅ Existing database deleted"
           fi
 
+          # 新規データベースを作成
+          echo "Creating new D1 database: $DB_NAME"
+          wrangler d1 create "$DB_NAME"
+          
+          # データベース作成の反映を待つ（リトライ＋指数バックオフ）
+          for i in {1..5}; do
+            DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
+            if [ -n "$DB_ID" ]; then
+              echo "Created database with ID: $DB_ID"
+              break
+            fi
+            echo "Waiting for database to be available (attempt $i/5)..."
+            sleep $((2 ** i))
+          done
+          
+          if [ -z "$DB_ID" ]; then
+            echo "Error: Failed to retrieve database ID after creation"
+            exit 1
+          fi
+          
+          # 常に新規作成フラグを設定
+          echo "IS_NEW_DB=true" >> $GITHUB_OUTPUT
+          echo "✅ New database created"
           echo "DB_ID=$DB_ID" >> $GITHUB_OUTPUT
 
       - name: Update wrangler.toml with D1 database ID
@@ -156,6 +168,58 @@ jobs:
             exit 1
           fi
 
+      - name: Seed D1 Database
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          IS_NEW_DB="${{ steps.d1-setup.outputs.IS_NEW_DB }}"
+          
+          if [ "$IS_NEW_DB" = "true" ]; then
+            if [ -f "infrastructure/persistence/drizzle/seeds/index.ts" ]; then
+              echo "🌱 Preparing seed data..."
+              
+              # ローカルマイグレーション
+              pnpm db:migrate:local
+              
+              # ローカルでseed実行
+              pnpm run db:seed
+              
+              # ローカルDBからデータをダンプ
+              LATEST_DB=$(ls -t .wrangler/state/v3/d1/miniflare-D1DatabaseObject/*.sqlite | head -1)
+              
+              if [ -n "$LATEST_DB" ]; then
+                echo "📦 Extracting seed data..."
+                # 外部キー制約を無効化
+                echo "PRAGMA foreign_keys=OFF;" > full-dump.sql
+                # データのみダンプ（内部テーブル除外）
+                sqlite3 "$LATEST_DB" .dump | \
+                  grep "^INSERT" | \
+                  grep -v "d1_migrations" | \
+                  grep -v "_cf_" >> full-dump.sql
+                # 外部キー制約を再度有効化
+                echo "PRAGMA foreign_keys=ON;" >> full-dump.sql
+                
+                # リモートD1に適用
+                echo "📤 Seeding remote D1..."
+                wrangler d1 execute ${{ steps.d1-setup.outputs.DB_NAME }} \
+                  --remote \
+                  --env preview \
+                  --file=full-dump.sql
+                
+                echo "✅ Seed complete"
+              else
+                echo "❌ Local DB not found"
+                exit 1
+              fi
+            else
+              echo "ℹ️ No seed file, skipping..."
+            fi
+          else
+            echo "ℹ️ Skipping seed for existing database"
+          fi
+
       - name: Deploy Backend to Cloudflare Workers
         id: deploy-backend
         working-directory: packages/backend
@@ -163,7 +227,9 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Preview環境にデプロイ
+          # Preview環境にデプロイ（通常のバンドルモード）
+          # TypeScriptエントリーポイント（index.ts）をWranglerにバンドルさせる
+          echo "🚀 Deploying backend (with bundling)..."
           DEPLOY_OUTPUT=$(wrangler deploy --env preview)
           echo "$DEPLOY_OUTPUT"
 
@@ -179,6 +245,8 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
         run: |
+          echo "🧹 Cleaning frontend cache..."
+          rm -rf .next out
           echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
           pnpm run build
 
@@ -220,16 +288,12 @@ jobs:
           FRONTEND_URL: ${{ steps.deploy-frontend.outputs.PAGES_URL }}
           BACKEND_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
           DB_NAME: ${{ steps.d1-setup.outputs.DB_NAME }}
-          IS_NEW_DB: ${{ steps.d1-setup.outputs.IS_NEW_DB }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const frontendUrl = process.env.FRONTEND_URL;
             const backendUrl = process.env.BACKEND_URL;
             const dbName = process.env.DB_NAME;
-            const isNewDb = process.env.IS_NEW_DB === 'true';
-
-            const dbStatus = isNewDb ? '🆕 新規作成' : '♻️ 既存DBを再利用';
 
             const comment = `## 🚀 Preview Environment Deployed!
 
@@ -240,7 +304,7 @@ jobs:
             ${backendUrl}
 
             ### 🗄️ Database
-            D1 Database: \`${dbName}\` (${dbStatus})
+            D1 Database: \`${dbName}\` (🆕 新規作成)
 
             ---
 
@@ -280,7 +344,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Setup Cloudflare Wrangler
-        run: pnpm add -g wrangler@3
+        run: pnpm add -g wrangler@${{ env.WRANGLER_VERSION }}
 
       - name: Delete D1 database
         working-directory: packages/backend

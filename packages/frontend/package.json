@@ -13,7 +13,8 @@
     "format:fix": "prettier --write .",
     "type-check": "tsc --noEmit",
     "check": "pnpm run type-check && pnpm run lint:check && pnpm run format:check",
-    "fix": "pnpm run lint:fix && pnpm run format:fix"
+    "fix": "pnpm run lint:fix && pnpm run format:fix",
+    "db:seed": "tsx ./infrastructure/persistence/drizzle/seeds/index.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

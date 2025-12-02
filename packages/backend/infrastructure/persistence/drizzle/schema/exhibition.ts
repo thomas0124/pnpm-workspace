@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { check, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { v4 as uuidv4 } from 'uuid'
 
 import { exhibitionInformation } from './exhibitionInformation'
 import { exhibitor } from './exhibitor'
@@ -10,7 +11,9 @@ import { exhibitor } from './exhibitor'
 export const exhibition = sqliteTable(
   'exhibition',
   {
-    id: text('id').primaryKey(),
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
     exhibitorId: text('exhibitor_id')
       .references(() => exhibitor.id)
       .notNull(),

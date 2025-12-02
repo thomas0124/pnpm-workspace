@@ -13,9 +13,16 @@ CREATE TABLE `exhibition` (
 	CONSTRAINT "is_published" CHECK("exhibition"."is_published" IN (0, 1))
 );
 --> statement-breakpoint
+CREATE TABLE `exhibition_ar_design` (
+	`id` text PRIMARY KEY NOT NULL,
+	`url` text
+);
+--> statement-breakpoint
 CREATE TABLE `exhibition_information` (
 	`id` text PRIMARY KEY NOT NULL,
 	`exhibitor_id` text NOT NULL,
+	`exhibition_ar_design_id` text,
+	`exhibitor_name` text NOT NULL,
 	`title` text NOT NULL,
 	`category` text NOT NULL,
 	`location` text NOT NULL,
@@ -26,13 +33,15 @@ CREATE TABLE `exhibition_information` (
 	`created_at` text NOT NULL,
 	`updated_at` text NOT NULL,
 	FOREIGN KEY (`exhibitor_id`) REFERENCES `exhibitor`(`id`) ON UPDATE no action ON DELETE no action,
-	CONSTRAINT "category_in_allowed_values" CHECK("exhibition_information"."category" IN ('飲食', '展示', '体験', 'ステージ'))
+	FOREIGN KEY (`exhibition_ar_design_id`) REFERENCES `exhibition_ar_design`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `exhibitor` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`password_hash` text NOT NULL,
-	`created_at` integer NOT NULL,
-	`updated_at` integer NOT NULL
+	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL
 );
+--> statement-breakpoint
+CREATE UNIQUE INDEX `exhibitor_name_unique` ON `exhibitor` (`name`);
