@@ -9,6 +9,7 @@ env:
   PNPM_VERSION: "9.15.5"
   NODE_VERSION: "20"
   CLOUDFLARE_WORKERS_SUBDOMAIN: "sekibun3109"
+  WRANGLER_VERSION: "4.51.0"
 
 jobs:
   deploy-production:
@@ -43,7 +44,7 @@ jobs:
         run: pnpm run build
 
       - name: Setup Cloudflare Wrangler
-        run: pnpm add -g wrangler@3
+        run: pnpm add -g wrangler@${{ env.WRANGLER_VERSION }}
 
       - name: Generate database migrations
         working-directory: packages/backend
