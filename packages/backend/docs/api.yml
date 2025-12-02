@@ -371,6 +371,11 @@ components:
             - $ref: '#/components/schemas/ExhibitionArDesign'
             - nullable: true
           description: 'ARデザイン情報(NULLの場合はARなし)'
+        image:
+          type: string
+          format: byte
+          nullable: true
+          description: 'Base64エンコードされた画像データ(画像が登録されていない場合はnull)'
 
     CategoryCount:
       type: object
@@ -1119,6 +1124,7 @@ paths:
       description: |
         公開されている出展の一覧を取得します。カテゴリでフィルタ可能です。
         is_published=true かつ exhibition_information_id が NULL でない出展のみを返します。
+        画像データはBase64エンコードされたimageフィールドに含まれます。
       parameters:
         - name: category
           in: query
@@ -1176,6 +1182,7 @@ paths:
       description: |
         指定された出展の詳細情報を取得します。
         is_published=true かつ exhibition_information_id が NULL でない出展のみアクセス可能です。
+        画像データはBase64エンコードされたimageフィールドに含まれます。
       parameters:
         - name: exhibition_id
           in: path
@@ -1193,45 +1200,6 @@ paths:
                 $ref: '#/components/schemas/PublicExhibition'
         '404':
           description: 出展が見つかりません、または非公開です
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /public/exhibitions/{exhibition_id}/image:
-    get:
-      tags:
-        - Public
-      summary: 出展画像の取得(公開用)
-      description: |
-        公開されている出展の画像を取得します。
-        is_published=true の出展のみアクセス可能です。
-      parameters:
-        - name: exhibition_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: 出展ID(ExhibitionテーブルのID)
-      responses:
-        '200':
-          description: 画像取得成功
-          content:
-            image/png:
-              schema:
-                type: string
-                format: binary
-            image/jpeg:
-              schema:
-                type: string
-                format: binary
-            image/gif:
-              schema:
-                type: string
-                format: binary
-        '404':
-          description: 出展または画像が見つかりません、または非公開です
           content:
             application/json:
               schema:

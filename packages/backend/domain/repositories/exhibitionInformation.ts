@@ -16,6 +16,11 @@ export type ExhibitionInformationRepository = {
   findById: (id: string) => Promise<ExhibitionInformation | null>
 
   /**
+   * 複数IDでExhibitionInformationを一括取得
+   */
+  findByIds: (ids: string[]) => Promise<ExhibitionInformation[]>
+
+  /**
    * 出展者IDでExhibitionInformationを検索（複数件）
    */
   findByExhibitorId: (exhibitorId: string) => Promise<ExhibitionInformation[]>
