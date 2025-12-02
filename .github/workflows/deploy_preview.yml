@@ -8,6 +8,7 @@ env:
   PNPM_VERSION: "9.15.5"
   NODE_VERSION: "20"
   CLOUDFLARE_WORKERS_SUBDOMAIN: "sekibun3109"
+  WRANGLER_VERSION: "4.51.0"
 
 jobs:
   deploy-preview:
@@ -36,11 +37,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Clean build cache
+        run: |
+          echo "🧹 Cleaning build cache..."
+          rm -rf packages/backend/dist
+          rm -rf packages/frontend/.next
+          rm -rf packages/frontend/out
+          echo "✅ Cache cleaned"
+
       - name: Build packages
         run: pnpm run build
 
       - name: Setup Cloudflare Wrangler
-        run: pnpm add -g wrangler@3
+        run: pnpm add -g wrangler@${{ env.WRANGLER_VERSION }}
 
       - name: Create or get D1 database
         id: d1-setup
@@ -163,8 +172,9 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Preview環境にデプロイ
-          DEPLOY_OUTPUT=$(wrangler deploy --env preview)
+          # Preview環境にデプロイ（キャッシュを無効化）
+          echo "🚀 Deploying backend with cache disabled..."
+          DEPLOY_OUTPUT=$(wrangler deploy --env preview --no-bundle)
           echo "$DEPLOY_OUTPUT"
 
           # 環境変数とWorker名から明示的にURLを生成
@@ -179,6 +189,8 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
         run: |
+          echo "🧹 Cleaning frontend cache..."
+          rm -rf .next out
           echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
           pnpm run build
 
@@ -280,7 +292,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Setup Cloudflare Wrangler
-        run: pnpm add -g wrangler@3
+        run: pnpm add -g wrangler@${{ env.WRANGLER_VERSION }}
 
       - name: Delete D1 database
         working-directory: packages/backend
