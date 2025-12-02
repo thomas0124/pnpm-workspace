@@ -1,8 +1,8 @@
-import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository.js'
-import type { AuthResponse, ExhibitorLoginRequest } from '../../dto/exhibitor.js'
-import { verifyPassword } from '../../../infrastructure/external/passwordService.js'
-import { generateToken } from '../../../infrastructure/external/jwtService.js'
-import { UnauthorizedError } from '../../../domain/errors/index.js'
+import { UnauthorizedError } from '../../../domain/errors'
+import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
+import { verifyExhibitorPassword } from '../../../domain/services/exhibitor'
+import { generateToken } from '../../../infrastructure/external/jwtService'
+import type { AuthResponse, ExhibitorLoginRequest } from '../../dto/exhibitor'
 
 /**
  * 出展者ログインユースケース
@@ -26,7 +26,7 @@ export async function loginExhibitorUseCase(
   }
 
   // 2. パスワードを検証
-  const isValid = await verifyPassword(request.password, exhibitor.passwordHash)
+  const isValid = await verifyExhibitorPassword(exhibitor, request.password)
 
   if (!isValid) {
     throw new UnauthorizedError('認証に失敗しました')

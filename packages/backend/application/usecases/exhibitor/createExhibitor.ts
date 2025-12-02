@@ -1,7 +1,6 @@
-import { ConflictError } from '../../../domain/errors/index'
 import { createExhibitor } from '../../../domain/factories/exhibitor'
 import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
-import { isDuplicateExhibitorName } from '../../../domain/services/exhibitor'
+import { checkExhibitorNameAvailability } from '../../../domain/services/exhibitor'
 import { hashPassword } from '../../../infrastructure/external/passwordService'
 import type { ExhibitorDto, ExhibitorRegisterRequest } from '../../dto/exhibitor'
 import { ExhibitorDtoSchema } from '../../dto/exhibitor'
@@ -22,11 +21,8 @@ export async function registerExhibitorUseCase(
   // 1. 出展者を作成
   const exhibitor = createExhibitor(request.name, hashedPassword)
 
-  // 2. 重複チェック
-  const isDuplicate = await isDuplicateExhibitorName(exhibitor.name, repository)
-  if (isDuplicate) {
-    throw new ConflictError('この名前は既に使用されています')
-  }
+  // 2. 重複チェック（ドメインサービスに委譲）
+  await checkExhibitorNameAvailability(exhibitor.name, repository)
 
   // 3. 保存
   await repository.save(exhibitor)
