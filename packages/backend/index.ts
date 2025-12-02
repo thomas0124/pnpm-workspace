@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types'
 import { Hono } from 'hono'
+
 import { errorHandler } from './presentation/middlewares/errorHandler'
 import { exhibitorRoutes } from './presentation/routes/exhibitor'
 import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
