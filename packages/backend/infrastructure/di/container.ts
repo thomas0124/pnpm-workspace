@@ -4,6 +4,8 @@ import type { ExhibitionRepository } from '../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../domain/repositories/exhibitionInformation'
 import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository'
+import type { PasswordService } from '../../domain/services/password'
+import { createBcryptPasswordService } from '../external/passwordService'
 import * as drizzleExhibitionArDesignRepo from '../persistence/drizzle/exhibitionArDesignRepository'
 import * as drizzleExhibitionInformationRepo from '../persistence/drizzle/exhibitionInformationRepository'
 import * as drizzleExhibitionRepo from '../persistence/drizzle/exhibitionRepository'
@@ -18,12 +20,14 @@ export function createContainer(d1: D1Database) {
     drizzleExhibitionInformationRepo.createExhibitionInformationRepository(d1)
   const exhibitionArDesignRepository: ExhibitionArDesignRepository =
     drizzleExhibitionArDesignRepo.createExhibitionArDesignRepository(d1)
+  const passwordService: PasswordService = createBcryptPasswordService()
 
   return {
     exhibitorRepository,
     exhibitionRepository,
     exhibitionInformationRepository,
     exhibitionArDesignRepository,
+    passwordService,
   }
 }
 

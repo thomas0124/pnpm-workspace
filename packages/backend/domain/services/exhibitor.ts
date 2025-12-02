@@ -1,6 +1,8 @@
+import { ConflictError } from '../errors'
 import type { Exhibitor } from '../models/exhibitor'
 import { ExhibitorIdSchema, ExhibitorNameSchema } from '../models/exhibitor'
 import type { ExhibitorRepository } from '../repositories/exhibitorRepository'
+import type { PasswordService } from './password'
 
 /**
  * 出展者名の重複チェック
@@ -34,7 +36,9 @@ export async function checkExhibitorNameAvailability(
   const isDuplicate = await isDuplicateExhibitorName(name, repository)
 
   if (isDuplicate) {
-    throw new Error(`The name "${name}" is already taken`)
+    // アプリケーション層からは ConflictError を想定して扱うため、
+    // ここでドメインの競合エラーを投げる
+    throw new ConflictError('この名前は既に使用されています')
   }
 }
 
@@ -45,6 +49,7 @@ export async function checkExhibitorNameAvailability(
  * @param repository Exhibitorリポジトリ
  * @returns 存在する場合はtrue
  * @throws zodバリデーションエラー時
+ *
  */
 export async function exhibitorExists(
   id: string,
@@ -61,9 +66,14 @@ export async function exhibitorExists(
  * 出展者の認証チェック（パスワード検証用）
  *
  * @param exhibitor 出展者エンティティ
- * @param passwordHash 検証するパスワードハッシュ
+ * @param password 平文パスワード
+ * @param passwordService パスワード検証サービス
  * @returns パスワードが一致する場合はtrue
  */
-export function verifyExhibitorPassword(exhibitor: Exhibitor, passwordHash: string): boolean {
-  return exhibitor.passwordHash === passwordHash
+export async function verifyExhibitorPassword(
+  exhibitor: Exhibitor,
+  password: string,
+  passwordService: PasswordService
+): Promise<boolean> {
+  return passwordService.verify(password, exhibitor.passwordHash)
 }
