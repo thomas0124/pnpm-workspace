@@ -1,4 +1,11 @@
 import { sign, verify } from 'hono/jwt'
+import { z } from 'zod'
+
+const JwtPayloadSchema = z.object({
+  exhibitorId: z.string(),
+  iat: z.number().optional(),
+  exp: z.number().optional(),
+})
 
 export interface JwtPayload {
   exhibitorId: string
@@ -41,8 +48,12 @@ export async function verifyToken(token: string, secret: string): Promise<JwtPay
 
   try {
     const payload = await verify(token, secret)
-    return payload as unknown as JwtPayload
-  } catch (_error) {
+    const validatedPayload = JwtPayloadSchema.parse(payload)
+    return validatedPayload
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new Error('トークンのペイロードが無効です')
+    }
     throw new Error('トークンが無効です')
   }
 }
