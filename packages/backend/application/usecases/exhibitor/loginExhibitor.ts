@@ -2,6 +2,7 @@ import type { ExhibitorRepository } from '../../../domain/repositories/exhibitor
 import type { AuthResponse, ExhibitorLoginRequest } from '../../dto/exhibitor.js'
 import { verifyPassword } from '../../../infrastructure/external/passwordService.js'
 import { generateToken } from '../../../infrastructure/external/jwtService.js'
+import { UnauthorizedError } from '../../../domain/errors/index.js'
 
 /**
  * 出展者ログインユースケース
@@ -9,7 +10,7 @@ import { generateToken } from '../../../infrastructure/external/jwtService.js'
  * @param request - ログインリクエスト
  * @param repository - Exhibitorリポジトリ
  * @returns 認証レスポンス（トークン + 出展者情報）
- * @throws 認証に失敗した場合
+ * @throws UnauthorizedError 認証に失敗した場合
  */
 export async function loginExhibitorUseCase(
   request: ExhibitorLoginRequest,
@@ -19,14 +20,14 @@ export async function loginExhibitorUseCase(
   const exhibitor = await repository.findByName(request.name)
 
   if (!exhibitor) {
-    throw new Error('認証に失敗しました')
+    throw new UnauthorizedError('認証に失敗しました')
   }
 
   // 2. パスワードを検証
   const isValid = await verifyPassword(request.password, exhibitor.passwordHash)
 
   if (!isValid) {
-    throw new Error('認証に失敗しました')
+    throw new UnauthorizedError('認証に失敗しました')
   }
 
   // 3. JWTトークンを生成

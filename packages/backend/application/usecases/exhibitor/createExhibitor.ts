@@ -4,13 +4,15 @@ import { isDuplicateExhibitorName } from '../../../domain/services/exhibitor'
 import type { ExhibitorDto, ExhibitorRegisterRequest } from '../../dto/exhibitor'
 import { ExhibitorDtoSchema } from '../../dto/exhibitor'
 import { hashPassword } from '../../../infrastructure/external/passwordService'
+import { ConflictError } from '../../../domain/errors/index.js'
+
 /**
  * 出展者登録ユースケース
  *
  * @param request - 出展者登録リクエスト
  * @param repository - Exhibitorリポジトリ
  * @returns 作成された出展者情報
- * @throws 出展者名が既に存在する場合
+ * @throws ConflictError 出展者名が既に存在する場合
  */
 export async function registerExhibitorUseCase(
   request: ExhibitorRegisterRequest,
@@ -23,7 +25,7 @@ export async function registerExhibitorUseCase(
   // 2. 重複チェック
   const isDuplicate = await isDuplicateExhibitorName(exhibitor.name, repository)
   if (isDuplicate) {
-    throw new Error('Exhibitor with this name already exists')
+    throw new ConflictError('この名前は既に使用されています')
   }
 
   // 3. 保存
