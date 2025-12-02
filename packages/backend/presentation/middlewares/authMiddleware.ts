@@ -17,9 +17,8 @@ export async function authMiddleware(c: Context, next: Next) {
   }
 
   // "Bearer {token}" 形式を想定
-  const token = authHeader.replace('Bearer ', '')
-
-  if (!token) {
+  const [scheme, token] = authHeader.split(' ')
+  if (scheme !== 'Bearer' || !token) {
     throw new UnauthorizedError('認証トークンが不正です')
   }
 
@@ -51,5 +50,10 @@ export function getExhibitorId(c: Context): string {
     throw new UnauthorizedError('認証情報が見つかりません')
   }
 
-  return exhibitorId as string
+  if (typeof exhibitorId !== 'string' || !exhibitorId) {
+    // このパスは通常通りませんが、型安全性のためにチェックします
+    throw new UnauthorizedError('認証情報が不正です')
+  }
+
+  return exhibitorId
 }
