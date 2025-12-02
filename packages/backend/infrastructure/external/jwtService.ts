@@ -1,7 +1,9 @@
+import 'dotenv/config'
+
 import { sign, verify } from 'hono/jwt'
 
 // TODO: 本番環境では環境変数から取得してください (wrangler secret put JWT_SECRET)
-const JWT_SECRET = 'your-secret-key-change-this-in-production'
+const JWT_SECRET = process.env.JWT_SECRET as string
 
 export interface JwtPayload {
   exhibitorId: string
