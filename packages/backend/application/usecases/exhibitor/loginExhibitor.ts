@@ -1,20 +1,22 @@
-import { UnauthorizedError } from '../../../domain/errors/index.js'
 import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository.js'
-import { generateToken } from '../../../infrastructure/external/jwtService.js'
-import { verifyPassword } from '../../../infrastructure/external/passwordService.js'
 import type { AuthResponse, ExhibitorLoginRequest } from '../../dto/exhibitor.js'
+import { verifyPassword } from '../../../infrastructure/external/passwordService.js'
+import { generateToken } from '../../../infrastructure/external/jwtService.js'
+import { UnauthorizedError } from '../../../domain/errors/index.js'
 
 /**
  * 出展者ログインユースケース
  *
  * @param request - ログインリクエスト
  * @param repository - Exhibitorリポジトリ
+ * @param jwtSecret - JWT署名用の秘密鍵
  * @returns 認証レスポンス（トークン + 出展者情報）
  * @throws UnauthorizedError 認証に失敗した場合
  */
 export async function loginExhibitorUseCase(
   request: ExhibitorLoginRequest,
-  repository: ExhibitorRepository
+  repository: ExhibitorRepository,
+  jwtSecret: string
 ): Promise<AuthResponse> {
   // 1. 名前で出展者を検索
   const exhibitor = await repository.findByName(request.name)
@@ -31,7 +33,7 @@ export async function loginExhibitorUseCase(
   }
 
   // 3. JWTトークンを生成
-  const token = await generateToken({ exhibitorId: exhibitor.id })
+  const token = await generateToken({ exhibitorId: exhibitor.id }, jwtSecret)
 
   // 4. AuthResponseを返す
   return {

@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 
-import { createContainer } from '../../infrastructure/di/container.js'
-import { handleLogin, handleLogout, handleRegister } from '../handlers/exhibitor.js'
+import { createContainer } from '../../infrastructure/di/container'
+import { handleLogin, handleLogout, handleRegister } from '../handlers/exhibitor'
 import { authMiddleware } from '../middlewares/authMiddleware'
 type Bindings = {
   DB: D1Database

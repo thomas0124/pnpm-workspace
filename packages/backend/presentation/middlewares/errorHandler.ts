@@ -7,10 +7,13 @@ import {
   NotFoundError,
   UnauthorizedError,
   ValidationError,
-} from '../../domain/errors/index.js'
+} from '../../domain/errors/index'
 
 export const errorHandler: ErrorHandler = (err, c) => {
   console.error('Error:', err)
+  console.error('Error type:', typeof err)
+  console.error('Error message:', err?.message)
+  console.error('Error stack:', err?.stack)
 
   // Zodバリデーションエラー
   if (err instanceof ZodError) {
@@ -80,7 +83,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
     return c.json(
       {
         error: 'INTERNAL_SERVER_ERROR',
-        message: err.message,
+        message: err.message || 'Unknown error occurred',
       },
       500
     )
@@ -90,7 +93,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
   return c.json(
     {
       error: 'INTERNAL_SERVER_ERROR',
-      message: 'Internal server error',
+      message: typeof err === 'string' ? err : 'Internal server error',
     },
     500
   )

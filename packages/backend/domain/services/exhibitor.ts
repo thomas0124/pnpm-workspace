@@ -1,69 +1,59 @@
-import type { Exhibitor } from '../models/exhibitor'
-import { ExhibitorIdSchema, ExhibitorNameSchema } from '../models/exhibitor'
-import type { ExhibitorRepository } from '../repositories/exhibitorRepository'
+import type { Context } from 'hono'
+import { registerExhibitorUseCase } from '../../application/usecases/exhibitor/createExhibitor.js'
+import { loginExhibitorUseCase } from '../../application/usecases/exhibitor/loginExhibitor.js'
+import {
+  AuthResponseSchema,
+  ExhibitorLoginRequestSchema,
+  ExhibitorRegisterRequestSchema,
+} from '../../application/dto/exhibitor.js'
+import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository.js'
+import { generateToken } from '../../infrastructure/external/jwtService.js'
 
 /**
- * 出展者名の重複チェック
- *
- * @param name チェックする出展者名
- * @param repository Exhibitorリポジトリ
- * @returns 重複している場合はtrue
- * @throws zodバリデーションエラー時
+ * 出展者登録ハンドラー
  */
-export async function isDuplicateExhibitorName(
-  name: string,
-  repository: ExhibitorRepository
-): Promise<boolean> {
-  // zodでバリデーション
-  ExhibitorNameSchema.parse(name)
+export async function handleRegister(c: Context, exhibitorRepository: ExhibitorRepository) {
+  const body = await c.req.json()
+  const request = ExhibitorRegisterRequestSchema.parse(body)
 
-  return await repository.existsByName(name)
+  // ユースケース内でパスワードハッシュ化を行う
+  const exhibitorDto = await registerExhibitorUseCase(request, exhibitorRepository)
+
+  // 環境変数からJWT_SECRETを取得
+  const jwtSecret = c.env.JWT_SECRET as string
+  
+  // JWTトークンを生成
+  const token = await generateToken({ exhibitorId: exhibitorDto.id }, jwtSecret)
+
+  const response = AuthResponseSchema.parse({
+    token,
+    exhibitor: exhibitorDto,
+  })
+
+  return c.json(response, 201)
 }
 
 /**
- * 出展者名の可用性チェック（登録可能かどうか）
- *
- * @param name チェックする出展者名
- * @param repository Exhibitorリポジトリ
- * @throws 名前が既に使用されている場合、またはバリデーションエラー時
+ * 出展者ログインハンドラー
  */
-export async function checkExhibitorNameAvailability(
-  name: string,
-  repository: ExhibitorRepository
-): Promise<void> {
-  const isDuplicate = await isDuplicateExhibitorName(name, repository)
+export async function handleLogin(c: Context, exhibitorRepository: ExhibitorRepository) {
+  const body = await c.req.json()
+  const request = ExhibitorLoginRequestSchema.parse(body)
 
-  if (isDuplicate) {
-    throw new Error(`The name "${name}" is already taken`)
-  }
+  // 環境変数からJWT_SECRETを取得
+  const jwtSecret = c.env.JWT_SECRET as string
+
+  // ログインユースケースを実行
+  const response = await loginExhibitorUseCase(request, exhibitorRepository, jwtSecret)
+
+  return c.json(response, 200)
 }
 
 /**
- * 出展者の存在確認
- *
- * @param id Exhibitor ID
- * @param repository Exhibitorリポジトリ
- * @returns 存在する場合はtrue
- * @throws zodバリデーションエラー時
+ * 出展者ログアウトハンドラー
  */
-export async function exhibitorExists(
-  id: string,
-  repository: ExhibitorRepository
-): Promise<boolean> {
-  // UUIDバリデーション
-  ExhibitorIdSchema.parse(id)
-
-  const exhibitor = await repository.findById(id)
-  return exhibitor !== null
-}
-
-/**
- * 出展者の認証チェック（パスワード検証用）
- *
- * @param exhibitor 出展者エンティティ
- * @param passwordHash 検証するパスワードハッシュ
- * @returns パスワードが一致する場合はtrue
- */
-export function verifyExhibitorPassword(exhibitor: Exhibitor, passwordHash: string): boolean {
-  return exhibitor.passwordHash === passwordHash
+export async function handleLogout(c: Context) {
+  // ステートレスJWTの場合、サーバー側での処理は不要
+  // クライアント側でトークンを削除することでログアウト
+  return c.body(null, 204)
 }

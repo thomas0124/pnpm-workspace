@@ -1,4 +1,4 @@
-import { ConflictError } from '../../../domain/errors/index.js'
+import { ConflictError } from '../../../domain/errors/index'
 import { createExhibitor } from '../../../domain/factories/exhibitor'
 import type { ExhibitorRepository } from '../../../domain/repositories/exhibitorRepository'
 import { isDuplicateExhibitorName } from '../../../domain/services/exhibitor'
