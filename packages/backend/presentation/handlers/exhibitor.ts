@@ -27,6 +27,10 @@ export async function handleRegister(
 
   // 環境変数からJWT_SECRETを取得
   const jwtSecret = c.env.JWT_SECRET as string
+  if (!jwtSecret) {
+    console.error('JWT_SECRET is not configured')
+    throw new Error('Server configuration error: JWT_SECRET is missing.')
+  }
 
   // JWTトークンを生成
   const token = await generateToken({ exhibitorId: exhibitorDto.id }, jwtSecret)

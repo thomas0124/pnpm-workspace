@@ -26,6 +26,10 @@ export async function authMiddleware(c: Context, next: Next) {
   try {
     // 環境変数からJWT_SECRETを取得してトークンを検証
     const jwtSecret = c.env.JWT_SECRET as string
+    if (!jwtSecret) {
+      console.error('JWT_SECRET is not configured')
+      throw new Error('Server configuration error: JWT_SECRET is missing.')
+    }
     const payload = await verifyToken(token, jwtSecret)
 
     // コンテキストに認証情報を追加
