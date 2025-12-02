@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+
 import { createContainer } from '../../infrastructure/di/container.js'
 import { handleLogin, handleLogout, handleRegister } from '../handlers/exhibitor.js'
 import { authMiddleware } from '../middlewares/authMiddleware'

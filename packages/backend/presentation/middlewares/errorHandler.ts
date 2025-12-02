@@ -1,5 +1,6 @@
-import type { Context, ErrorHandler } from 'hono'
+import type { ErrorHandler } from 'hono'
 import { ZodError } from 'zod'
+
 import {
   ConflictError,
   ForbiddenError,

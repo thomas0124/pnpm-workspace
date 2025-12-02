@@ -30,7 +30,7 @@ export async function verifyToken(token: string): Promise<JwtPayload> {
   try {
     const payload = await verify(token, JWT_SECRET)
     return payload as unknown as JwtPayload
-  } catch (error) {
+  } catch (_error) {
     throw new Error('トークンが無効です')
   }
 }

@@ -1,6 +1,7 @@
 import type { Context, Next } from 'hono'
-import { verifyToken } from '../../infrastructure/external/jwtService.js'
+
 import { UnauthorizedError } from '../../domain/errors/index.js'
+import { verifyToken } from '../../infrastructure/external/jwtService.js'
 
 /**
  * JWT認証ミドルウェア
@@ -30,7 +31,7 @@ export async function authMiddleware(c: Context, next: Next) {
     c.set('exhibitorId', payload.exhibitorId)
     
     await next()
-  } catch (error) {
+  } catch (_error) {
     throw new UnauthorizedError('認証トークンが無効または期限切れです')
   }
 }

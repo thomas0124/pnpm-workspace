@@ -4,7 +4,7 @@ import app from './index.js'
 
 const port = 8787
 
-console.log(`🚀 Backend server running on http://localhost:${port}`)
+console.error(`🚀 Backend server running on http://localhost:${port}`)
 
 serve({
   fetch: app.fetch,
