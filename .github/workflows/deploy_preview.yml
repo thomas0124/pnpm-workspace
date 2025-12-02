@@ -197,9 +197,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Preview環境にデプロイ（キャッシュを無効化）
-          echo "🚀 Deploying backend with cache disabled..."
-          DEPLOY_OUTPUT=$(wrangler deploy --env preview --no-bundle)
+          # Preview環境にデプロイ（通常のバンドルモード）
+          # TypeScriptエントリーポイント（index.ts）をWranglerにバンドルさせる
+          echo "🚀 Deploying backend (with bundling)..."
+          DEPLOY_OUTPUT=$(wrangler deploy --env preview)
           echo "$DEPLOY_OUTPUT"
 
           # 環境変数とWorker名から明示的にURLを生成
