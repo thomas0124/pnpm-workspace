@@ -165,6 +165,27 @@ jobs:
             exit 1
           fi
 
+      - name: Seed D1 Database
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_URL: ${{ steps.d1-setup.outputs.DB_ID }}
+        run: |
+          IS_NEW_DB="${{ steps.d1-setup.outputs.IS_NEW_DB }}"
+          
+          if [ "$IS_NEW_DB" = "true" ]; then
+            echo "🌱 Seeding new database..."
+            if pnpm run db:seed; then
+              echo "✅ Database seeded successfully"
+            else
+              echo "❌ Database seeding failed - aborting deployment"
+              exit 1
+            fi
+          else
+            echo "ℹ️ Skipping seed for existing database"
+          fi
+
       - name: Deploy Backend to Cloudflare Workers
         id: deploy-backend
         working-directory: packages/backend
