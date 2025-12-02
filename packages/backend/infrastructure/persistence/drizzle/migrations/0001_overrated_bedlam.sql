@@ -1,4 +1,4 @@
-CREATE TABLE `exhibition_ar_design` (
+ｃCREATE TABLE `exhibition_ar_design` (
 	`id` text PRIMARY KEY NOT NULL,
 	`url` text
 );

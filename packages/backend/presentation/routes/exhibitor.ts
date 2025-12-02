@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { createContainer } from '../../infrastructure/di/container.js'
 import { handleLogin, handleLogout, handleRegister } from '../handlers/exhibitor.js'
-
+import { authMiddleware } from '../middlewares/authMiddleware'
 type Bindings = {
   DB: D1Database
 }
@@ -21,7 +21,6 @@ exhibitorRoutes.post('/login', async (c) => {
 })
 
 // 出展者ログアウト
-exhibitorRoutes.post('/logout', async (c) => {
-  // TODO: JWT検証ミドルウェアを追加する必要があります
+exhibitorRoutes.post('/logout', authMiddleware, async (c) => {
   return handleLogout(c)
 })
