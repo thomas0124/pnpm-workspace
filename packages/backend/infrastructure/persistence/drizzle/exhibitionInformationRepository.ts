@@ -1,5 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 
 import { reconstructExhibitionInformation } from '../../../domain/factories/exhibitionInformation'
 import type { ExhibitionInformation as DomainExhibitionInformation } from '../../../domain/models/exhibitionInformation'
@@ -86,6 +86,18 @@ export class DrizzleExhibitionInformationRepository implements ExhibitionInforma
 
     if (!row) return null
     return mapToDomain(row)
+  }
+
+  async findByIds(ids: string[]): Promise<DomainExhibitionInformation[]> {
+    if (ids.length === 0) return []
+
+    const rows = await this.db
+      .select()
+      .from(exhibitionInformation)
+      .where(inArray(exhibitionInformation.id, ids))
+      .all()
+
+    return rows.map(mapToDomain)
   }
 
   async findByExhibitorId(exhibitorId: string): Promise<DomainExhibitionInformation[]> {

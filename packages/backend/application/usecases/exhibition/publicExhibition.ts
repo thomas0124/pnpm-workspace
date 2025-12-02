@@ -67,18 +67,37 @@ export async function listPublicExhibitionsUseCase(
 
   const result = await exhibitionRepository.findPublished(params)
 
+  // 一覧分の ExhibitionInformation を一括取得
+  const infoIds = result.data
+    .map((ex) => ex.exhibitionInformationId)
+    .filter((id): id is string => !!id)
+  const uniqueInfoIds = Array.from(new Set(infoIds))
+  const infos = await exhibitionInformationRepository.findByIds(uniqueInfoIds)
+  const infoMap = new Map(infos.map((info) => [info.id, info]))
+
+  // 一覧分の ExhibitionArDesign を一括取得
+  const arDesignIds = infos
+    .map((info) => info.exhibitionArDesignId)
+    .filter((id): id is string => !!id)
+  const uniqueArDesignIds = Array.from(new Set(arDesignIds))
+  const arDesigns = uniqueArDesignIds.length
+    ? await exhibitionArDesignRepository.findByIds(uniqueArDesignIds)
+    : []
+  const arDesignMap = new Map(arDesigns.map((design) => [design.id, design]))
+
   const data: PublicExhibitionDto[] = []
   for (const ex of result.data) {
     if (!ex.exhibitionInformationId) {
       // 公開条件的にはありえないがガードしておく
       continue
     }
-    const info = await exhibitionInformationRepository.findById(ex.exhibitionInformationId)
+
+    const info = infoMap.get(ex.exhibitionInformationId)
     if (!info) continue
 
     let arDesign: PublicExhibitionDto['ar_design'] = null
     if (info.exhibitionArDesignId) {
-      const design = await exhibitionArDesignRepository.findById(info.exhibitionArDesignId)
+      const design = arDesignMap.get(info.exhibitionArDesignId)
       if (design) {
         arDesign = PublicExhibitionArDesignSchema.parse({
           id: design.id,

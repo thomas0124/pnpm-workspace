@@ -1,5 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 
 import { reconstructExhibitionArDesign } from '../../../domain/factories/exhibitionArDesign'
 import type { ExhibitionArDesign as DomainExhibitionArDesign } from '../../../domain/models/exhibitionArDesign'
@@ -52,6 +52,18 @@ export class DrizzleExhibitionArDesignRepository implements ExhibitionArDesignRe
 
     if (!row) return null
     return mapToDomain(row)
+  }
+
+  async findByIds(ids: string[]): Promise<DomainExhibitionArDesign[]> {
+    if (ids.length === 0) return []
+
+    const rows = await this.db
+      .select()
+      .from(exhibitionArDesign)
+      .where(inArray(exhibitionArDesign.id, ids))
+      .all()
+
+    return rows.map(mapToDomain)
   }
 
   async findAll(): Promise<DomainExhibitionArDesign[]> {

@@ -16,6 +16,11 @@ export type ExhibitionArDesignRepository = {
   findById: (id: string) => Promise<ExhibitionArDesign | null>
 
   /**
+   * 複数IDでExhibitionArDesignを一括取得
+   */
+  findByIds: (ids: string[]) => Promise<ExhibitionArDesign[]>
+
+  /**
    * すべてのExhibitionArDesignを取得
    */
   findAll: () => Promise<ExhibitionArDesign[]>
