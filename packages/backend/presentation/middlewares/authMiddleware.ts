@@ -24,8 +24,9 @@ export async function authMiddleware(c: Context, next: Next) {
   }
 
   try {
-    // トークンを検証
-    const payload = await verifyToken(token)
+    // 環境変数からJWT_SECRETを取得してトークンを検証
+    const jwtSecret = c.env.JWT_SECRET as string
+    const payload = await verifyToken(token, jwtSecret)
 
     // コンテキストに認証情報を追加
     c.set('exhibitorId', payload.exhibitorId)

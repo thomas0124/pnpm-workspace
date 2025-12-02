@@ -4,11 +4,11 @@ import {
   AuthResponseSchema,
   ExhibitorLoginRequestSchema,
   ExhibitorRegisterRequestSchema,
-} from '../../application/dto/exhibitor'
-import { registerExhibitorUseCase } from '../../application/usecases/exhibitor/createExhibitor'
-import { loginExhibitorUseCase } from '../../application/usecases/exhibitor/loginExhibitor'
-import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository'
-import { generateToken } from '../../infrastructure/external/jwtService'
+} from '../../application/dto/exhibitor.js'
+import { registerExhibitorUseCase } from '../../application/usecases/exhibitor/createExhibitor.js'
+import { loginExhibitorUseCase } from '../../application/usecases/exhibitor/loginExhibitor.js'
+import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository.js'
+import { generateToken } from '../../infrastructure/external/jwtService.js'
 
 /**
  * 出展者登録ハンドラー
@@ -20,8 +20,11 @@ export async function handleRegister(c: Context, exhibitorRepository: ExhibitorR
   // ユースケース内でパスワードハッシュ化を行う
   const exhibitorDto = await registerExhibitorUseCase(request, exhibitorRepository)
 
+  // 環境変数からJWT_SECRETを取得
+  const jwtSecret = c.env.JWT_SECRET as string
+
   // JWTトークンを生成
-  const token = await generateToken({ exhibitorId: exhibitorDto.id })
+  const token = await generateToken({ exhibitorId: exhibitorDto.id }, jwtSecret)
 
   const response = AuthResponseSchema.parse({
     token,
@@ -38,8 +41,11 @@ export async function handleLogin(c: Context, exhibitorRepository: ExhibitorRepo
   const body = await c.req.json()
   const request = ExhibitorLoginRequestSchema.parse(body)
 
+  // 環境変数からJWT_SECRETを取得
+  const jwtSecret = c.env.JWT_SECRET as string
+
   // ログインユースケースを実行
-  const response = await loginExhibitorUseCase(request, exhibitorRepository)
+  const response = await loginExhibitorUseCase(request, exhibitorRepository, jwtSecret)
 
   return c.json(response, 200)
 }
