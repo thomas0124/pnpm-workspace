@@ -27,10 +27,7 @@ import {
 function toBase64OrNull(blob: Uint8Array | null): string | null {
   if (!blob) return null
 
-  let binary = ''
-  for (let i = 0; i < blob.length; i++) {
-    binary += String.fromCharCode(blob[i])
-  }
+  const binary = Array.from(blob, (byte) => String.fromCharCode(byte)).join('')
 
   // Cloudflare Workers 環境では btoa が利用可能
   return btoa(binary)
