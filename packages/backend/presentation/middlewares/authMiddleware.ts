@@ -5,7 +5,7 @@ import { verifyToken } from '../../infrastructure/external/jwtService.js'
 
 /**
  * JWT認証ミドルウェア
- * 
+ *
  * Authorizationヘッダーからトークンを取得し、検証します。
  * 検証成功時、トークンのペイロードをコンテキストに追加します。
  */
@@ -26,10 +26,10 @@ export async function authMiddleware(c: Context, next: Next) {
   try {
     // トークンを検証
     const payload = await verifyToken(token)
-    
+
     // コンテキストに認証情報を追加
     c.set('exhibitorId', payload.exhibitorId)
-    
+
     await next()
   } catch (_error) {
     throw new UnauthorizedError('認証トークンが無効または期限切れです')
@@ -41,10 +41,10 @@ export async function authMiddleware(c: Context, next: Next) {
  */
 export function getExhibitorId(c: Context): string {
   const exhibitorId = c.get('exhibitorId')
-  
+
   if (!exhibitorId) {
     throw new UnauthorizedError('認証情報が見つかりません')
   }
-  
+
   return exhibitorId as string
 }

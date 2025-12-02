@@ -16,9 +16,9 @@ import { ExhibitorDtoSchema } from '../../dto/exhibitor'
  */
 export async function registerExhibitorUseCase(
   request: ExhibitorRegisterRequest,
-  repository: ExhibitorRepository,
+  repository: ExhibitorRepository
 ): Promise<ExhibitorDto> {
-    const hashedPassword = await hashPassword(request.password)
+  const hashedPassword = await hashPassword(request.password)
   // 1. 出展者を作成
   const exhibitor = createExhibitor(request.name, hashedPassword)
 
