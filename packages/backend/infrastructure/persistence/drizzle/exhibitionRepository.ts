@@ -1,3 +1,4 @@
+import type { D1Database } from '@cloudflare/workers-types'
 import { and, count, eq, isNotNull, sql } from 'drizzle-orm'
 
 import { reconstructExhibition } from '../../../domain/factories/exhibition'

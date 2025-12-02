@@ -1,3 +1,5 @@
+import type { D1Database } from '@cloudflare/workers-types'
+
 import type { ExhibitionRepository } from '../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../domain/repositories/exhibitionInformation'

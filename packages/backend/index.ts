@@ -1,3 +1,4 @@
+import type { D1Database } from '@cloudflare/workers-types'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
 
