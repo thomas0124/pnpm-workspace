@@ -24,7 +24,7 @@ export const exhibitionInformation = sqliteTable('exhibition_information', {
   price: integer('price'),
   requiredTime: integer('required_time'),
   comment: text('comment'),
-  image: blob('image', { mode: 'buffer' }),
+  image: blob('image'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 })
