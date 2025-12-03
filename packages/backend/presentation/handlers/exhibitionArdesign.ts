@@ -5,7 +5,7 @@ import type { ExhibitionArDesignRepository } from '../../domain/repositories/exh
 
 /**
  * ARデザイン一覧取得ハンドラー
- * 
+ *
  * @param c - Honoコンテキスト
  * @param repository - ExhibitionArDesignリポジトリ
  * @returns 200 OK with ARデザイン一覧

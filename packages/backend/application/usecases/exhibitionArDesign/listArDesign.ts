@@ -3,7 +3,7 @@ import type { ArDesignListResponse } from '../../dto/exhibitionArDesign'
 
 /**
  * ARデザイン一覧取得ユースケース
- * 
+ *
  * 利用可能なすべてのARデザインを取得します。
  * 出展者が出展情報作成・編集時に使用します。
  *

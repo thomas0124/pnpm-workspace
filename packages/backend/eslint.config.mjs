@@ -6,12 +6,13 @@ export default [
   ...honoConfig,
   {
     ignores: [
-      'node_modules',
-      'dist',
-      'build',
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      '.wrangler/**',
       '*.config.js',
       '*.config.mjs',
-      'coverage',
+      'coverage/**',
     ],
     plugins: {
       'simple-import-sort': simpleImportSort,
