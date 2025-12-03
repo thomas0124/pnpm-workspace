@@ -4,7 +4,7 @@ import { Hono } from 'hono'
 import { errorHandler } from './presentation/middlewares/errorHandler'
 import { exhibitorRoutes } from './presentation/routes/exhibitor'
 import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
-import { arDesignRoutes } from './presentation/routes/exhibitionArdesign'
+import { ArDesignRoutes } from './presentation/routes/exhibitionArdesign'
 
 type Bindings = {
   DB: D1Database
@@ -27,6 +27,6 @@ app.route('/api/exhibitors', exhibitorRoutes)
 app.route('/', publicExhibitionRoutes)
 
 // ARデザインAPI
-app.route('/api/ar-designs', arDesignRoutes)
+app.route('/api/ar-designs', ArDesignRoutes)
 
 export default app
