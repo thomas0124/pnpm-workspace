@@ -172,7 +172,6 @@ export async function handleGetExhibitionImage(c: HandlerContext) {
     }
   }
 
-
   const arrayBuffer = image.buffer.slice(
     image.byteOffset,
     image.byteOffset + image.byteLength
@@ -205,4 +204,3 @@ export async function handleDeleteExhibitionImage(c: HandlerContext) {
 
   return c.body(null, 204)
 }
-

@@ -48,5 +48,3 @@ export async function deleteExhibitionImageUseCase(
 
   await exhibitionInformationRepository.save(updatedInformation)
 }
-
-

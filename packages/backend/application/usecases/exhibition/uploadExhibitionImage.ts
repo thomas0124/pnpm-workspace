@@ -52,5 +52,3 @@ export async function uploadExhibitionImageUseCase(
   // 保存
   await exhibitionInformationRepository.save(updatedInformation)
 }
-
-
