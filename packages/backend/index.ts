@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 
 import type { Bindings } from './presentation/handlers/index'
 import { errorHandler } from './presentation/middlewares/errorHandler'
-import { exhibitionRoutes } from './presentation/routes/exhibition'
+import { exhibitionRoutes } from './presentation/routes/exhibition/exhibition'
 import { arDesignRoutes } from './presentation/routes/exhibitionArDesign'
 import { exhibitorRoutes } from './presentation/routes/exhibitor'
 import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
