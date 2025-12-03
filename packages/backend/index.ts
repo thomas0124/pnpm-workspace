@@ -2,8 +2,8 @@ import { Hono } from 'hono'
 
 import type { Bindings } from './presentation/handlers/index'
 import { errorHandler } from './presentation/middlewares/errorHandler'
-import { arDesignRoutes } from './presentation/routes/exhibitionArDesign'
 import { exhibitionRoutes } from './presentation/routes/exhibition'
+import { arDesignRoutes } from './presentation/routes/exhibitionArDesign'
 import { exhibitorRoutes } from './presentation/routes/exhibitor'
 import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
 
@@ -20,8 +20,9 @@ app.get('/health', (c) => {
 // 出展者API
 app.route('/api/exhibitors', exhibitorRoutes)
 
-// ARデザインAPI（認証必須）
+// ARデザインAPI
 app.route('/api/ar-designs', arDesignRoutes)
+
 // 出展管理API
 app.route('/api/exhibitions', exhibitionRoutes)
 
