@@ -8,8 +8,8 @@ import {
   handleGetExhibition,
   handleGetExhibitionImage,
   handlePublishExhibition,
-  handleUpdateExhibitionInformation,
   handleUnpublishExhibition,
+  handleUpdateExhibitionInformation,
   handleUploadExhibitionImage,
 } from '../handlers/exhibition'
 import type { Bindings } from '../handlers/index'
