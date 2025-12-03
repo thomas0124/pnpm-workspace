@@ -1,5 +1,3 @@
-import type { Context } from 'hono'
-
 import {
   AuthResponseSchema,
   ExhibitorLoginRequestSchema,
@@ -7,29 +5,30 @@ import {
 } from '../../application/dto/exhibitor.js'
 import { registerExhibitorUseCase } from '../../application/usecases/exhibitor/createExhibitor.js'
 import { loginExhibitorUseCase } from '../../application/usecases/exhibitor/loginExhibitor.js'
-import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository.js'
-import type { PasswordService } from '../../domain/services/password.js'
+import { UnauthorizedError } from '../../domain/errors/index.js'
 import { generateToken } from '../../infrastructure/external/jwtService.js'
+import type { HandlerContext } from './index'
+import { getContainer } from './index'
 
 /**
  * 出展者登録ハンドラー
  */
-export async function handleRegister(
-  c: Context,
-  exhibitorRepository: ExhibitorRepository,
-  passwordService: PasswordService
-) {
+export async function handleRegister(c: HandlerContext) {
+  const container = getContainer(c)
   const body = await c.req.json()
   const request = ExhibitorRegisterRequestSchema.parse(body)
 
   // ユースケース内でパスワードハッシュ化を行う
-  const exhibitorDto = await registerExhibitorUseCase(request, exhibitorRepository, passwordService)
+  const exhibitorDto = await registerExhibitorUseCase(
+    request,
+    container.exhibitorRepository,
+    container.passwordService
+  )
 
   // 環境変数からJWT_SECRETを取得
-  const jwtSecret = c.env.JWT_SECRET as string
+  const jwtSecret = c.env.JWT_SECRET
   if (!jwtSecret) {
-    console.error('JWT_SECRET is not configured')
-    throw new Error('Server configuration error: JWT_SECRET is missing.')
+    throw new UnauthorizedError('JWT_SECRETが設定されていません')
   }
 
   // JWTトークンを生成
@@ -46,23 +45,23 @@ export async function handleRegister(
 /**
  * 出展者ログインハンドラー
  */
-export async function handleLogin(
-  c: Context,
-  exhibitorRepository: ExhibitorRepository,
-  passwordService: PasswordService
-) {
+export async function handleLogin(c: HandlerContext) {
+  const container = getContainer(c)
   const body = await c.req.json()
   const request = ExhibitorLoginRequestSchema.parse(body)
 
   // 環境変数からJWT_SECRETを取得
-  const jwtSecret = c.env.JWT_SECRET as string
+  const jwtSecret = c.env.JWT_SECRET
+  if (!jwtSecret) {
+    throw new UnauthorizedError('JWT_SECRETが設定されていません')
+  }
 
   // ログインユースケースを実行
   const response = await loginExhibitorUseCase(
     request,
-    exhibitorRepository,
+    container.exhibitorRepository,
     jwtSecret,
-    passwordService
+    container.passwordService
   )
 
   return c.json(response, 200)
@@ -71,7 +70,7 @@ export async function handleLogin(
 /**
  * 出展者ログアウトハンドラー
  */
-export async function handleLogout(c: Context) {
+export async function handleLogout(c: HandlerContext) {
   // ステートレスJWTの場合、サーバー側での処理は不要
   // クライアント側でトークンを削除することでログアウト
   return c.body(null, 204)

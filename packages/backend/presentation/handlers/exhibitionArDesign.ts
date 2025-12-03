@@ -1,19 +1,15 @@
-import type { Context } from 'hono'
-
 import { listArDesignsUseCase } from '../../application/usecases/exhibitionArDesign/listArDesign'
-import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
+import type { HandlerContext } from './index'
+import { getContainer } from './index'
 
 /**
  * ARデザイン一覧取得ハンドラー
  *
- * @param c - Honoコンテキスト
- * @param repository - ExhibitionArDesignリポジトリ
+ * @param c - HandlerContext
  * @returns 200 OK with ARデザイン一覧
  */
-export async function handleListArDesign(
-  c: Context,
-  repository: ExhibitionArDesignRepository
-): Promise<Response> {
-  const response = await listArDesignsUseCase(repository)
+export async function handleListArDesign(c: HandlerContext): Promise<Response> {
+  const container = getContainer(c)
+  const response = await listArDesignsUseCase(container.exhibitionArDesignRepository)
   return c.json(response, 200)
 }

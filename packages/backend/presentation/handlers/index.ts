@@ -9,6 +9,7 @@ import { createContainer } from '../../infrastructure/di/container'
  */
 export type Bindings = {
   DB: D1Database
+  JWT_SECRET: string
 }
 
 /**
