@@ -36,6 +36,7 @@ CREATE TABLE `exhibition_information` (
 	FOREIGN KEY (`exhibition_ar_design_id`) REFERENCES `exhibition_ar_design`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `exhibition_information_exhibitor_id_unique` ON `exhibition_information` (`exhibitor_id`);--> statement-breakpoint
 CREATE TABLE `exhibitor` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
