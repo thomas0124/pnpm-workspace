@@ -1,4 +1,3 @@
-import { ValidationError } from '../../../domain/errors'
 import { publish as publishExhibitionDomain } from '../../../domain/factories/exhibition'
 import type { Exhibition } from '../../../domain/models/exhibition'
 import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
@@ -62,10 +61,6 @@ export async function publishExhibitionUseCase(
     exhibitorId,
     exhibitionRepository
   )
-
-  if (exhibition.exhibitionInformationId === null) {
-    throw new ValidationError('必須情報が不足しています(exhibition_information_idがNULL)')
-  }
 
   const published = publishExhibitionDomain(exhibition)
 
