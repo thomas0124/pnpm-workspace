@@ -26,7 +26,12 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
   const { exhibition } = exhibitionSchema
 
   // 固定ID（テストしやすいように決め打ち・すべてUUID形式）
-  const exhibitorId = '7c64d3d8-2fe4-4042-bf3d-0c6840016f39'
+  const exhibitorIds = [
+    '7c64d3d8-2fe4-4042-bf3d-0c6840016f39',
+    '8d75e4e9-3af5-5153-ca4e-1d7951127f40',
+    '9e86f5fa-4ba6-6264-da5f-2e8a6223a51',
+    'af97a6ab-5cb7-7375-eb6a-3f9b7334b62',
+  ]
 
   const arDesignIds = [
     '53486767-131a-402f-92b2-629a7915765d',
@@ -62,18 +67,20 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     await db.delete(exhibitionArDesign).where(eq(exhibitionArDesign.id, id)).run()
   }
 
-  await db.delete(exhibitor).where(eq(exhibitor.id, exhibitorId)).run()
+  for (const id of exhibitorIds) {
+    await db.delete(exhibitor).where(eq(exhibitor.id, id)).run()
+  }
 
-  // 出展者
-  const exhibitorRow: Exhibitor = {
-    id: exhibitorId,
-    name: 'Seed Exhibitor',
+  // 出展者（各出展情報ごとに異なる出展者を作成）
+  const exhibitorRows: Exhibitor[] = exhibitorIds.map((id, index) => ({
+    id,
+    name: `Seed Exhibitor ${index + 1}`,
     passwordHash: 'dummy-hash', // テスト用途なので実際のハッシュでなくてOK
     createdAt: now,
     updatedAt: now,
-  }
+  }))
 
-  await db.insert(exhibitor).values(exhibitorRow).run()
+  await db.insert(exhibitor).values(exhibitorRows).run()
 
   // ARデザイン（URLだけ持つシンプルなものを複数パターン用意）
   const arDesignRows: ExhibitionArDesign[] = [
@@ -93,9 +100,9 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
   const exhibitionInformationRows: ExhibitionInformation[] = [
     {
       id: exhibitionInformationIds[0],
-      exhibitorId,
+      exhibitorId: exhibitorIds[0],
       exhibitionArDesignId: arDesignIds[0],
-      exhibitorName: 'Seed Exhibitor',
+      exhibitorName: 'Seed Exhibitor 1',
       title: 'Seed Exhibition Title - 展示',
       category: '展示',
       location: 'A-01',
@@ -108,9 +115,9 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     },
     {
       id: exhibitionInformationIds[1],
-      exhibitorId,
+      exhibitorId: exhibitorIds[1],
       exhibitionArDesignId: arDesignIds[1],
-      exhibitorName: 'Seed Exhibitor',
+      exhibitorName: 'Seed Exhibitor 2',
       title: 'Seed Exhibition Title - 体験',
       category: '体験',
       location: 'B-02',
@@ -123,9 +130,9 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     },
     {
       id: exhibitionInformationIds[2],
-      exhibitorId,
+      exhibitorId: exhibitorIds[2],
       exhibitionArDesignId: null,
-      exhibitorName: 'Seed Exhibitor',
+      exhibitorName: 'Seed Exhibitor 3',
       title: 'Seed Exhibition Title - 飲食',
       category: '飲食',
       location: 'C-03',
@@ -139,9 +146,9 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     {
       // 非公開（ドラフト）用の出展情報
       id: exhibitionInformationIds[3],
-      exhibitorId,
+      exhibitorId: exhibitorIds[3],
       exhibitionArDesignId: null,
-      exhibitorName: 'Seed Exhibitor',
+      exhibitorName: 'Seed Exhibitor 4',
       title: 'Draft Exhibition Title - 展示',
       category: '展示',
       location: 'D-04',
@@ -162,7 +169,7 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     .values([
       {
         id: exhibitionIds[0],
-        exhibitorId,
+        exhibitorId: exhibitorIds[0],
         exhibitionInformationId: exhibitionInformationIds[0],
         isDraft: 0,
         isPublished: 1,
@@ -172,7 +179,7 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
       },
       {
         id: exhibitionIds[1],
-        exhibitorId,
+        exhibitorId: exhibitorIds[1],
         exhibitionInformationId: exhibitionInformationIds[1],
         isDraft: 0,
         isPublished: 1,
@@ -182,7 +189,7 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
       },
       {
         id: exhibitionIds[2],
-        exhibitorId,
+        exhibitorId: exhibitorIds[2],
         exhibitionInformationId: exhibitionInformationIds[2],
         isDraft: 0,
         isPublished: 1,
@@ -193,7 +200,7 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
       {
         // ドラフト（非公開）出展。公開APIでは取得されないことを確認するためのデータ
         id: exhibitionIds[3],
-        exhibitorId,
+        exhibitorId: exhibitorIds[3],
         exhibitionInformationId: exhibitionInformationIds[3],
         isDraft: 1,
         isPublished: 0,

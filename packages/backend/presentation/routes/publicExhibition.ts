@@ -1,15 +1,11 @@
-import type { D1Database } from '@cloudflare/workers-types'
 import { Hono } from 'hono'
 
+import type { Bindings } from '../handlers/index'
 import {
   handleGetPublicExhibition,
   handleGetPublicExhibitionCategories,
   handleGetPublicExhibitions,
 } from '../handlers/publicExhibition'
-
-type Bindings = {
-  DB: D1Database
-}
 
 export const publicExhibitionRoutes = new Hono<{ Bindings: Bindings }>()
 

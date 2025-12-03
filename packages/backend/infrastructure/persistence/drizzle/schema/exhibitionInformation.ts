@@ -13,7 +13,8 @@ export const exhibitionInformation = sqliteTable('exhibition_information', {
     .$defaultFn(() => uuidv4()),
   exhibitorId: text('exhibitor_id')
     .references(() => exhibitor.id)
-    .notNull(),
+    .notNull()
+    .unique(),
   exhibitionArDesignId: text('exhibition_ar_design_id').references(() => exhibitionArDesign.id),
   exhibitorName: text('exhibitor_name').notNull(),
   title: text('title').notNull(),

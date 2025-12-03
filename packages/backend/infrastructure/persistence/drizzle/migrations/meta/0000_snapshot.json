@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "e22114f6-9023-47a6-aa1c-1f4c45e143b1",
+  "id": "3df08252-50da-4a05-a4fc-f2367f003bcb",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "exhibition": {
@@ -227,7 +227,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "exhibition_information_exhibitor_id_unique": {
+          "name": "exhibition_information_exhibitor_id_unique",
+          "columns": [
+            "exhibitor_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "exhibition_information_exhibitor_id_exhibitor_id_fk": {
           "name": "exhibition_information_exhibitor_id_exhibitor_id_fk",

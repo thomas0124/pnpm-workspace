@@ -29,14 +29,7 @@ export default [
       // TypeScript型安全性ルール
       '@typescript-eslint/no-unnecessary-type-assertion': 'error',
 
-      '@typescript-eslint/explicit-function-return-type': [
-        'warn',
-        {
-          allowExpressions: true,
-          allowTypedFunctionExpressions: true,
-          allowHigherOrderFunctions: true,
-        },
-      ],
+      '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
 
       // 未使用変数のエラー

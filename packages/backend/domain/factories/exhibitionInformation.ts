@@ -62,3 +62,45 @@ export function reconstructExhibitionInformation(
 ): ExhibitionInformation {
   return ExhibitionInformationSchema.parse(data)
 }
+
+/**
+ * 既存のExhibitionInformationを更新
+ * イミュータブルに新しいオブジェクトを返す
+ *
+ * @param existing 既存のExhibitionInformationエンティティ
+ * @param updates 更新するフィールド（部分的に更新可能）
+ * @returns 更新されたExhibitionInformationエンティティ
+ * @throws zodバリデーションエラー時
+ */
+export function updateExhibitionInformation(
+  existing: ExhibitionInformation,
+  updates: {
+    exhibitorName?: string
+    title?: string
+    category?: Category
+    location?: string
+    price?: number | null
+    requiredTime?: number | null
+    comment?: string | null
+    exhibitionArDesignId?: string | null
+    image?: Uint8Array | null
+  }
+): ExhibitionInformation {
+  const now = new Date().toISOString()
+
+  return ExhibitionInformationSchema.parse({
+    id: existing.id,
+    exhibitorId: existing.exhibitorId,
+    exhibitionArDesignId: updates.exhibitionArDesignId ?? existing.exhibitionArDesignId,
+    exhibitorName: updates.exhibitorName ?? existing.exhibitorName,
+    title: updates.title ?? existing.title,
+    category: updates.category ?? existing.category,
+    location: updates.location ?? existing.location,
+    price: updates.price !== undefined ? updates.price : existing.price,
+    requiredTime: updates.requiredTime !== undefined ? updates.requiredTime : existing.requiredTime,
+    comment: updates.comment !== undefined ? updates.comment : existing.comment,
+    image: updates.image !== undefined ? updates.image : existing.image,
+    createdAt: existing.createdAt,
+    updatedAt: now,
+  })
+}
