@@ -155,25 +155,23 @@ export async function handleGetExhibitionImage(c: HandlerContext) {
   )
 
   // シグネチャから簡易的にContent-Typeを判定
-  let contentType = 'image/png'
+  let contentType = 'application/octet-stream'
   if (image.length >= 4) {
-    const sig0 = image[0]
-    const sig1 = image[1]
-    const sig2 = image[2]
-    const sig3 = image[3]
-    // JPEG: FF D8 FF
-    if (sig0 === 0xff && sig1 === 0xd8 && sig2 === 0xff) {
-      contentType = 'image/jpeg'
-    }
+    const sig = image.subarray(0, 4)
     // PNG: 89 50 4E 47
-    else if (sig0 === 0x89 && sig1 === 0x50 && sig2 === 0x4e && sig3 === 0x47) {
+    if (sig[0] === 0x89 && sig[1] === 0x50 && sig[2] === 0x4e && sig[3] === 0x47) {
       contentType = 'image/png'
     }
+    // JPEG: FF D8 FF
+    else if (sig[0] === 0xff && sig[1] === 0xd8 && sig[2] === 0xff) {
+      contentType = 'image/jpeg'
+    }
     // GIF: 'GIF8'
-    else if (sig0 === 0x47 && sig1 === 0x49 && sig2 === 0x46 && sig3 === 0x38) {
+    else if (sig[0] === 0x47 && sig[1] === 0x49 && sig[2] === 0x46 && sig[3] === 0x38) {
       contentType = 'image/gif'
     }
   }
+
 
   const arrayBuffer = image.buffer.slice(
     image.byteOffset,
