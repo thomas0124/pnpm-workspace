@@ -5,6 +5,7 @@ import {
 } from '../../application/dto/exhibitor.js'
 import { registerExhibitorUseCase } from '../../application/usecases/exhibitor/createExhibitor.js'
 import { loginExhibitorUseCase } from '../../application/usecases/exhibitor/loginExhibitor.js'
+import { UnauthorizedError } from '../../domain/errors/index.js'
 import { generateToken } from '../../infrastructure/external/jwtService.js'
 import type { HandlerContext } from './index'
 import { getContainer } from './index'
@@ -27,8 +28,7 @@ export async function handleRegister(c: HandlerContext) {
   // 環境変数からJWT_SECRETを取得
   const jwtSecret = c.env.JWT_SECRET
   if (!jwtSecret) {
-    console.error('JWT_SECRET is not configured')
-    throw new Error('Server configuration error: JWT_SECRET is missing.')
+    throw new UnauthorizedError('JWT_SECRETが設定されていません')
   }
 
   // JWTトークンを生成
@@ -52,6 +52,9 @@ export async function handleLogin(c: HandlerContext) {
 
   // 環境変数からJWT_SECRETを取得
   const jwtSecret = c.env.JWT_SECRET
+  if (!jwtSecret) {
+    throw new UnauthorizedError('JWT_SECRETが設定されていません')
+  }
 
   // ログインユースケースを実行
   const response = await loginExhibitorUseCase(
