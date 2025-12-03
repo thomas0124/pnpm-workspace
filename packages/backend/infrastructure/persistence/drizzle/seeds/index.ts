@@ -59,6 +59,7 @@ async function main() {
     },
   })
 
-  await seedPublicExhibitions(db)}
+  await seedPublicExhibitions(db)
+}
 
 main()
