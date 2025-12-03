@@ -11,6 +11,8 @@ import { getExhibitorId } from '../middlewares/authMiddleware'
 import type { HandlerContext } from './index'
 import { getContainer } from './index'
 
+const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
+
 /**
  * 出展作成ハンドラー
  */
@@ -108,8 +110,7 @@ export async function handleUploadExhibitionImage(c: HandlerContext) {
     throw new ValidationError('画像ファイルが指定されていません')
   }
 
-  const maxSize = 5 * 1024 * 1024 // 5MB
-  if (file.size > maxSize) {
+  if (file.size > MAX_SIZE_BYTES) {
     throw new ValidationError('画像ファイルのサイズが大きすぎます（最大5MB）')
   }
 
