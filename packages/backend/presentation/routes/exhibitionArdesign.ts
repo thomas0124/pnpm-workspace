@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { createContainer } from '../../infrastructure/di/container.js'
-import { handleListArDesign } from '../handlers/exhibitionArdesign.js'
+import { handleListArDesign } from '../handlers/exhibitionArDesign.js'
 import { authMiddleware } from '../middlewares/authMiddleware.js'
 
 type Bindings = {
