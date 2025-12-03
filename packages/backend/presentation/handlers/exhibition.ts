@@ -2,8 +2,11 @@ import { ExhibitionInformationInputSchema } from '../../application/dto/exhibiti
 import { createExhibitionUseCase } from '../../application/usecases/exhibition/createExhibition'
 import { deleteExhibitionUseCase } from '../../application/usecases/exhibition/deleteExhibition'
 import { deleteExhibitionImageUseCase } from '../../application/usecases/exhibition/deleteExhibitionImage'
+import { draftExhibitionUseCase } from '../../application/usecases/exhibition/draftExhibition'
 import { getExhibitionUseCase } from '../../application/usecases/exhibition/getExhibition'
 import { getExhibitionImageUseCase } from '../../application/usecases/exhibition/getExhibitionImage'
+import { publishExhibitionUseCase } from '../../application/usecases/exhibition/publishExhibition'
+import { unpublishExhibitionUseCase } from '../../application/usecases/exhibition/unpublishExhibition'
 import { updateExhibitionInformationUseCase } from '../../application/usecases/exhibition/updateExhibitionInformation'
 import { uploadExhibitionImageUseCase } from '../../application/usecases/exhibition/uploadExhibitionImage'
 import { ValidationError } from '../../domain/errors'
@@ -70,6 +73,74 @@ export async function handleDeleteExhibition(c: HandlerContext) {
 
   return c.body(null, 204)
 }
+
+// 出展状態変更系ハンドラーで共通の依存取得
+function getExhibitionDeps(c: HandlerContext) {
+  const container = getContainer(c)
+  const exhibitorId = getExhibitorId(c)
+  const exhibitionId = c.req.param('exhibition_id')
+
+  return {
+    container,
+    exhibitorId,
+    exhibitionId,
+  }
+}
+
+/**
+ * 出展を下書き状態に戻すハンドラー
+ * PUT /exhibitions/{exhibition_id}/draft
+ */
+export async function handleDraftExhibition(c: HandlerContext) {
+  const { container, exhibitorId, exhibitionId } = getExhibitionDeps(c)
+
+  const result = await draftExhibitionUseCase(
+    exhibitionId,
+    exhibitorId,
+    container.exhibitionRepository,
+    container.exhibitionInformationRepository,
+    container.exhibitionArDesignRepository
+  )
+
+  return c.json(result, 200)
+}
+
+/**
+ * 出展公開ハンドラー
+ * PUT /exhibitions/{exhibition_id}/publish
+ */
+export async function handlePublishExhibition(c: HandlerContext) {
+  const { container, exhibitorId, exhibitionId } = getExhibitionDeps(c)
+
+  const result = await publishExhibitionUseCase(
+    exhibitionId,
+    exhibitorId,
+    container.exhibitionRepository,
+    container.exhibitionInformationRepository,
+    container.exhibitionArDesignRepository
+  )
+
+  return c.json(result, 200)
+}
+
+/**
+ * 出展非公開ハンドラー
+ * PUT /exhibitions/{exhibition_id}/unpublish
+ */
+export async function handleUnpublishExhibition(c: HandlerContext) {
+  const { container, exhibitorId, exhibitionId } = getExhibitionDeps(c)
+
+  const result = await unpublishExhibitionUseCase(
+    exhibitionId,
+    exhibitorId,
+    container.exhibitionRepository,
+    container.exhibitionInformationRepository,
+    container.exhibitionArDesignRepository
+  )
+
+  return c.json(result, 200)
+}
+
 
 /**
  * 出展基本情報更新ハンドラー
