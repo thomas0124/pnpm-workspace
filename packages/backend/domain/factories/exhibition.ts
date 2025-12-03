@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 
 import type { Exhibition } from '../models/exhibition'
+import { ValidationError } from '../errors'
 import { ExhibitionSchema } from '../models/exhibition'
 
 // 新規Exhibitionを作成
@@ -42,17 +43,19 @@ export function reconstructExhibition(data: {
  *
  * @param exhibition - 公開するExhibition
  * @returns 公開状態に更新されたExhibition
- * @throws Error - exhibitionInformationIdがnullの場合、または既に公開中の場合はエラー
+ * @throws ValidationError - exhibitionInformationIdがnullの場合、または既に公開中の場合はエラー
  */
 export function publish(exhibition: Exhibition): Exhibition {
   // 公開条件: exhibitionInformationIdがnullでないこと
   if (exhibition.exhibitionInformationId === null) {
-    throw new Error('公開するには基本情報(exhibitionInformationId)が登録されている必要があります')
+    throw new ValidationError(
+      '公開するには基本情報(exhibitionInformationId)が登録されている必要があります'
+    )
   }
 
   // 既に公開中の場合はエラー（直接的な状態遷移は不可）
   if (exhibition.isPublished === 1) {
-    throw new Error('既に公開中の出展です')
+    throw new ValidationError('既に公開中の出展です')
   }
 
   const now = new Date().toISOString()
@@ -72,12 +75,12 @@ export function publish(exhibition: Exhibition): Exhibition {
  *
  * @param exhibition - 非公開にするExhibition
  * @returns 非公開状態に更新されたExhibition
- * @throws Error - 既に非公開の場合はエラー
+ * @throws ValidationError - 既に非公開の場合はエラー
  */
 export function unpublish(exhibition: Exhibition): Exhibition {
   // 公開中でない場合はエラー
   if (exhibition.isPublished === 0) {
-    throw new Error('既に非公開の出展です')
+    throw new ValidationError('既に非公開の出展です')
   }
 
   const now = new Date().toISOString()
@@ -97,12 +100,12 @@ export function unpublish(exhibition: Exhibition): Exhibition {
  *
  * @param exhibition - 下書きに戻すExhibition
  * @returns 下書き状態に更新されたExhibition
- * @throws Error - 公開中の場合はエラー（先に非公開にする必要がある）
+ * @throws ValidationError - 公開中の場合はエラー（先に非公開にする必要がある）
  */
 export function draft(exhibition: Exhibition): Exhibition {
   // 公開中の場合はエラー（直接下書きに戻せない）
   if (exhibition.isPublished === 1) {
-    throw new Error('公開中の出展は下書きに戻せません。先に非公開にしてください')
+    throw new ValidationError('公開中の出展は下書きに戻せません。先に非公開にしてください')
   }
 
   // 既に下書きの場合はそのまま返す
