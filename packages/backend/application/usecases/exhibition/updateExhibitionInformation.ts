@@ -3,7 +3,7 @@ import { updateExhibitionInformation } from '../../../domain/factories/exhibitio
 import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
-import type { ExhibitionInformationDto,ExhibitionInformationInputDto } from '../../dto/exhibition'
+import type { ExhibitionInformationDto, ExhibitionInformationInputDto } from '../../dto/exhibition'
 import { toExhibitionInformationDto } from '../../dto/exhibition'
 import { validateArDesignId } from '../shared/validateArDesignId'
 import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
@@ -74,4 +74,3 @@ export async function updateExhibitionInformationUseCase(
   // DTOに変換
   return toExhibitionInformationDto(updatedInformation, exhibitionArDesignRepository)
 }
-

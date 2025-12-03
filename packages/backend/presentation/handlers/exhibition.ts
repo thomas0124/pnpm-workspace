@@ -4,8 +4,8 @@ import { deleteExhibitionUseCase } from '../../application/usecases/exhibition/d
 import { getExhibitionUseCase } from '../../application/usecases/exhibition/getExhibition'
 import { updateExhibitionInformationUseCase } from '../../application/usecases/exhibition/updateExhibitionInformation'
 import { getExhibitorId } from '../middlewares/authMiddleware'
-import type {HandlerContext} from './index';
-import { getContainer  } from './index'
+import type { HandlerContext } from './index'
+import { getContainer } from './index'
 
 /**
  * 出展作成ハンドラー
@@ -87,4 +87,3 @@ export async function handleUpdateExhibitionInformation(c: HandlerContext) {
 
   return c.json(result, 200)
 }
-

@@ -2,7 +2,7 @@ import type { ExhibitionRepository } from '../../../domain/repositories/exhibiti
 import type { ExhibitionArDesignRepository } from '../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
 import type { ExhibitionDto } from '../../dto/exhibition'
-import { toExhibitionDto,toExhibitionInformationDto } from '../../dto/exhibition'
+import { toExhibitionDto, toExhibitionInformationDto } from '../../dto/exhibition'
 import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
 
 /**
@@ -47,4 +47,3 @@ export async function getExhibitionUseCase(
 
   return toExhibitionDto(exhibition, exhibitionInformationDto)
 }
-

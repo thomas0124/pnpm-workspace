@@ -25,4 +25,3 @@ export type HandlerContext = Context<{ Bindings: Bindings }>
 export function getContainer(c: HandlerContext): Container {
   return createContainer(c.env.DB)
 }
-

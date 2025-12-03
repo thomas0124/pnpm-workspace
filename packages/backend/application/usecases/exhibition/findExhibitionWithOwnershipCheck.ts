@@ -1,4 +1,4 @@
-import { ForbiddenError,NotFoundError } from '../../../domain/errors'
+import { ForbiddenError, NotFoundError } from '../../../domain/errors'
 import type { Exhibition } from '../../../domain/models/exhibition'
 import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
 import { isOwnedBy } from '../../../domain/services/exhibition'
@@ -29,4 +29,3 @@ export async function findExhibitionWithOwnershipCheck(
 
   return exhibition
 }
-

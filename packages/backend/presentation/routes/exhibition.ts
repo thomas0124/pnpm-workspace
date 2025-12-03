@@ -25,4 +25,3 @@ exhibitionRoutes.delete('/:exhibition_id', handleDeleteExhibition)
 
 // PUT /exhibitions/:exhibition_id/information - 基本情報の更新
 exhibitionRoutes.put('/:exhibition_id/information', handleUpdateExhibitionInformation)
-

@@ -21,4 +21,3 @@ export async function validateArDesignId(
     throw new NotFoundError('指定されたARデザインが見つかりません')
   }
 }
-

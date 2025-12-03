@@ -36,4 +36,3 @@ export async function deleteExhibitionUseCase(
     await exhibitionInformationRepository.delete(exhibitionInformationId)
   }
 }
-
