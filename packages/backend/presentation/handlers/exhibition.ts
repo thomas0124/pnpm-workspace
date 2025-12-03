@@ -141,7 +141,6 @@ export async function handleUnpublishExhibition(c: HandlerContext) {
   return c.json(result, 200)
 }
 
-
 /**
  * 出展基本情報更新ハンドラー
  */

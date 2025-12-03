@@ -75,5 +75,3 @@ export async function unpublishExhibitionUseCase(
     exhibitionArDesignRepository,
   })
 }
-
-
