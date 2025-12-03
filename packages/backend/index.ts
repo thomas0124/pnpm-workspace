@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 
-import { errorHandler } from './presentation/middlewares/errorHandler'
-import { exhibitorRoutes } from './presentation/routes/exhibitor'
-import { exhibitionRoutes } from './presentation/routes/exhibition'
-import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
 import type { Bindings } from './presentation/handlers/index'
+import { errorHandler } from './presentation/middlewares/errorHandler'
+import { exhibitionRoutes } from './presentation/routes/exhibition'
+import { exhibitorRoutes } from './presentation/routes/exhibitor'
+import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
 
 const app = new Hono<{ Bindings: Bindings }>()
 

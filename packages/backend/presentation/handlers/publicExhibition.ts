@@ -3,7 +3,8 @@ import {
   getPublicExhibitionUseCase,
   listPublicExhibitionsUseCase,
 } from '../../application/usecases/exhibition/publicExhibition'
-import { getContainer, type HandlerContext } from './index'
+import type {HandlerContext} from './index';
+import { getContainer  } from './index'
 
 export async function handleGetPublicExhibitions(c: HandlerContext) {
   const container = getContainer(c)

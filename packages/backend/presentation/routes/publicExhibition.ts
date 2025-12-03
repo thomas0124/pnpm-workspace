@@ -1,11 +1,11 @@
 import { Hono } from 'hono'
 
+import type { Bindings } from '../handlers/index'
 import {
   handleGetPublicExhibition,
   handleGetPublicExhibitionCategories,
   handleGetPublicExhibitions,
 } from '../handlers/publicExhibition'
-import type { Bindings } from '../handlers/index'
 
 export const publicExhibitionRoutes = new Hono<{ Bindings: Bindings }>()
 

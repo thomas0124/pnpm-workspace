@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
+import type { Exhibition } from '../../domain/models/exhibition'
+import type { ExhibitionInformation } from '../../domain/models/exhibitionInformation'
 import type { ExhibitionCategory } from '../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
-import type { ExhibitionInformation } from '../../domain/models/exhibitionInformation'
-import type { Exhibition } from '../../domain/models/exhibition'
 
 /**
  * ページネーションメタ情報（公開API用）

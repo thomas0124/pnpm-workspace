@@ -1,8 +1,8 @@
 import type { D1Database } from '@cloudflare/workers-types'
 import type { Context } from 'hono'
 
-import { createContainer } from '../../infrastructure/di/container'
 import type { Container } from '../../infrastructure/di/container'
+import { createContainer } from '../../infrastructure/di/container'
 
 /**
  * Cloudflare WorkersのBindings型定義

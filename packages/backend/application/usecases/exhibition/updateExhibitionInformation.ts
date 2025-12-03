@@ -1,12 +1,12 @@
+import { NotFoundError, ValidationError } from '../../../domain/errors'
 import { updateExhibitionInformation } from '../../../domain/factories/exhibitionInformation'
 import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
 import type { ExhibitionArDesignRepository } from '../../../domain/repositories/exhibitionArDesign'
-import { NotFoundError, ValidationError } from '../../../domain/errors'
-import type { ExhibitionInformationInputDto, ExhibitionInformationDto } from '../../dto/exhibition'
+import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
+import type { ExhibitionInformationDto,ExhibitionInformationInputDto } from '../../dto/exhibition'
 import { toExhibitionInformationDto } from '../../dto/exhibition'
-import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
 import { validateArDesignId } from '../shared/validateArDesignId'
+import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
 
 /**
  * 出展基本情報更新ユースケース

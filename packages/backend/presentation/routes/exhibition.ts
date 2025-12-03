@@ -2,12 +2,12 @@ import { Hono } from 'hono'
 
 import {
   handleCreateExhibition,
-  handleGetExhibition,
   handleDeleteExhibition,
+  handleGetExhibition,
   handleUpdateExhibitionInformation,
 } from '../handlers/exhibition'
-import { authMiddleware } from '../middlewares/authMiddleware'
 import type { Bindings } from '../handlers/index'
+import { authMiddleware } from '../middlewares/authMiddleware'
 
 export const exhibitionRoutes = new Hono<{ Bindings: Bindings }>()
 
