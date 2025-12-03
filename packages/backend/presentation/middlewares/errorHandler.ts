@@ -11,9 +11,6 @@ import {
 
 export const errorHandler: ErrorHandler = (err, c) => {
   console.error('Error:', err)
-  console.error('Error type:', typeof err)
-  console.error('Error message:', err?.message)
-  console.error('Error stack:', err?.stack)
 
   // Zodバリデーションエラー
   if (err instanceof ZodError) {

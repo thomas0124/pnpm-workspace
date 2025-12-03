@@ -6,20 +6,18 @@ import type { ExhibitionInformationRepository } from '../../domain/repositories/
 import type { ExhibitorRepository } from '../../domain/repositories/exhibitorRepository'
 import type { PasswordService } from '../../domain/services/password'
 import { createBcryptPasswordService } from '../external/passwordService'
-import * as drizzleExhibitionArDesignRepo from '../persistence/drizzle/exhibitionArDesignRepository'
-import * as drizzleExhibitionInformationRepo from '../persistence/drizzle/exhibitionInformationRepository'
-import * as drizzleExhibitionRepo from '../persistence/drizzle/exhibitionRepository'
-import * as drizzleExhibitorRepo from '../persistence/drizzle/ExhibitorRepository'
+import { createExhibitionArDesignRepository } from '../persistence/drizzle/exhibitionArDesignRepository'
+import { createExhibitionInformationRepository } from '../persistence/drizzle/exhibitionInformationRepository'
+import { createExhibitionRepository } from '../persistence/drizzle/exhibitionRepository'
+import { createExhibitorRepository } from '../persistence/drizzle/ExhibitorRepository'
 
 export function createContainer(d1: D1Database) {
-  const exhibitorRepository: ExhibitorRepository =
-    drizzleExhibitorRepo.createExhibitorRepository(d1)
-  const exhibitionRepository: ExhibitionRepository =
-    drizzleExhibitionRepo.createExhibitionRepository(d1)
+  const exhibitorRepository: ExhibitorRepository = createExhibitorRepository(d1)
+  const exhibitionRepository: ExhibitionRepository = createExhibitionRepository(d1)
   const exhibitionInformationRepository: ExhibitionInformationRepository =
-    drizzleExhibitionInformationRepo.createExhibitionInformationRepository(d1)
+    createExhibitionInformationRepository(d1)
   const exhibitionArDesignRepository: ExhibitionArDesignRepository =
-    drizzleExhibitionArDesignRepo.createExhibitionArDesignRepository(d1)
+    createExhibitionArDesignRepository(d1)
   const passwordService: PasswordService = createBcryptPasswordService()
 
   return {

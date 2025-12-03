@@ -25,12 +25,12 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
   const { exhibitionInformation } = exhibitionInformationSchema
   const { exhibition } = exhibitionSchema
 
-  // 固定ID（テストしやすいように決め打ち・すべてUUID形式）
+  // 固定ID(テストしやすいように決め打ち・すべてUUID形式)
   const exhibitorIds = [
     '7c64d3d8-2fe4-4042-bf3d-0c6840016f39',
     '8d75e4e9-3af5-5153-ca4e-1d7951127f40',
-    '9e86f5fa-4ba6-6264-da5f-2e8a6223a51',
-    'af97a6ab-5cb7-7375-eb6a-3f9b7334b62',
+    '9e86f5fa-4ba6-6264-da5f-2e8a6223a517',
+    'af97a6ab-5cb7-7375-eb6a-3f9b7334b62f',
   ]
 
   const arDesignIds = [
