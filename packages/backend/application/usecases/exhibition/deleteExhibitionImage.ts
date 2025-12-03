@@ -38,6 +38,9 @@ export async function deleteExhibitionImageUseCase(
   if (!information) {
     throw new NotFoundError('出展情報が見つかりません')
   }
+  if (!information.image) {
+    throw new NotFoundError('画像が見つかりません')
+  }
 
   const updatedInformation = updateExhibitionInformation(information, {
     image: null,
