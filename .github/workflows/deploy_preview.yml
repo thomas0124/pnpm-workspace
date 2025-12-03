@@ -105,6 +105,12 @@ jobs:
           DB_NAME="${{ steps.d1-setup.outputs.DB_NAME }}"
           DB_ID="${{ steps.d1-setup.outputs.DB_ID }}"
           
+          # 元のwrangler.tomlをバックアップ（チェックアウト時点の状態を保持）
+          cp wrangler.toml wrangler.toml.original
+          
+          # バックアップから一時的なwrangler.tomlを作成（常に元の状態から開始）
+          cp wrangler.toml.original wrangler.toml
+          
           # env.preview.d1_databasesセクション内のdatabase_nameを更新
           sed -i "s|database_name = \"ar-pamph-db-preview\"|database_name = \"$DB_NAME\"|" wrangler.toml
           
@@ -119,6 +125,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          # 一時的なwrangler.tomlが使用される（前のステップで作成済み）
           IS_NEW_DB="${{ steps.d1-setup.outputs.IS_NEW_DB }}"
           
           # マイグレーションファイルが存在するかチェック
@@ -174,6 +181,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          # ローカルマイグレーションとシードはデフォルトDBを使用するが、
+          # リモートD1への適用は一時的なwrangler.tomlの設定を使用する
           IS_NEW_DB="${{ steps.d1-setup.outputs.IS_NEW_DB }}"
           
           if [ "$IS_NEW_DB" = "true" ]; then
@@ -237,6 +246,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          # 一時的なwrangler.tomlが使用される（前のステップで作成済み）
           # Preview環境にデプロイ（通常のバンドルモード）
           # TypeScriptエントリーポイント（index.ts）をWranglerにバンドルさせる
           echo "🚀 Deploying backend (with bundling)..."
