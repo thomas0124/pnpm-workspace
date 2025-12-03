@@ -3,8 +3,11 @@ import { Hono } from 'hono'
 import {
   handleCreateExhibition,
   handleDeleteExhibition,
+  handleDeleteExhibitionImage,
   handleGetExhibition,
+  handleGetExhibitionImage,
   handleUpdateExhibitionInformation,
+  handleUploadExhibitionImage,
 } from '../handlers/exhibition'
 import type { Bindings } from '../handlers/index'
 import { authMiddleware } from '../middlewares/authMiddleware'
@@ -22,6 +25,18 @@ exhibitionRoutes.get('/:exhibition_id', handleGetExhibition)
 
 // DELETE /exhibitions/:exhibition_id - 出展の削除
 exhibitionRoutes.delete('/:exhibition_id', handleDeleteExhibition)
+
+// POST /exhibitions/:exhibition_id/information/image - 出展画像のアップロード
+exhibitionRoutes.post('/:exhibition_id/information/image', handleUploadExhibitionImage)
+
+// PUT /exhibitions/:exhibition_id/information/image - 出展画像の更新
+exhibitionRoutes.put('/:exhibition_id/information/image', handleUploadExhibitionImage)
+
+// GET /exhibitions/:exhibition_id/information/image - 出展画像の取得
+exhibitionRoutes.get('/:exhibition_id/information/image', handleGetExhibitionImage)
+
+// DELETE /exhibitions/:exhibition_id/information/image - 出展画像の削除
+exhibitionRoutes.delete('/:exhibition_id/information/image', handleDeleteExhibitionImage)
 
 // PUT /exhibitions/:exhibition_id/information - 基本情報の更新
 exhibitionRoutes.put('/:exhibition_id/information', handleUpdateExhibitionInformation)
