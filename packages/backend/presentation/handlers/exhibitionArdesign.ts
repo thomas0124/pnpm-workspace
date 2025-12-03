@@ -8,7 +8,7 @@ import type { ExhibitionArDesignRepository } from '../../domain/repositories/exh
 export async function handleListArDesign(
   c: Context,
   repository: ExhibitionArDesignRepository
-) {
+): Promise<Response> {
   const response = await listArDesignsUseCase(repository)
   return c.json(response, 200)
 }
