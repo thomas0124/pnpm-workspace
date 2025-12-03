@@ -11,6 +11,7 @@ import {
   exhibitorSchema,
 } from '../client'
 import { seedPublicExhibitions } from './exhibition'
+import { seedArDesigns } from './exhibitionArDesign'
 
 dotenv.config()
 
@@ -60,6 +61,7 @@ async function main() {
   })
 
   await seedPublicExhibitions(db)
+  await seedArDesigns(db)
 }
 
 main()
