@@ -1,4 +1,3 @@
-import { ValidationError } from '../../../domain/errors'
 import { draft as draftExhibitionDomain } from '../../../domain/factories/exhibition'
 import type { Exhibition } from '../../../domain/models/exhibition'
 import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
@@ -62,11 +61,6 @@ export async function draftExhibitionUseCase(
     exhibitorId,
     exhibitionRepository
   )
-
-  // ドメインレベルの遷移チェック（公開中→下書きは禁止）
-  if (exhibition.isPublished === 1) {
-    throw new ValidationError('公開中の出展は下書きに戻せません。先に非公開にしてください')
-  }
 
   const drafted = draftExhibitionDomain(exhibition)
 
