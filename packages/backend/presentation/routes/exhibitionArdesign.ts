@@ -1,7 +1,8 @@
 import { Hono } from 'hono'
-import { createContainer } from '../../infrastructure/di/container.js'
-import { handleListArDesign } from '../handlers/exhibitionArDesign.js'
-import { authMiddleware } from '../middlewares/authMiddleware.js'
+
+import { createContainer } from '../../infrastructure/di/container'
+import { handleListArDesign } from '../handlers/exhibitionArDesign'
+import { authMiddleware } from '../middlewares/authMiddleware'
 
 type Bindings = {
   DB: D1Database

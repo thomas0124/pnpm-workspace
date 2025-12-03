@@ -2,9 +2,9 @@ import type { D1Database } from '@cloudflare/workers-types'
 import { Hono } from 'hono'
 
 import { errorHandler } from './presentation/middlewares/errorHandler'
+import { arDesignRoutes } from './presentation/routes/exhibitionArDesign'
 import { exhibitorRoutes } from './presentation/routes/exhibitor'
 import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
-import { ArDesignRoutes } from './presentation/routes/exhibitionArdesign'
 
 type Bindings = {
   DB: D1Database
@@ -23,10 +23,10 @@ app.get('/health', (c) => {
 // 出展者API
 app.route('/api/exhibitors', exhibitorRoutes)
 
+// ARデザインAPI（認証必須）
+app.route('/api/ar-designs', arDesignRoutes)
+
 // 公開出展API
 app.route('/', publicExhibitionRoutes)
-
-// ARデザインAPI
-app.route('/api/ar-designs', ArDesignRoutes)
 
 export default app

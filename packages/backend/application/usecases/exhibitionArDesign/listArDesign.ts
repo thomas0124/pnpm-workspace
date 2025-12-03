@@ -3,6 +3,9 @@ import type { ArDesignListResponse } from '../../dto/exhibitionArDesign'
 
 /**
  * ARデザイン一覧取得ユースケース
+ * 
+ * 利用可能なすべてのARデザインを取得します。
+ * 出展者が出展情報作成・編集時に使用します。
  *
  * @param repository - ExhibitionArDesignリポジトリ
  * @returns ARデザイン一覧
@@ -10,10 +13,8 @@ import type { ArDesignListResponse } from '../../dto/exhibitionArDesign'
 export async function listArDesignsUseCase(
   repository: ExhibitionArDesignRepository
 ): Promise<ArDesignListResponse> {
-  // 1. 全ARデザインを取得
   const arDesigns = await repository.findAll()
 
-  // 2. DTOに変換
   const data = arDesigns.map((design) => ({
     id: design.id,
     url: design.url,
