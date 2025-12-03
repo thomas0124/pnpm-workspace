@@ -1,0 +1,14 @@
+import type { Context } from 'hono'
+import { listArDesignsUseCase } from '../../application/usecases/exhibitionArDesign/listArDesign'
+import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
+
+/**
+ * ARデザイン一覧取得ハンドラー
+ */
+export async function handleListArDesign(
+  c: Context,
+  repository: ExhibitionArDesignRepository
+) {
+  const response = await listArDesignsUseCase(repository)
+  return c.json(response, 200)
+}
