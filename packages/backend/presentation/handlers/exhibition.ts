@@ -1,25 +1,16 @@
-import type { D1Database } from '@cloudflare/workers-types'
-import type { Context } from 'hono'
-
 import { ExhibitionInformationInputSchema } from '../../application/dto/exhibition'
 import { createExhibitionUseCase } from '../../application/usecases/exhibition/createExhibition'
 import { getExhibitionUseCase } from '../../application/usecases/exhibition/getExhibition'
 import { deleteExhibitionUseCase } from '../../application/usecases/exhibition/deleteExhibition'
 import { updateExhibitionInformationUseCase } from '../../application/usecases/exhibition/updateExhibitionInformation'
-import { createContainer } from '../../infrastructure/di/container'
 import { getExhibitorId } from '../middlewares/authMiddleware'
-
-type Bindings = {
-  DB: D1Database
-}
-
-type ExhibitionContext = Context<{ Bindings: Bindings }>
+import { getContainer, type HandlerContext } from './index'
 
 /**
  * 出展作成ハンドラー
  */
-export async function handleCreateExhibition(c: ExhibitionContext) {
-  const container = createContainer(c.env.DB)
+export async function handleCreateExhibition(c: HandlerContext) {
+  const container = getContainer(c)
   const exhibitorId = getExhibitorId(c)
 
   const body = await c.req.json()
@@ -39,8 +30,8 @@ export async function handleCreateExhibition(c: ExhibitionContext) {
 /**
  * 出展取得ハンドラー
  */
-export async function handleGetExhibition(c: ExhibitionContext) {
-  const container = createContainer(c.env.DB)
+export async function handleGetExhibition(c: HandlerContext) {
+  const container = getContainer(c)
   const exhibitorId = getExhibitorId(c)
   const exhibitionId = c.req.param('exhibition_id')
 
@@ -58,8 +49,8 @@ export async function handleGetExhibition(c: ExhibitionContext) {
 /**
  * 出展削除ハンドラー
  */
-export async function handleDeleteExhibition(c: ExhibitionContext) {
-  const container = createContainer(c.env.DB)
+export async function handleDeleteExhibition(c: HandlerContext) {
+  const container = getContainer(c)
   const exhibitorId = getExhibitorId(c)
   const exhibitionId = c.req.param('exhibition_id')
 
@@ -76,8 +67,8 @@ export async function handleDeleteExhibition(c: ExhibitionContext) {
 /**
  * 出展基本情報更新ハンドラー
  */
-export async function handleUpdateExhibitionInformation(c: ExhibitionContext) {
-  const container = createContainer(c.env.DB)
+export async function handleUpdateExhibitionInformation(c: HandlerContext) {
+  const container = getContainer(c)
   const exhibitorId = getExhibitorId(c)
   const exhibitionId = c.req.param('exhibition_id')
 
