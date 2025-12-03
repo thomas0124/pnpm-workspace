@@ -29,6 +29,9 @@ exhibitionRoutes.delete('/:exhibition_id', handleDeleteExhibition)
 // POST /exhibitions/:exhibition_id/information/image - 出展画像のアップロード
 exhibitionRoutes.post('/:exhibition_id/information/image', handleUploadExhibitionImage)
 
+// PUT /exhibitions/:exhibition_id/information/image - 出展画像の更新
+exhibitionRoutes.put('/:exhibition_id/information/image', handleUploadExhibitionImage)
+
 // GET /exhibitions/:exhibition_id/information/image - 出展画像の取得
 exhibitionRoutes.get('/:exhibition_id/information/image', handleGetExhibitionImage)
 
