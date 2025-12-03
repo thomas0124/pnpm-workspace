@@ -1,14 +1,10 @@
-import type { D1Database } from '@cloudflare/workers-types'
 import { Hono } from 'hono'
 
 import { errorHandler } from './presentation/middlewares/errorHandler'
 import { exhibitorRoutes } from './presentation/routes/exhibitor'
 import { exhibitionRoutes } from './presentation/routes/exhibition'
 import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
-
-type Bindings = {
-  DB: D1Database
-}
+import type { Bindings } from './presentation/handlers/index'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
