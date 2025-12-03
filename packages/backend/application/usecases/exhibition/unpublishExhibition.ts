@@ -1,4 +1,3 @@
-import { ValidationError } from '../../../domain/errors'
 import { unpublish as unpublishExhibitionDomain } from '../../../domain/factories/exhibition'
 import type { Exhibition } from '../../../domain/models/exhibition'
 import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
@@ -62,10 +61,6 @@ export async function unpublishExhibitionUseCase(
     exhibitorId,
     exhibitionRepository
   )
-
-  if (exhibition.isPublished === 0) {
-    throw new ValidationError('公開中ではない出展は非公開にできません')
-  }
 
   const unpublished = unpublishExhibitionDomain(exhibition)
 
