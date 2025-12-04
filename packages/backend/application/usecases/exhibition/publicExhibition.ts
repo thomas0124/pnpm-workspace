@@ -125,60 +125,6 @@ export async function listPublicExhibitionsUseCase(
     data.push(publicExhibition)
   }
 
-  return PublicExhibitionListResponseSchema.parse({
-    data,
-    meta: {
-      total: result.meta.total,
-      page: result.meta.page,
-      per_page: result.meta.perPage,
-      total_pages: result.meta.totalPages,
-    },
-  })
-}
-
-/**
- * 公開出展詳細取得ユースケース
- */
-export async function getPublicExhibitionUseCase(
-  exhibitionId: string,
-  exhibitionRepository: ExhibitionRepository,
-  exhibitionInformationRepository: ExhibitionInformationRepository,
-  exhibitionArDesignRepository: ExhibitionArDesignRepository
-): Promise<PublicExhibitionDto | null> {
-  const ex = await exhibitionRepository.findPublishedById(exhibitionId)
-  if (!ex || !ex.exhibitionInformationId) return null
-
-  const info = await exhibitionInformationRepository.findById(ex.exhibitionInformationId)
-  if (!info) return null
-
-  let arDesign: PublicExhibitionDto['ar_design'] = null
-  if (info.exhibitionArDesignId) {
-    const design = await exhibitionArDesignRepository.findById(info.exhibitionArDesignId)
-    if (design) {
-      arDesign = PublicExhibitionArDesignSchema.parse({
-        id: design.id,
-        url: design.url,
-      })
-    }
-  }
-
-  // 詳細取得時もExhibitionInformationが保持する画像BLOBをBase64として含める
-  const image = toBase64OrNull(info.image)
-
-  return PublicExhibitionSchema.parse({
-    id: ex.id,
-    title: info.title,
-    category: info.category,
-    exhibitor_name: info.exhibitorName,
-    location: info.location,
-    price: info.price,
-    required_time: info.requiredTime,
-    comment: info.comment,
-    ar_design: arDesign,
-    image,
-  })
-}
-
 /**
  * カテゴリ別件数取得ユースケース
  */
