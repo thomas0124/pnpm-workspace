@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { LoginForm } from "./loginForm"
+import { LoginForm } from "./loginForm";
 
 export function LoginFormWrapper() {
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
       <LoginForm />
     </div>
-  )
+  );
 }

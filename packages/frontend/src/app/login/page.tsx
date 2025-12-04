@@ -1,5 +1,5 @@
-import { LoginFormWrapper } from "@/components/login/loginFormWrapper"
+import { LoginFormWrapper } from "@/components/login/loginFormWrapper";
 
 export default function LoginPage() {
-  return <LoginFormWrapper />
+  return <LoginFormWrapper />;
 }

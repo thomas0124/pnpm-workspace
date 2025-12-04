@@ -1,5 +1,5 @@
-import { RegisterFormWrapper } from "@/components/register/registerFormWrapper"
+import { RegisterFormWrapper } from "@/components/register/registerFormWrapper";
 
 export default function RegisterPage() {
-  return <RegisterFormWrapper />
+  return <RegisterFormWrapper />;
 }
