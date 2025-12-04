@@ -45,7 +45,7 @@ export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
  * 公開出展一覧取得ユースケース
  */
 export async function listPublicExhibitionsUseCase(
-  rawQuery: { category?: string; page?: string; per_page?: string },
+  rawQuery: { category?: string; page?: string; perPage?: string },
   exhibitionRepository: ExhibitionRepository,
   exhibitionInformationRepository: ExhibitionInformationRepository,
   exhibitionArDesignRepository: ExhibitionArDesignRepository
@@ -53,7 +53,7 @@ export async function listPublicExhibitionsUseCase(
   const parsed = ListQuerySchema.parse({
     category: rawQuery.category,
     page: rawQuery.page ? Number(rawQuery.page) : undefined,
-    perPage: rawQuery.per_page ? Number(rawQuery.per_page) : undefined,
+    perPage: rawQuery.perPage ? Number(rawQuery.perPage) : undefined,
   })
 
   const params: FindPublishedParams = {
@@ -92,7 +92,7 @@ export async function listPublicExhibitionsUseCase(
     const info = infoMap.get(ex.exhibitionInformationId)
     if (!info) continue
 
-    let arDesign: PublicExhibitionDto['ar_design'] = null
+    let arDesign: PublicExhibitionDto['arDesign'] = null
     if (info.exhibitionArDesignId) {
       const design = arDesignMap.get(info.exhibitionArDesignId)
       if (design) {
@@ -110,12 +110,12 @@ export async function listPublicExhibitionsUseCase(
       id: ex.id,
       title: info.title,
       category: info.category,
-      exhibitor_name: info.exhibitorName,
+      exhibitorName: info.exhibitorName,
       location: info.location,
       price: info.price,
-      required_time: info.requiredTime,
+      requiredTime: info.requiredTime,
       comment: info.comment,
-      ar_design: arDesign,
+      arDesign: arDesign,
       image,
     })
 
@@ -127,8 +127,8 @@ export async function listPublicExhibitionsUseCase(
     meta: {
       total: result.meta.total,
       page: result.meta.page,
-      per_page: result.meta.perPage,
-      total_pages: result.meta.totalPages,
+      perPage: result.meta.perPage,
+      totalPages: result.meta.totalPages,
     },
   })
 }
@@ -148,7 +148,7 @@ export async function getPublicExhibitionUseCase(
   const info = await exhibitionInformationRepository.findById(ex.exhibitionInformationId)
   if (!info) return null
 
-  let arDesign: PublicExhibitionDto['ar_design'] = null
+  let arDesign: PublicExhibitionDto['arDesign'] = null
   if (info.exhibitionArDesignId) {
     const design = await exhibitionArDesignRepository.findById(info.exhibitionArDesignId)
     if (design) {
@@ -166,12 +166,12 @@ export async function getPublicExhibitionUseCase(
     id: ex.id,
     title: info.title,
     category: info.category,
-    exhibitor_name: info.exhibitorName,
+    exhibitorName: info.exhibitorName,
     location: info.location,
     price: info.price,
-    required_time: info.requiredTime,
+    requiredTime: info.requiredTime,
     comment: info.comment,
-    ar_design: arDesign,
+    arDesign: arDesign,
     image,
   })
 }
