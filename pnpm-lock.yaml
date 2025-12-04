@@ -120,6 +120,9 @@ importers:
       next:
         specifier: 14.2.3
         version: 14.2.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      next-on-pages:
+        specifier: ^0.1.6
+        version: 0.1.6
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -2809,6 +2812,11 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
+
+  next-on-pages@0.1.6:
+    resolution: {integrity: sha512-ggOHkbeyMxI6WQ21CWOBRI2w0UjTPZYpSOSsOQ/HpESnMJaMjatd6Y0Uy50fHvZ3hHn2ijPzKwHmQ+fAmCrJ7Q==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+    hasBin: true
 
   next@14.2.3:
     resolution: {integrity: sha512-dowFkFTR8v79NPJO4QsBUtxv0g9BrS/phluVpMAt2ku7H+cbcBJlopXjkWlwxrk/xGqMemr7JkGPGemPrLLX7A==}
@@ -6264,6 +6272,8 @@ snapshots:
   napi-postinstall@0.3.4: {}
 
   natural-compare@1.4.0: {}
+
+  next-on-pages@0.1.6: {}
 
   next@14.2.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
