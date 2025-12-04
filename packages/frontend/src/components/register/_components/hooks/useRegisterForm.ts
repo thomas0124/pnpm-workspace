@@ -40,7 +40,7 @@ export function useRegisterForm() {
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       if (!baseUrl) {
         throw new Error("バックエンドURLが設定されていません");
       }
