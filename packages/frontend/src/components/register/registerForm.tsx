@@ -33,7 +33,7 @@ export function RegisterForm() {
     <div className="w-full max-w-md space-y-8">
       <div className="space-y-2 text-center">
         <h1 className="text-3xl font-bold text-gray-900">
-          デジタルパンフレット
+          えあパンフ
         </h1>
         <p className="text-sm text-gray-600">出展者新規登録</p>
       </div>
