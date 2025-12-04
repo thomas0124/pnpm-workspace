@@ -1,4 +1,4 @@
-import type React from "react";
+import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -9,14 +9,10 @@ interface InputWithLabelProps
   inputWrapper?: (input: React.ReactElement) => React.ReactElement;
 }
 
-export function InputWithLabel({
-  label,
-  id,
-  type = "text",
-  className,
-  inputWrapper,
-  ...props
-}: InputWithLabelProps) {
+export const InputWithLabel = React.forwardRef<
+  HTMLInputElement,
+  InputWithLabelProps
+>(({ label, id, type = "text", className, inputWrapper, ...props }, ref) => {
   const input = (
     <Input
       id={id}
@@ -25,6 +21,7 @@ export function InputWithLabel({
         "w-full border-gray-200 bg-gray-50 focus-visible:ring-gray-300",
         className,
       )}
+      ref={ref}
       {...props}
     />
   );
@@ -37,4 +34,6 @@ export function InputWithLabel({
       {inputWrapper ? inputWrapper(input) : input}
     </div>
   );
-}
+});
+
+InputWithLabel.displayName = "InputWithLabel";
