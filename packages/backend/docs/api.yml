@@ -993,6 +993,51 @@ paths:
                   message:
                     type: string
                     example: '画像が正常にアップロードされました'
+    put:
+      tags:
+        - Exhibition Management
+      summary: 出展画像の更新
+      description: |
+        既に画像が登録されている出展の画像を更新します。
+        画像はBLOB形式でExhibitionInformationテーブルのimageカラムに保存されます。
+
+        注意:
+        - まだ画像が登録されていない出展に対してこのエンドポイントを呼び出した場合は 404 を返します。
+        - 画像の新規登録には POST /exhibitions/{id}/information/image を使用してください。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exhibition_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 出展ID(ExhibitionテーブルのID)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: '画像ファイル(PNG, JPG, GIF, 最大5MB)'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: '画像が正常に更新されました'
         '400':
           description: バリデーションエラー(ファイルサイズ、形式など)
           content:
@@ -1012,7 +1057,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '404':
-          description: 出展が見つかりません
+          description: 出展または画像が見つかりません
           content:
             application/json:
               schema:

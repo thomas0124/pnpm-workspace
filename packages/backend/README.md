@@ -10,11 +10,36 @@
 - 🔷 **TypeScript** - 型安全な開発ができるよ
 - ✅ **Zod** - スキーマバリデーションとドメインモデル定義に使うよ
 - ⚡ **Hono** - 軽量高速なWebフレームワークだよ
+- 🔌 **Hono RPC** - サーバーとクライアントでAPI型を共有できるよ
 - 🗄️ **Drizzle ORM** - 型安全で軽量なORMだよ
 - ☁️ **Cloudflare D1** - エッジで動くSQLiteデータベースだよ
 - 💭 **関数型の考え方** - シンプルで予測可能なコードが書けるよ
 
-## 📂 ディレクトリ構成
+---
+
+## 🔌 Hono RPC と `AppType`
+
+このバックエンドでは、Hono RPC を使って**サーバー側のルート定義からAPI型を共有**できるようにしているよ。
+
+- エントリポイント: `packages/backend/index.ts`
+- RPC 対象ルーター: `routes`（`/api/*` と公開 API をまとめたもの）
+- エクスポートされる型: `AppType = typeof routes`
+
+```typescript
+// packages/backend/index.ts（抜粋）
+export const routes = app
+  .route('/exhibitors', exhibitorRoutes)
+  .route('/ar-designs', arDesignRoutes)
+  .route('/exhibitions', exhibitionRoutes)
+  .route('/', publicExhibitionRoutes)
+
+export type AppType = typeof routes
+```
+
+入力バリデーションには `@hono/zod-validator` を使っていて、JSON / query / param に対して `zValidator` を付けているよ。  
+そのためクライアント側では [Hono RPC ガイド](https://hono.dev/docs/guides/rpc) や  
+「[見よ、これがHonoのRPCだ](https://zenn.dev/yusukebe/articles/a00721f8b3b92e)」の記事のように
+`hc<AppType>` と `InferRequestType` / `InferResponseType` を使って型安全に API を呼び出せる想定だよ。
 
 ```
 backend/

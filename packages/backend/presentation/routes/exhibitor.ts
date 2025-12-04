@@ -2,24 +2,13 @@ import { Hono } from 'hono'
 
 import { handleLogin, handleLogout, handleRegister } from '../handlers/exhibitor'
 import type { Bindings } from '../handlers/index'
-import { getContainer } from '../handlers/index'
 import { authMiddleware } from '../middlewares/authMiddleware'
 
+// GitHub issue #3148 の解決策: メソッドチェーン形式で定義することで型推論が正しく動作する
 export const exhibitorRoutes = new Hono<{ Bindings: Bindings }>()
-
-// 出展者登録
-exhibitorRoutes.post('/register', async (c) => {
-  const container = getContainer(c)
-  return handleRegister(c, container.exhibitorRepository, container.passwordService)
-})
-
-// 出展者ログイン
-exhibitorRoutes.post('/login', async (c) => {
-  const container = getContainer(c)
-  return handleLogin(c, container.exhibitorRepository, container.passwordService)
-})
-
-// 出展者ログアウト
-exhibitorRoutes.post('/logout', authMiddleware, async (c) => {
-  return handleLogout(c)
-})
+  // 出展者登録
+  .post('/register', ...handleRegister)
+  // 出展者ログイン
+  .post('/login', ...handleLogin)
+  // 出展者ログアウト
+  .post('/logout', authMiddleware, ...handleLogout)

@@ -4,21 +4,21 @@ import type {
   CategoryCount,
   ExhibitionRepository,
   FindPublishedParams,
-} from '../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../domain/repositories/exhibitionArDesign'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
+} from '../../../../domain/repositories/exhibition'
+import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
+import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type {
   CategoryCountListResponseDto,
   PublicExhibitionDto,
   PublicExhibitionListResponseDto,
-} from '../../dto/exhibition'
+} from '../../../dto/exhibition'
 import {
   CategoryCountListResponseSchema,
   CategoryCountSchema,
   PublicExhibitionArDesignSchema,
   PublicExhibitionListResponseSchema,
   PublicExhibitionSchema,
-} from '../../dto/exhibition'
+} from '../../../dto/exhibition'
 
 /**
  * 画像BLOB(Uint8Array)をBase64文字列に変換
@@ -46,7 +46,7 @@ export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
  * 公開出展一覧取得ユースケース
  */
 export async function listPublicExhibitionsUseCase(
-  rawQuery: { search?: string; category?: string; page?: string; per_page?: string },
+  rawQuery: { search?: string; category?: string; page?: string; perPage?: string },
   exhibitionRepository: ExhibitionRepository,
   exhibitionInformationRepository: ExhibitionInformationRepository,
   exhibitionArDesignRepository: ExhibitionArDesignRepository
@@ -55,7 +55,7 @@ export async function listPublicExhibitionsUseCase(
     search: rawQuery.search,
     category: rawQuery.category,
     page: rawQuery.page ? Number(rawQuery.page) : undefined,
-    perPage: rawQuery.per_page ? Number(rawQuery.per_page) : undefined,
+    perPage: rawQuery.perPage ? Number(rawQuery.perPage) : undefined,
   })
 
   const params: FindPublishedParams = {
@@ -95,7 +95,7 @@ export async function listPublicExhibitionsUseCase(
     const info = infoMap.get(ex.exhibitionInformationId)
     if (!info) continue
 
-    let arDesign: PublicExhibitionDto['ar_design'] = null
+    let arDesign: PublicExhibitionDto['arDesign'] = null
     if (info.exhibitionArDesignId) {
       const design = arDesignMap.get(info.exhibitionArDesignId)
       if (design) {
@@ -113,12 +113,12 @@ export async function listPublicExhibitionsUseCase(
       id: ex.id,
       title: info.title,
       category: info.category,
-      exhibitor_name: info.exhibitorName,
+      exhibitorName: info.exhibitorName,
       location: info.location,
       price: info.price,
-      required_time: info.requiredTime,
+      requiredTime: info.requiredTime,
       comment: info.comment,
-      ar_design: arDesign,
+      arDesign: arDesign,
       image,
     })
 
@@ -130,8 +130,8 @@ export async function listPublicExhibitionsUseCase(
     meta: {
       total: result.meta.total,
       page: result.meta.page,
-      per_page: result.meta.perPage,
-      total_pages: result.meta.totalPages,
+      perPage: result.meta.perPage,
+      totalPages: result.meta.totalPages,
     },
   })
 }

@@ -1,15 +1,19 @@
+import { zValidator } from '@hono/zod-validator'
+
+import { PublicExhibitionListQuerySchema } from '../../application/dto/exhibition'
 import {
   getPublicExhibitionCategoryCountsUseCase,
   listPublicExhibitionsUseCase,
-} from '../../application/usecases/exhibition/publicExhibition'
+} from '../../application/usecases/exhibition/public/publicExhibition'
 import { CATEGORY_MAPPING} from '../../domain/repositories/exhibition'
-import type { HandlerContext } from './index'
-import { getContainer } from './index'
+import { getContainer, handlerFactory } from './index'
 
 
 export type ExhibitionCategoryEn = keyof typeof CATEGORY_MAPPING
 
-export async function handleGetPublicExhibitions(c: HandlerContext) {
+export const handleGetPublicExhibitions = handlerFactory.createHandlers(
+  zValidator('query', PublicExhibitionListQuerySchema),
+  async (c) => {
   try {
     const container = getContainer(c)
 
@@ -36,12 +40,12 @@ export async function handleGetPublicExhibitions(c: HandlerContext) {
     console.error('❌ Error in handleGetPublicExhibitions:', error)
     throw error
   }
-}
+})
 
-export async function handleGetPublicExhibitionCategories(c: HandlerContext) {
+export const handleGetPublicExhibitionCategories = handlerFactory.createHandlers(async (c) => {
   const container = getContainer(c)
 
   const result = await getPublicExhibitionCategoryCountsUseCase(container.exhibitionRepository)
 
   return c.json(result, 200)
-}
+})

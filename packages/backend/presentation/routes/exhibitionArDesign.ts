@@ -1,17 +1,10 @@
 import { Hono } from 'hono'
 
-import { createContainer } from '../../infrastructure/di/container'
 import { handleListArDesign } from '../handlers/exhibitionArDesign'
+import type { Bindings } from '../handlers/index'
 import { authMiddleware } from '../middlewares/authMiddleware'
 
-type Bindings = {
-  DB: D1Database
-}
-
+// GitHub issue #3148 の解決策: メソッドチェーン形式で定義することで型推論が正しく動作する
 export const arDesignRoutes = new Hono<{ Bindings: Bindings }>()
-
-// ARデザイン一覧取得（認証必須）
-arDesignRoutes.get('/', authMiddleware, async (c) => {
-  const container = createContainer(c.env.DB)
-  return handleListArDesign(c, container.exhibitionArDesignRepository)
-})
+  // ARデザイン一覧取得（認証必須）
+  .get('/', authMiddleware, ...handleListArDesign)
