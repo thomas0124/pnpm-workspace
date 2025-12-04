@@ -4,7 +4,6 @@ import { and, count, eq, isNotNull, sql } from 'drizzle-orm'
 import { reconstructExhibition } from '../../../domain/factories/exhibition'
 import type { Exhibition as DomainExhibition } from '../../../domain/models/exhibition'
 import type {
-  CategoryCount,
   ExhibitionRepository,
   FindPublishedParams,
   PaginatedResult,
@@ -156,11 +155,11 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
         .offset(offset)
         .all()
 
-        // デバッグ: 取得したデータを確認
+      // デバッグ: 取得したデータを確認
       console.log('Fetched rows:', rows)
 
       return {
-         data: rows.map((row) => {
+        data: rows.map((row) => {
           console.log('Mapping row:', row) // デバッグログ
           return mapToDomain(row)
         }),
@@ -192,7 +191,6 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
       .offset(offset)
       .all()
 
-      
     // デバッグ: 取得したデータを確認
     console.log('Fetched rows (no filter):', rows)
 
@@ -205,29 +203,5 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
         totalPages: total === 0 ? 0 : Math.ceil(total / perPage),
       },
     }
-  }
-
-  /**
-   * 公開中出展のカテゴリ別件数
-   */
-  async findCategoryCounts(): Promise<CategoryCount[]> {
-    const rows = await this.db
-      .select({
-        category: exhibitionInformation.category,
-        count: sql<number>`COUNT(*)`.as('count'),
-      })
-      .from(exhibition)
-      .innerJoin(
-        exhibitionInformation,
-        eq(exhibition.exhibitionInformationId, exhibitionInformation.id)
-      )
-      .where(and(eq(exhibition.isPublished, 1), isNotNull(exhibition.exhibitionInformationId)))
-      .groupBy(exhibitionInformation.category)
-      .all()
-
-    return rows.map((row) => ({
-      category: row.category,
-      count: row.count,
-    }))
   }
 }
