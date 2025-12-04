@@ -1,5 +1,4 @@
 import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
 
 import { ExhibitionInformationInputSchema } from '../../application/dto/exhibition'
 import { createExhibitionUseCase } from '../../application/usecases/exhibition/core/createExhibition'
@@ -13,14 +12,11 @@ import { draftExhibitionUseCase } from '../../application/usecases/exhibition/st
 import { publishExhibitionUseCase } from '../../application/usecases/exhibition/status/publishExhibition'
 import { unpublishExhibitionUseCase } from '../../application/usecases/exhibition/status/unpublishExhibition'
 import { ValidationError } from '../../domain/errors'
+import { ExhibitionIdSchema } from '../../domain/models/exhibition'
 import { getExhibitorId } from '../middlewares/authMiddleware'
 import { getContainer, handlerFactory } from './index'
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
-
-const ExhibitionIdParamSchema = z.object({
-  exhibitionId: z.uuid(),
-})
 
 /**
  * 出展作成ハンドラー
@@ -48,11 +44,11 @@ export const handleCreateExhibition = handlerFactory.createHandlers(
  * 出展取得ハンドラー
  */
 export const handleGetExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     const result = await getExhibitionUseCase(
       exhibitionId,
@@ -70,11 +66,11 @@ export const handleGetExhibition = handlerFactory.createHandlers(
  * 出展削除ハンドラー
  */
 export const handleDeleteExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     await deleteExhibitionUseCase(
       exhibitionId,
@@ -92,11 +88,11 @@ export const handleDeleteExhibition = handlerFactory.createHandlers(
  * PUT /exhibitions/{exhibition_id}/draft
  */
 export const handleDraftExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     const result = await draftExhibitionUseCase(
       exhibitionId,
@@ -115,11 +111,11 @@ export const handleDraftExhibition = handlerFactory.createHandlers(
  * PUT /exhibitions/{exhibition_id}/publish
  */
 export const handlePublishExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     const result = await publishExhibitionUseCase(
       exhibitionId,
@@ -138,11 +134,11 @@ export const handlePublishExhibition = handlerFactory.createHandlers(
  * PUT /exhibitions/{exhibition_id}/unpublish
  */
 export const handleUnpublishExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     const result = await unpublishExhibitionUseCase(
       exhibitionId,
@@ -160,12 +156,12 @@ export const handleUnpublishExhibition = handlerFactory.createHandlers(
  * 出展基本情報更新ハンドラー
  */
 export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   zValidator('json', ExhibitionInformationInputSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
     const input = c.req.valid('json')
 
     const result = await updateExhibitionInformationUseCase(
@@ -186,11 +182,11 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
  * POST /exhibitions/{exhibition_id}/information/image
  */
 export const handleUploadExhibitionImage = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     const body = await c.req.parseBody()
     const file = body['image']
@@ -233,13 +229,13 @@ export const handleUploadExhibitionImage = handlerFactory.createHandlers(
  * GET /exhibitions/{exhibition_id}/information/image
  */
 export const handleGetExhibitionImage = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     // 画像バイナリを返却する専用エンドポイント。
     // Hono RPC ではこのルートは `Response` として扱い、JSON ベースの型付きレスポンスの対象外とする。
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     const { image } = await getExhibitionImageUseCase(
       exhibitionId,
@@ -286,11 +282,11 @@ export const handleGetExhibitionImage = handlerFactory.createHandlers(
  * DELETE /exhibitions/{exhibition_id}/information/image
  */
 export const handleDeleteExhibitionImage = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     await deleteExhibitionImageUseCase(
       exhibitionId,

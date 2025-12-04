@@ -1,24 +1,13 @@
 import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
 
+import { PublicExhibitionListQuerySchema } from '../../application/dto/exhibition'
 import {
   getPublicExhibitionCategoryCountsUseCase,
   getPublicExhibitionUseCase,
   listPublicExhibitionsUseCase,
 } from '../../application/usecases/exhibition/public/publicExhibition'
+import { ExhibitionIdSchema } from '../../domain/models/exhibition'
 import { getContainer, handlerFactory } from './index'
-
-// 公開出展一覧クエリ用スキーマ（文字列クエリのまま受け取り、ユースケース側で数値変換を行う）
-const PublicExhibitionListQuerySchema = z.object({
-  category: z.string().optional(),
-  page: z.string().optional(),
-  per_page: z.string().optional(),
-})
-
-// 公開出展詳細用パスパラメータスキーマ
-export const PublicExhibitionParamSchema = z.object({
-  exhibitionId: z.uuid(),
-})
 
 export const handleGetPublicExhibitions = handlerFactory.createHandlers(
   zValidator('query', PublicExhibitionListQuerySchema),
@@ -39,10 +28,10 @@ export const handleGetPublicExhibitions = handlerFactory.createHandlers(
 )
 
 export const handleGetPublicExhibition = handlerFactory.createHandlers(
-  zValidator('param', PublicExhibitionParamSchema),
+  zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
-    const { exhibitionId } = c.req.valid('param')
+    const exhibitionId = c.req.valid('param')
 
     const result = await getPublicExhibitionUseCase(
       exhibitionId,
