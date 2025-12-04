@@ -28,9 +28,9 @@
 ```typescript
 // packages/backend/index.ts（抜粋）
 export const routes = app
-  .route('/api/exhibitors', exhibitorRoutes)
-  .route('/api/ar-designs', arDesignRoutes)
-  .route('/api/exhibitions', exhibitionRoutes)
+  .route('/exhibitors', exhibitorRoutes)
+  .route('/ar-designs', arDesignRoutes)
+  .route('/exhibitions', exhibitionRoutes)
   .route('/', publicExhibitionRoutes)
 
 export type AppType = typeof routes
