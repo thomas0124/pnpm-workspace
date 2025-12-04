@@ -241,8 +241,8 @@ components:
           example: 'マルゲリータピザ'
         category:
           type: string
-          enum: ['飲食', '展示', '体験', 'ステージ']
-          example: '飲食'
+          enum: ['Food', 'Exhibition', 'Experience', 'Stage']
+          example: 'Food'
         location:
           type: string
           maxLength: 100
@@ -297,8 +297,8 @@ components:
           example: 'マルゲリータピザ'
         category:
           type: string
-          enum: ['飲食', '展示', '体験', 'ステージ']
-          example: '飲食'
+          enum: ['Food', 'Exhibition', 'Experience', 'Stage']
+          example: 'Food'
         location:
           type: string
           maxLength: 100
@@ -345,8 +345,8 @@ components:
           example: 'マルゲリータピザ'
         category:
           type: string
-          enum: ['飲食', '展示', '体験', 'ステージ']
-          example: '飲食'
+          enum: ['Food', 'Exhibition', 'Experience', 'Stage']
+          example: 'Food'
         exhibitor_name:
           type: string
           example: 'イタリア料理研究会'
@@ -385,8 +385,8 @@ components:
       properties:
         category:
           type: string
-          enum: ['飲食', '展示', '体験', 'ステージ']
-          example: '飲食'
+          enum: ['Food', 'Exhibition', 'Experience', 'Stage']
+          example: 'Food'
         count:
           type: integer
           example: 28
@@ -751,7 +751,7 @@ paths:
                   id: '770e8400-e29b-41d4-a716-446655440002'
                   exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
                   title: 'マルゲリータピザ'
-                  category: '飲食'
+                  category: 'Food'
                   location: '1号館 201'
                   price: 500
                   required_time: 15
@@ -836,7 +836,7 @@ paths:
                   id: '770e8400-e29b-41d4-a716-446655440002'
                   exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
                   title: 'マルゲリータピザ'
-                  category: '飲食'
+                  category: 'Food'
                   location: '1号館 201'
                   price: 500
                   required_time: 15
@@ -916,7 +916,7 @@ paths:
                   id: '770e8400-e29b-41d4-a716-446655440002'
                   exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
                   title: 'マルゲリータピザ'
-                  category: '飲食'
+                  category: 'Food'
                   location: '1号館 201'
                   price: 500
                   required_time: 15
@@ -1183,7 +1183,7 @@ paths:
           required: false
           schema:
             type: string
-            enum: ['飲食', '展示', '体験', 'ステージ']
+            enum: ['Food', 'Exhibition', 'Experience', 'Stage']
           description: カテゴリでフィルタ
       responses:
         '200':
