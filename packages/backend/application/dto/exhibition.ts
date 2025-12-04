@@ -5,6 +5,10 @@ import type { ExhibitionInformation } from '../../domain/models/exhibitionInform
 import type { ExhibitionCategory } from '../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
 
+export const ExhibitionIdParamSchema = z.object({
+  exhibition_id: z.string().uuid(),
+})
+
 /**
  * ページネーションメタ情報（公開API用）
  */

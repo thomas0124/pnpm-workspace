@@ -5,5 +5,5 @@ import type { Bindings } from '../../handlers/index'
 
 export const exhibitionInformationRoutes = new Hono<{ Bindings: Bindings }>()
 
-// PUT /:exhibition_id/information - 基本情報の更新
-exhibitionInformationRoutes.put('/', handleUpdateExhibitionInformation)
+// PUT /:exhibitionId/information - 基本情報の更新
+exhibitionInformationRoutes.put('/', ...handleUpdateExhibitionInformation)
