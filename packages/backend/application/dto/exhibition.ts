@@ -11,22 +11,9 @@ export const ExhibitionIdParamSchema = z.object({
 
 // 公開出展一覧クエリ用スキーマ（文字列クエリのまま受け取り、ユースケース側で数値変換を行う）
 export const PublicExhibitionListQuerySchema = z.object({
-  category: z.string().optional(),
-  page: z.string().optional(),
-  perPage: z.string().optional(),
+  search: z.string().optional(),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']).optional(),
 })
-
-/**
- * ページネーションメタ情報（公開API用）
- */
-export const PaginationMetaSchema = z.object({
-  total: z.number().int().nonnegative(),
-  page: z.number().int().min(1),
-  perPage: z.number().int().min(1),
-  totalPages: z.number().int().nonnegative(),
-})
-
-export type PaginationMetaDto = z.infer<typeof PaginationMetaSchema>
 
 /**
  * 公開用ARデザイン
@@ -75,19 +62,9 @@ export type CategoryCountDto = z.infer<typeof CategoryCountSchema>
  */
 export const PublicExhibitionListResponseSchema = z.object({
   data: z.array(PublicExhibitionSchema),
-  meta: PaginationMetaSchema,
 })
 
 export type PublicExhibitionListResponseDto = z.infer<typeof PublicExhibitionListResponseSchema>
-
-/**
- * カテゴリ別件数レスポンス
- */
-export const CategoryCountListResponseSchema = z.object({
-  data: z.array(CategoryCountSchema),
-})
-
-export type CategoryCountListResponseDto = z.infer<typeof CategoryCountListResponseSchema>
 
 /**
  * 出展情報入力（作成・更新用）
@@ -96,7 +73,7 @@ export type CategoryCountListResponseDto = z.infer<typeof CategoryCountListRespo
 export const ExhibitionInformationInputSchema = z.object({
   exhibitorName: z.string().min(1).max(100).trim(),
   title: z.string().min(1).max(200).trim(),
-  category: z.enum(['飲食', '展示', '体験', 'ステージ']),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']),
   location: z.string().min(1).max(100).trim(),
   price: z.number().int().min(0).nullable().optional(),
   requiredTime: z.number().int().min(1).nullable().optional(),
@@ -125,7 +102,7 @@ export const ExhibitionInformationDtoSchema = z.object({
   exhibitorId: z.uuid(),
   exhibitorName: z.string(),
   title: z.string(),
-  category: z.enum(['飲食', '展示', '体験', 'ステージ']),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']),
   location: z.string(),
   price: z.number().int().nullable(),
   requiredTime: z.number().int().nullable(),

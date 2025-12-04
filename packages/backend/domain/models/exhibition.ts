@@ -1,12 +1,13 @@
 import { z } from 'zod'
 
 // Zodスキーマで値オブジェクトを定義
-export const ExhibitionIdSchema = z.uuid()
+export const ExhibitionIdSchema = z.uuid('Invalid exhibition ID format')
 
-export const ExhibitorIdSchema = z.uuid()
+export const ExhibitorIdSchema = z.uuid('Invalid exhibitor ID format')
 
-export const ExhibitionInformationIdSchema = z.uuid().nullable()
-
+export const ExhibitionInformationIdSchema = z
+  .uuid('Invalid exhibition information ID format')
+  .nullable()
 // エンティティのスキーマ
 export const ExhibitionSchema = z.object({
   id: ExhibitionIdSchema,

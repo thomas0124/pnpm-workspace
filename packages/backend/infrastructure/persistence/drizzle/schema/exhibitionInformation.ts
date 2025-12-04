@@ -19,7 +19,7 @@ export const exhibitionInformation = sqliteTable('exhibition_information', {
   exhibitorName: text('exhibitor_name').notNull(),
   title: text('title').notNull(),
   category: text('category', {
-    enum: ['飲食', '展示', '体験', 'ステージ'],
+    enum: ['Food', 'Exhibition', 'Experience', 'Stage'],
   }).notNull(),
   location: text('location').notNull(),
   price: integer('price'),

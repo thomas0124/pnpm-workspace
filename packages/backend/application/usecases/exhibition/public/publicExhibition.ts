@@ -1,20 +1,13 @@
 import { z } from 'zod'
 
 import type {
-  CategoryCount,
   ExhibitionRepository,
   FindPublishedParams,
 } from '../../../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
-import type {
-  CategoryCountListResponseDto,
-  PublicExhibitionDto,
-  PublicExhibitionListResponseDto,
-} from '../../../dto/exhibition'
+import type { PublicExhibitionDto, PublicExhibitionListResponseDto } from '../../../dto/exhibition'
 import {
-  CategoryCountListResponseSchema,
-  CategoryCountSchema,
   PublicExhibitionArDesignSchema,
   PublicExhibitionListResponseSchema,
   PublicExhibitionSchema,
@@ -34,9 +27,8 @@ function toBase64OrNull(blob: Uint8Array | null): string | null {
 }
 
 const ListQuerySchema = z.object({
-  category: z.enum(['飲食', '展示', '体験', 'ステージ']).optional(),
-  page: z.number().int().min(1).optional(),
-  perPage: z.number().int().min(1).max(100).optional(),
+  search: z.string().optional(),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']).optional(),
 })
 
 export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
@@ -45,29 +37,25 @@ export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
  * 公開出展一覧取得ユースケース
  */
 export async function listPublicExhibitionsUseCase(
-  rawQuery: { category?: string; page?: string; perPage?: string },
+  rawQuery: ListPublicExhibitionsQuery,
   exhibitionRepository: ExhibitionRepository,
   exhibitionInformationRepository: ExhibitionInformationRepository,
   exhibitionArDesignRepository: ExhibitionArDesignRepository
 ): Promise<PublicExhibitionListResponseDto> {
   const parsed = ListQuerySchema.parse({
+    search: rawQuery.search,
     category: rawQuery.category,
-    page: rawQuery.page ? Number(rawQuery.page) : undefined,
-    perPage: rawQuery.perPage ? Number(rawQuery.perPage) : undefined,
   })
 
   const params: FindPublishedParams = {
+    search: parsed.search,
     category: parsed.category,
-    page: parsed.page,
-    perPage: parsed.perPage,
   }
 
   const result = await exhibitionRepository.findPublished(params)
 
   // 一覧分の ExhibitionInformation を一括取得
-  const infoIds = result.data
-    .map((ex) => ex.exhibitionInformationId)
-    .filter((id): id is string => !!id)
+  const infoIds = result.map((ex) => ex.exhibitionInformationId).filter((id): id is string => !!id)
   const uniqueInfoIds = Array.from(new Set(infoIds))
   const infos = await exhibitionInformationRepository.findByIds(uniqueInfoIds)
   const infoMap = new Map(infos.map((info) => [info.id, info]))
@@ -83,7 +71,7 @@ export async function listPublicExhibitionsUseCase(
   const arDesignMap = new Map(arDesigns.map((design) => [design.id, design]))
 
   const data: PublicExhibitionDto[] = []
-  for (const ex of result.data) {
+  for (const ex of result) {
     if (!ex.exhibitionInformationId) {
       // 公開条件的にはありえないがガードしておく
       continue
@@ -123,75 +111,6 @@ export async function listPublicExhibitionsUseCase(
   }
 
   return PublicExhibitionListResponseSchema.parse({
-    data,
-    meta: {
-      total: result.meta.total,
-      page: result.meta.page,
-      perPage: result.meta.perPage,
-      totalPages: result.meta.totalPages,
-    },
-  })
-}
-
-/**
- * 公開出展詳細取得ユースケース
- */
-export async function getPublicExhibitionUseCase(
-  exhibitionId: string,
-  exhibitionRepository: ExhibitionRepository,
-  exhibitionInformationRepository: ExhibitionInformationRepository,
-  exhibitionArDesignRepository: ExhibitionArDesignRepository
-): Promise<PublicExhibitionDto | null> {
-  const ex = await exhibitionRepository.findPublishedById(exhibitionId)
-  if (!ex || !ex.exhibitionInformationId) return null
-
-  const info = await exhibitionInformationRepository.findById(ex.exhibitionInformationId)
-  if (!info) return null
-
-  let arDesign: PublicExhibitionDto['arDesign'] = null
-  if (info.exhibitionArDesignId) {
-    const design = await exhibitionArDesignRepository.findById(info.exhibitionArDesignId)
-    if (design) {
-      arDesign = PublicExhibitionArDesignSchema.parse({
-        id: design.id,
-        url: design.url,
-      })
-    }
-  }
-
-  // 詳細取得時もExhibitionInformationが保持する画像BLOBをBase64として含める
-  const image = toBase64OrNull(info.image)
-
-  return PublicExhibitionSchema.parse({
-    id: ex.id,
-    title: info.title,
-    category: info.category,
-    exhibitorName: info.exhibitorName,
-    location: info.location,
-    price: info.price,
-    requiredTime: info.requiredTime,
-    comment: info.comment,
-    arDesign: arDesign,
-    image,
-  })
-}
-
-/**
- * カテゴリ別件数取得ユースケース
- */
-export async function getPublicExhibitionCategoryCountsUseCase(
-  exhibitionRepository: ExhibitionRepository
-): Promise<CategoryCountListResponseDto> {
-  const rows: CategoryCount[] = await exhibitionRepository.findCategoryCounts()
-
-  const data = rows.map((row) =>
-    CategoryCountSchema.parse({
-      category: row.category,
-      count: row.count,
-    })
-  )
-
-  return CategoryCountListResponseSchema.parse({
     data,
   })
 }
