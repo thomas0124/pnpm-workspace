@@ -154,47 +154,43 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
           NODE_ENV: production
         run: |
+          echo "🧹 Cleaning frontend cache..."
+          rm -rf .next .open-next .vercel out
           echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
-          pnpm run build
+          npx opennextjs-cloudflare build
 
-      - name: Create Cloudflare Pages project if not exists
+      - name: Update wrangler.jsonc for production environment
         working-directory: packages/frontend
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # 既存のプロジェクトを確認
-          PROJECTS=$(wrangler pages project list 2>/dev/null || echo "")
-          PROJECT_EXISTS=$(echo "$PROJECTS" | grep -q "ar-pamph" && echo "exists" || echo "")
-          
-          if [ -z "$PROJECT_EXISTS" ]; then
-            echo "Creating Cloudflare Pages project: ar-pamph"
-            wrangler pages project create ar-pamph --production-branch=main
-          else
-            echo "Project ar-pamph already exists"
-          fi
+          # Production環境用のWorker名を設定
+          WORKER_NAME="ar-pamph-frontend"
+          # wrangler.jsoncのnameを更新
+          sed -i "s|\"name\": \"ar-pamph-frontend\"|\"name\": \"$WORKER_NAME\"|" wrangler.jsonc
+          sed -i "s|\"service\": \"ar-pamph-frontend\"|\"service\": \"$WORKER_NAME\"|" wrangler.jsonc
+          cat wrangler.jsonc
 
-      - name: Deploy Frontend to Cloudflare Pages (Production)
+      - name: Deploy Frontend to Cloudflare Workers (Production)
         id: deploy-frontend
         working-directory: packages/frontend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Cloudflare Pagesにデプロイ（静的エクスポートされたoutディレクトリをデプロイ）
-          wrangler pages deploy out --project-name=ar-pamph --branch=main
-
-          # デプロイされたURLを生成
-          PAGES_URL="https://ar-pamph.pages.dev"
-          echo "PAGES_URL=$PAGES_URL" >> $GITHUB_OUTPUT
-          echo "✅ Frontend deployed to: $PAGES_URL"
+          # Cloudflare Workersにデプロイ
+          wrangler deploy --config wrangler.jsonc
+          
+          # デプロイされたURLを生成（Workers のURL）
+          WORKER_NAME="ar-pamph-frontend"
+          FRONTEND_URL="https://${WORKER_NAME}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
+          echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_OUTPUT
+          echo "✅ Frontend deployed to: $FRONTEND_URL"
 
       - name: Create deployment summary
         run: |
           echo "## 🎉 Production Environment Deployed Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📱 Frontend (Live)" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 ${{ steps.deploy-frontend.outputs.PAGES_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 ${{ steps.deploy-frontend.outputs.FRONTEND_URL }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ⚙️ Backend API (Live)" >> $GITHUB_STEP_SUMMARY
           echo "🔗 ${{ steps.deploy-backend.outputs.WORKER_URL }}" >> $GITHUB_STEP_SUMMARY
@@ -213,6 +209,6 @@ jobs:
         if: success()
         run: |
           echo "::notice title=Production Deployment::Successfully deployed to production! 🚀"
-          echo "Frontend: ${{ steps.deploy-frontend.outputs.PAGES_URL }}"
+          echo "Frontend: ${{ steps.deploy-frontend.outputs.FRONTEND_URL }}"
           echo "Backend: ${{ steps.deploy-backend.outputs.WORKER_URL }}"
 
