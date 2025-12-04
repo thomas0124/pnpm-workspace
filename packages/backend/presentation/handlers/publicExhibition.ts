@@ -10,6 +10,7 @@ export async function handleGetPublicExhibitions(c: HandlerContext) {
   const container = getContainer(c)
 
   const query = {
+    search: c.req.query('search') ?? undefined,
     category: c.req.query('category') ?? undefined,
     page: c.req.query('page') ?? undefined,
     per_page: c.req.query('per_page') ?? undefined,

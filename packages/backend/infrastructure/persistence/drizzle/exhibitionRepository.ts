@@ -94,10 +94,33 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
       isNotNull(exhibition.exhibitionInformationId)
     )
 
-    // カテゴリフィルタがある場合はExhibitionInformationとJOINして絞り込む
     const category = params?.category
+    const search = params?.search
 
-    if (category) {
+    // 検索条件とカテゴリフィルタの両方に対応
+    const needsJoin = category || search
+
+    if (needsJoin) {
+      // ExhibitionInformationとJOIN
+      const conditions = [baseWhere]
+
+      if (category) {
+        conditions.push(eq(exhibitionInformation.category, category))
+      }
+
+      if (search) {
+        // タイトル、出展者名、コメントのいずれかに部分一致
+        conditions.push(
+          sql`(
+            ${exhibitionInformation.title} LIKE ${'%' + search + '%'} OR
+            ${exhibitionInformation.exhibitorName} LIKE ${'%' + search + '%'} OR
+            ${exhibitionInformation.comment} LIKE ${'%' + search + '%'}
+          )`
+        )
+      }
+
+      const whereCondition = and(...conditions)
+
       const totalRow = await this.db
         .select({
           value: count(exhibition.id).as('value'),
@@ -107,7 +130,7 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
           exhibitionInformation,
           eq(exhibition.exhibitionInformationId, exhibitionInformation.id)
         )
-        .where(and(baseWhere, eq(exhibitionInformation.category, category)))
+        .where(whereCondition)
         .get()
 
       const total = totalRow?.value ?? 0
@@ -128,7 +151,7 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
           exhibitionInformation,
           eq(exhibition.exhibitionInformationId, exhibitionInformation.id)
         )
-        .where(and(baseWhere, eq(exhibitionInformation.category, category)))
+        .where(whereCondition)
         .limit(perPage)
         .offset(offset)
         .all()
@@ -144,7 +167,7 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
       }
     }
 
-    // カテゴリフィルタなし
+    // 検索もカテゴリフィルタもなし
     const totalRow = await this.db
       .select({
         value: count(exhibition.id).as('value'),

@@ -32,6 +32,7 @@ export type CategoryCount = {
  * 公開出展検索のパラメータ
  */
 export type FindPublishedParams = {
+  search?: string // 追加: タイトル・出展者名・コメントの部分一致検索
   category?: ExhibitionCategory
   page?: number
   perPage?: number

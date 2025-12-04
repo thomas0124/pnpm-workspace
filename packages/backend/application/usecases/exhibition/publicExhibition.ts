@@ -34,6 +34,7 @@ function toBase64OrNull(blob: Uint8Array | null): string | null {
 }
 
 const ListQuerySchema = z.object({
+  search: z.string().optional(),
   category: z.enum(['飲食', '展示', '体験', 'ステージ']).optional(),
   page: z.number().int().min(1).optional(),
   perPage: z.number().int().min(1).max(100).optional(),
@@ -45,18 +46,20 @@ export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
  * 公開出展一覧取得ユースケース
  */
 export async function listPublicExhibitionsUseCase(
-  rawQuery: { category?: string; page?: string; per_page?: string },
+  rawQuery: { search?: string; category?: string; page?: string; per_page?: string },
   exhibitionRepository: ExhibitionRepository,
   exhibitionInformationRepository: ExhibitionInformationRepository,
   exhibitionArDesignRepository: ExhibitionArDesignRepository
 ): Promise<PublicExhibitionListResponseDto> {
   const parsed = ListQuerySchema.parse({
+    search: rawQuery.search,
     category: rawQuery.category,
     page: rawQuery.page ? Number(rawQuery.page) : undefined,
     perPage: rawQuery.per_page ? Number(rawQuery.per_page) : undefined,
   })
 
   const params: FindPublishedParams = {
+    search: parsed.search,
     category: parsed.category,
     page: parsed.page,
     perPage: parsed.perPage,
