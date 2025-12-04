@@ -1,25 +1,14 @@
-"use client";
-
-import type React from "react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/button";
 import { InputWithLabel } from "@/components/inputWithLabel";
 import Link from "next/link";
+import { useLoginForm } from "./_components/hooks/useLoginForm";
 
 export function LoginForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    sessionStorage.setItem("isLoggedIn", "true");
-    sessionStorage.setItem("userName", name);
-    router.push("/exhibitor/basic-info");
-  };
+  const { register, handleSubmit, errors, isSubmitting, apiError, onSubmit } =
+    useLoginForm();
 
   return (
     <div className="w-full max-w-md space-y-8">
@@ -28,25 +17,26 @@ export function LoginForm() {
         <p className="text-sm text-gray-600">出展者ログイン</p>
       </div>
       <div className="space-y-6 rounded-2xl bg-white p-8 shadow-sm">
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <InputWithLabel
             label="名前"
             id="name"
             type="text"
             placeholder="名前を入力してください"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
             inputWrapper={(input) => <div className="relative">{input}</div>}
-            required
+            {...register("name")}
           />
+          {errors.name && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.name.message}
+            </p>
+          )}
+
           <InputWithLabel
             label="パスワード"
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="パスワードを入力してください"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
             inputWrapper={(input) => (
               <div className="relative">
                 {input}
@@ -63,9 +53,25 @@ export function LoginForm() {
                 </button>
               </div>
             )}
+            {...register("password")}
           />
-          <Button type="submit" color="red" className="w-full">
-            ログイン
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.password.message}
+            </p>
+          )}
+
+          {apiError && (
+            <p className="mt-2 text-sm text-red-500">{apiError}</p>
+          )}
+
+          <Button
+            type="submit"
+            color="red"
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "ログイン中..." : "ログイン"}
           </Button>
         </form>
         <div className="relative">
