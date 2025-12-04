@@ -95,8 +95,8 @@ export const ExhibitionInformationSchema = z.object({
   requiredTime: RequiredTimeSchema,
   comment: CommentSchema,
   image: z.custom<Uint8Array | null>(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 })
 
 /**

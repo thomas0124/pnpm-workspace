@@ -156,8 +156,14 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
         .offset(offset)
         .all()
 
+        // デバッグ: 取得したデータを確認
+      console.log('Fetched rows:', rows)
+
       return {
-        data: rows.map(mapToDomain),
+         data: rows.map((row) => {
+          console.log('Mapping row:', row) // デバッグログ
+          return mapToDomain(row)
+        }),
         meta: {
           total,
           page,
@@ -185,6 +191,10 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
       .limit(perPage)
       .offset(offset)
       .all()
+
+      
+    // デバッグ: 取得したデータを確認
+    console.log('Fetched rows (no filter):', rows)
 
     return {
       data: rows.map(mapToDomain),

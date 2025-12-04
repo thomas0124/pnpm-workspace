@@ -59,7 +59,20 @@ async function main() {
     },
   })
 
-  await seedPublicExhibitions(db)
+   console.log('🌱 シードデータを投入中...')
+
+  try {
+    // ここで seedPublicExhibitions を呼び出す
+    await seedPublicExhibitions(db)
+    
+    console.log('✅ シードデータの投入が完了しました')
+  } catch (error) {
+    console.error('❌ シードデータの投入に失敗しました:', error)
+    process.exit(1)
+  } finally {
+    sqlite.close()
+  }
 }
+
 
 main()
