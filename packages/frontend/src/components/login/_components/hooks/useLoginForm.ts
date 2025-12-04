@@ -59,9 +59,6 @@ export function useLoginForm() {
 
       // セッション保存
       sessionStorage.setItem("authToken", data.token);
-      sessionStorage.setItem("exhibitorId", data.exhibitor.id);
-      sessionStorage.setItem("userName", data.exhibitor.name);
-      sessionStorage.setItem("isLoggedIn", "true");
 
       // 画面遷移
       router.push("/exhibitor/basic-info");

@@ -54,9 +54,6 @@ export function useRegisterForm() {
       const data = await response.json();
 
       sessionStorage.setItem("authToken", data.token);
-      sessionStorage.setItem("exhibitorId", data.exhibitor.id);
-      sessionStorage.setItem("userName", data.exhibitor.name);
-      sessionStorage.setItem("isLoggedIn", "true");
 
       router.push("/exhibitor/basic-info");
     } catch (error) {
