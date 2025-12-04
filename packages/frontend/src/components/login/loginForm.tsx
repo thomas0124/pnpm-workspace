@@ -4,8 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/button";
 import { InputWithLabel } from "@/components/inputWithLabel";
 import Link from "next/link";
 
@@ -73,7 +72,8 @@ export function LoginForm() {
           />
           <Button
             type="submit"
-            className="w-full rounded-lg bg-red-400 py-6 font-medium text-white hover:bg-red-500"
+            color="red"
+            className="w-full"
           >
             ログイン
           </Button>
@@ -87,10 +87,11 @@ export function LoginForm() {
           </div>
         </div>
         <Link href="/register">
-          <Button
+        <Button
             type="button"
             variant="outline"
-            className="w-full rounded-lg border-2 border-red-400 bg-transparent py-6 font-medium text-red-400 hover:bg-red-50"
+            color="pink"
+            className="w-full"
           >
             新規登録
           </Button>
