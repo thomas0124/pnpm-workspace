@@ -391,32 +391,6 @@ components:
           type: integer
           example: 28
 
-    # ページネーション
-    PaginationMeta:
-      type: object
-      required:
-        - total
-        - page
-        - per_page
-        - total_pages
-      properties:
-        total:
-          type: integer
-          example: 100
-          description: '総件数'
-        page:
-          type: integer
-          example: 1
-          description: '現在のページ番号'
-        per_page:
-          type: integer
-          example: 20
-          description: '1ページあたりの件数'
-        total_pages:
-          type: integer
-          example: 5
-          description: '総ページ数'
-
 paths:
   # ==================== 認証 ====================
   /exhibitors/register:
