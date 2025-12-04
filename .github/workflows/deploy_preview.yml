@@ -257,46 +257,40 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
         run: |
           echo "🧹 Cleaning frontend cache..."
-          rm -rf .next .vercel out
+          rm -rf .next .open-next .vercel out
           echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
-          pnpm run build
+          npx opennextjs-cloudflare build
 
-      - name: Create Cloudflare Pages project if not exists
+      - name: Update wrangler.jsonc for preview environment
         working-directory: packages/frontend
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # 既存のプロジェクトを確認
-          PROJECTS=$(wrangler pages project list 2>/dev/null || echo "")
-          PROJECT_EXISTS=$(echo "$PROJECTS" | grep -q "ar-pamph" && echo "exists" || echo "")
-          
-          if [ -z "$PROJECT_EXISTS" ]; then
-            echo "Creating Cloudflare Pages project: ar-pamph"
-            wrangler pages project create ar-pamph --production-branch=main
-          else
-            echo "Project ar-pamph already exists"
-          fi
+          # Preview環境用のWorker名を設定
+          WORKER_NAME="ar-pamph-frontend-preview-pr-${{ github.event.pull_request.number }}"
+          # wrangler.jsoncのnameを更新
+          sed -i "s|\"name\": \"ar-pamph-frontend\"|\"name\": \"$WORKER_NAME\"|" wrangler.jsonc
+          sed -i "s|\"service\": \"ar-pamph-frontend\"|\"service\": \"$WORKER_NAME\"|" wrangler.jsonc
+          cat wrangler.jsonc
 
-      - name: Deploy Frontend to Cloudflare Pages
+      - name: Deploy Frontend to Cloudflare Workers
         id: deploy-frontend
         working-directory: packages/frontend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Cloudflare Pagesにデプロイ（動的レンダリング対応の.vercel/output/staticディレクトリをデプロイ）
-          wrangler pages deploy .vercel/output/static --project-name=ar-pamph --branch=preview-pr-${{ github.event.pull_request.number }}
-
-          # デプロイされたURLを生成
-          PAGES_URL="https://preview-pr-${{ github.event.pull_request.number }}.ar-pamph.pages.dev"
-          echo "PAGES_URL=$PAGES_URL" >> $GITHUB_OUTPUT
-          echo "✅ Frontend deployed to: $PAGES_URL"
+          # Cloudflare Workersにデプロイ
+          wrangler deploy --config wrangler.jsonc
+          
+          # デプロイされたURLを生成（Workers のURL）
+          WORKER_NAME="ar-pamph-frontend-preview-pr-${{ github.event.pull_request.number }}"
+          FRONTEND_URL="https://${WORKER_NAME}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
+          echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_OUTPUT
+          echo "✅ Frontend deployed to: $FRONTEND_URL"
 
       - name: Comment PR with deployment URLs
         uses: actions/github-script@v7
         env:
-          FRONTEND_URL: ${{ steps.deploy-frontend.outputs.PAGES_URL }}
+          FRONTEND_URL: ${{ steps.deploy-frontend.outputs.FRONTEND_URL }}
           BACKEND_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
           DB_NAME: ${{ steps.d1-setup.outputs.DB_NAME }}
         with:
@@ -384,7 +378,7 @@ jobs:
             fi
           fi
 
-      - name: Delete Cloudflare Worker deployment
+      - name: Delete Cloudflare Worker deployment (Backend)
         working-directory: packages/backend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -407,35 +401,24 @@ jobs:
             echo "⚠️ Worker $WORKER_NAME (preview) not found. It may have already been deleted."
           fi
 
-      - name: Delete Cloudflare Pages deployment
+      - name: Delete Cloudflare Worker deployment (Frontend)
         working-directory: packages/frontend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          PROJECT_NAME="ar-pamph"
-          BRANCH_NAME="preview-pr-${{ github.event.pull_request.number }}"
-          echo "🗑️ Checking for Cloudflare Pages deployment: $PROJECT_NAME (branch: $BRANCH_NAME)"
+          WORKER_NAME="ar-pamph-frontend-preview-pr-${{ github.event.pull_request.number }}"
+          echo "🗑️ Checking for Cloudflare Worker: $WORKER_NAME"
 
-          # Pagesのデプロイメント一覧を取得
-          DEPLOYMENTS=$(wrangler pages deployment list --project-name="$PROJECT_NAME" --json 2>/dev/null || echo "[]")
-          
-          # 該当するブランチのデプロイメントを検索
-          DEPLOYMENT_ID=$(echo "$DEPLOYMENTS" | jq -r ".[] | select(.branch==\"$BRANCH_NAME\") | .id" 2>/dev/null | head -n 1)
-
-          if [ -z "$DEPLOYMENT_ID" ] || [ "$DEPLOYMENT_ID" == "null" ]; then
-            echo "⚠️ Pages deployment for branch $BRANCH_NAME not found. It may have already been deleted."
-          else
-            echo "Found Pages deployment: $DEPLOYMENT_ID (branch: $BRANCH_NAME)"
-            echo "Deleting Pages deployment..."
-            # Pagesのデプロイメント削除（APIを使用）
-            if curl -X DELETE \
-              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT_NAME/deployments/$DEPLOYMENT_ID" \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-              -H "Content-Type: application/json" 2>/dev/null | grep -q '"success":true'; then
-              echo "✅ Successfully deleted Pages deployment: $DEPLOYMENT_ID"
+          # Workerが存在するか確認して削除
+          if wrangler deployments list 2>/dev/null | grep -q "$WORKER_NAME"; then
+            echo "Found Worker deployment. Attempting to delete..."
+            if wrangler delete "$WORKER_NAME" --force 2>/dev/null; then
+              echo "✅ Successfully deleted Worker: $WORKER_NAME"
             else
-              echo "⚠️ Failed to delete Pages deployment: $DEPLOYMENT_ID"
-              echo "This may be because the deployment was already deleted or does not exist."
+              echo "⚠️ Failed to delete Worker: $WORKER_NAME"
+              echo "This may be because the Worker was already deleted or does not exist."
             fi
+          else
+            echo "⚠️ Worker $WORKER_NAME not found. It may have already been deleted."
           fi
