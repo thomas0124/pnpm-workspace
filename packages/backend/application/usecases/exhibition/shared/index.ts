@@ -4,7 +4,7 @@ import type { ExhibitionArDesignRepository } from '../../../../domain/repositori
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type { ExhibitionDto } from '../../../dto/exhibition'
 import { toExhibitionDto, toExhibitionInformationDto } from '../../../dto/exhibition'
-import { findExhibitionWithOwnershipCheck } from '../findExhibitionWithOwnershipCheck'
+import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwnershipCheck'
 
 export type CommonDeps = {
   exhibitionRepository: ExhibitionRepository

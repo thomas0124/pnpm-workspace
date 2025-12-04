@@ -1,12 +1,15 @@
-import { NotFoundError, ValidationError } from '../../../domain/errors'
-import { updateExhibitionInformation } from '../../../domain/factories/exhibitionInformation'
-import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../domain/repositories/exhibitionArDesign'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
-import type { ExhibitionInformationDto, ExhibitionInformationInputDto } from '../../dto/exhibition'
-import { toExhibitionInformationDto } from '../../dto/exhibition'
-import { validateArDesignId } from '../shared/validateArDesignId'
-import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
+import { NotFoundError, ValidationError } from '../../../../domain/errors'
+import { updateExhibitionInformation } from '../../../../domain/factories/exhibitionInformation'
+import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
+import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
+import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
+import type {
+  ExhibitionInformationDto,
+  ExhibitionInformationInputDto,
+} from '../../../dto/exhibition'
+import { toExhibitionInformationDto } from '../../../dto/exhibition'
+import { validateArDesignId } from '../../shared/validateArDesignId'
+import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwnershipCheck'
 
 /**
  * 出展基本情報更新ユースケース
@@ -53,18 +56,18 @@ export async function updateExhibitionInformationUseCase(
   }
 
   // ARデザインIDの存在確認
-  await validateArDesignId(input.exhibition_ar_design_id, exhibitionArDesignRepository)
+  await validateArDesignId(input.exhibitionArDesignId, exhibitionArDesignRepository)
 
   // ExhibitionInformationを更新
   const updatedInformation = updateExhibitionInformation(existingInformation, {
-    exhibitorName: input.exhibitor_name,
+    exhibitorName: input.exhibitorName,
     title: input.title,
     category: input.category,
     location: input.location,
     price: input.price ?? null,
-    requiredTime: input.required_time ?? null,
+    requiredTime: input.requiredTime ?? null,
     comment: input.comment ?? null,
-    exhibitionArDesignId: input.exhibition_ar_design_id ?? null,
+    exhibitionArDesignId: input.exhibitionArDesignId ?? null,
     // 画像は更新しない（別途エンドポイントで管理）
   })
 

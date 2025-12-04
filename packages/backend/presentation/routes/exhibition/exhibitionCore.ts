@@ -13,19 +13,19 @@ import type { Bindings } from '../../handlers/index'
 export const exhibitionCoreRoutes = new Hono<{ Bindings: Bindings }>()
 
 // POST / - 出展情報の新規作成
-exhibitionCoreRoutes.post('/', handleCreateExhibition)
+exhibitionCoreRoutes.post('/', ...handleCreateExhibition)
 
-// GET /:exhibition_id - 出展情報の取得
-exhibitionCoreRoutes.get('/:exhibition_id', handleGetExhibition)
+// GET /:exhibitionId - 出展情報の取得
+exhibitionCoreRoutes.get('/:exhibitionId', ...handleGetExhibition)
 
-// DELETE /:exhibition_id - 出展の削除
-exhibitionCoreRoutes.delete('/:exhibition_id', handleDeleteExhibition)
+// DELETE /:exhibitionId - 出展の削除
+exhibitionCoreRoutes.delete('/:exhibitionId', ...handleDeleteExhibition)
 
-// PUT /:exhibition_id/draft - 出展を下書きに戻す
-exhibitionCoreRoutes.put('/:exhibition_id/draft', handleDraftExhibition)
+// PUT /:exhibitionId/draft - 出展を下書きに戻す
+exhibitionCoreRoutes.put('/:exhibitionId/draft', ...handleDraftExhibition)
 
-// PUT /:exhibition_id/publish - 出展の公開
-exhibitionCoreRoutes.put('/:exhibition_id/publish', handlePublishExhibition)
+// PUT /:exhibitionId/publish - 出展の公開
+exhibitionCoreRoutes.put('/:exhibitionId/publish', ...handlePublishExhibition)
 
-// PUT /:exhibition_id/unpublish - 出展の非公開
-exhibitionCoreRoutes.put('/:exhibition_id/unpublish', handleUnpublishExhibition)
+// PUT /:exhibitionId/unpublish - 出展の非公開
+exhibitionCoreRoutes.put('/:exhibitionId/unpublish', ...handleUnpublishExhibition)

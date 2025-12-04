@@ -1,12 +1,12 @@
-import { ConflictError } from '../../../domain/errors'
-import { createExhibition } from '../../../domain/factories/exhibition'
-import { createExhibitionInformation } from '../../../domain/factories/exhibitionInformation'
-import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../domain/repositories/exhibitionArDesign'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
-import type { ExhibitionDto, ExhibitionInformationInputDto } from '../../dto/exhibition'
-import { toExhibitionDto, toExhibitionInformationDto } from '../../dto/exhibition'
-import { validateArDesignId } from '../shared/validateArDesignId'
+import { ConflictError } from '../../../../domain/errors'
+import { createExhibition } from '../../../../domain/factories/exhibition'
+import { createExhibitionInformation } from '../../../../domain/factories/exhibitionInformation'
+import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
+import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
+import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
+import type { ExhibitionDto, ExhibitionInformationInputDto } from '../../../dto/exhibition'
+import { toExhibitionDto, toExhibitionInformationDto } from '../../../dto/exhibition'
+import { validateArDesignId } from '../../shared/validateArDesignId'
 
 /**
  * 出展情報作成ユースケース
@@ -34,19 +34,19 @@ export async function createExhibitionUseCase(
   }
 
   // ARデザインIDの存在確認
-  await validateArDesignId(input.exhibition_ar_design_id, exhibitionArDesignRepository)
+  await validateArDesignId(input.exhibitionArDesignId, exhibitionArDesignRepository)
 
   // ExhibitionInformationを作成
   const exhibitionInformation = createExhibitionInformation(
     exhibitorId,
-    input.exhibitor_name,
+    input.exhibitorName,
     input.title,
     input.category,
     input.location,
     input.price ?? null,
-    input.required_time ?? null,
+    input.requiredTime ?? null,
     input.comment ?? null,
-    input.exhibition_ar_design_id ?? null,
+    input.exhibitionArDesignId ?? null,
     null // 画像は別途アップロード
   )
 

@@ -1,8 +1,8 @@
-import { NotFoundError, ValidationError } from '../../../domain/errors'
-import { updateExhibitionInformation } from '../../../domain/factories/exhibitionInformation'
-import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
-import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
+import { NotFoundError, ValidationError } from '../../../../domain/errors'
+import { updateExhibitionInformation } from '../../../../domain/factories/exhibitionInformation'
+import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
+import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
+import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwnershipCheck'
 
 /**
  * 出展画像更新ユースケース
