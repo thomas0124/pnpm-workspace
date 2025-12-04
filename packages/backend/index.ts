@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 
 import type { Bindings } from './presentation/handlers/index'
 import { errorHandler } from './presentation/middlewares/errorHandler'
@@ -11,6 +12,9 @@ const app = new Hono<{ Bindings: Bindings }>()
 
 // エラーハンドラーを適用
 app.onError(errorHandler)
+
+// CORSを適用
+app.use('*', cors())
 
 // ヘルスチェック
 app.get('/health', (c) => {
