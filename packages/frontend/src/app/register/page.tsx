@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { RegisterFormWrapper } from "@/components/register/registerFormWrapper";
 

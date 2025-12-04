@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { LoginFormWrapper } from "@/components/login/loginFormWrapper";
 
