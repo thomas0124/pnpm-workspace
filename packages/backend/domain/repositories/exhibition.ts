@@ -1,15 +1,7 @@
 import type { Exhibition } from '../models/exhibition'
 
-export type ExhibitionCategory = '飲食' | '展示' | '体験' | 'ステージ'
+export type ExhibitionCategory = 'Food' | 'Exhibition' | 'Experience' | 'Stage'
 
-export const CATEGORY_MAPPING = {
-  food: '飲食',
-  exhibition: '展示',
-  experience: '体験',
-  stage: 'ステージ',
-} as const
-
-export type ExhibitionCategoryEn = keyof typeof CATEGORY_MAPPING
 /**
  * ページネーション情報の型定義
  */
@@ -26,14 +18,6 @@ export type PaginationMeta = {
 export type PaginatedResult<T> = {
   data: T[]
   meta: PaginationMeta
-}
-
-/**
- * 公開出展のカテゴリ別件数
- */
-export type CategoryCount = {
-  category: ExhibitionCategory
-  count: number
 }
 
 /**
@@ -55,5 +39,4 @@ export type ExhibitionRepository = {
   findByExhibitorId: (exhibitorId: string) => Promise<Exhibition[]>
   delete: (id: string) => Promise<void>
   findPublished: (params?: FindPublishedParams) => Promise<PaginatedResult<Exhibition>>
-  findCategoryCounts: () => Promise<CategoryCount[]>
 }
