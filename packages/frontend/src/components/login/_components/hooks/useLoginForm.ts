@@ -48,10 +48,7 @@ export function useLoginForm() {
 
       router.push("/exhibitor/basic-info");
     } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        console.error(error.message);
-      }
+      console.error("Login failed:", error);
     } finally {
       setIsSubmitting(false);
     }
