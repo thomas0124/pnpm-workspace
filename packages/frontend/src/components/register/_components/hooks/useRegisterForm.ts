@@ -4,11 +4,11 @@ import { useForm } from "react-hook-form";
 
 import { exhibitorSchema } from "@/schema/exhibitors";
 import type { ExhibitorSchema } from "@/schema/exhibitors";
+import client from "@/lib/apiClient";
 
 export function useRegisterForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -23,7 +23,6 @@ export function useRegisterForm() {
   });
 
   const onSubmit = async (values: ExhibitorSchema) => {
-    setApiError(null);
     setIsSubmitting(true);
 
     try {
@@ -40,41 +39,19 @@ export function useRegisterForm() {
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!baseUrl) {
-        throw new Error("バックエンドURLが設定されていません");
-      }
-
-      const response = await fetch(`${baseUrl}/api/exhibitors/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: values.name,
-          password: values.password,
-        }),
+      const response = await client.exhibitors.register.$post({
+        json: values,
       });
 
       if (!response.ok) {
-        if (response.status === 409) {
-          setError("name", {
-            type: "manual",
-            message: "この名前は既に使用されています",
-          });
-          return;
-        }
-
-        throw new Error("登録に失敗しました");
+        setError("name", {
+          type: "manual",
+          message: "この名前は既に使用されています",
+        });
+        return;
       }
 
-      const data: {
-        token: string;
-        exhibitor: {
-          id: string;
-          name: string;
-        };
-      } = await response.json();
+      const data = await response.json();
 
       sessionStorage.setItem("authToken", data.token);
       sessionStorage.setItem("exhibitorId", data.exhibitor.id);
@@ -85,9 +62,7 @@ export function useRegisterForm() {
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
-        setApiError(error.message);
-      } else {
-        setApiError("予期せぬエラーが発生しました");
+        console.error(error);
       }
     } finally {
       setIsSubmitting(false);
@@ -99,7 +74,6 @@ export function useRegisterForm() {
     handleSubmit,
     errors,
     isSubmitting,
-    apiError,
     onSubmit,
   };
 }
