@@ -29,8 +29,6 @@ function toBase64OrNull(blob: Uint8Array | null): string | null {
 const ListQuerySchema = z.object({
   search: z.string().optional(),
   category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']).optional(),
-  page: z.number().int().min(1).optional(),
-  perPage: z.number().int().min(1).max(100).optional(),
 })
 
 export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
@@ -47,23 +45,17 @@ export async function listPublicExhibitionsUseCase(
   const parsed = ListQuerySchema.parse({
     search: rawQuery.search,
     category: rawQuery.category,
-    page: rawQuery.page ? Number(rawQuery.page) : undefined,
-    perPage: rawQuery.perPage ? Number(rawQuery.perPage) : undefined,
   })
 
   const params: FindPublishedParams = {
     search: parsed.search,
     category: parsed.category,
-    page: parsed.page,
-    perPage: parsed.perPage,
   }
 
   const result = await exhibitionRepository.findPublished(params)
 
   // 一覧分の ExhibitionInformation を一括取得
-  const infoIds = result.data
-    .map((ex) => ex.exhibitionInformationId)
-    .filter((id): id is string => !!id)
+  const infoIds = result.map((ex) => ex.exhibitionInformationId).filter((id): id is string => !!id)
   const uniqueInfoIds = Array.from(new Set(infoIds))
   const infos = await exhibitionInformationRepository.findByIds(uniqueInfoIds)
   const infoMap = new Map(infos.map((info) => [info.id, info]))
@@ -79,7 +71,7 @@ export async function listPublicExhibitionsUseCase(
   const arDesignMap = new Map(arDesigns.map((design) => [design.id, design]))
 
   const data: PublicExhibitionDto[] = []
-  for (const ex of result.data) {
+  for (const ex of result) {
     if (!ex.exhibitionInformationId) {
       // 公開条件的にはありえないがガードしておく
       continue
@@ -120,11 +112,5 @@ export async function listPublicExhibitionsUseCase(
 
   return PublicExhibitionListResponseSchema.parse({
     data,
-    meta: {
-      total: result.meta.total,
-      page: result.meta.page,
-      perPage: result.meta.perPage,
-      totalPages: result.meta.totalPages,
-    },
   })
 }

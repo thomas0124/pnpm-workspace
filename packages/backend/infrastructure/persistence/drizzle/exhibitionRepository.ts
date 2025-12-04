@@ -1,12 +1,11 @@
 import type { D1Database } from '@cloudflare/workers-types'
-import { and, count, eq, isNotNull, sql } from 'drizzle-orm'
+import { and, eq, isNotNull, sql } from 'drizzle-orm'
 
 import { reconstructExhibition } from '../../../domain/factories/exhibition'
 import type { Exhibition as DomainExhibition } from '../../../domain/models/exhibition'
 import type {
   ExhibitionRepository,
   FindPublishedParams,
-  PaginatedResult,
 } from '../../../domain/repositories/exhibition'
 import { getDb } from './client'
 import { exhibition } from './schema/exhibition'
@@ -16,12 +15,6 @@ type DbExhibition = typeof exhibition.$inferSelect
 
 function mapToDomain(row: DbExhibition): DomainExhibition {
   return reconstructExhibition(row)
-}
-
-function normalizePaginationParams(params?: FindPublishedParams) {
-  const page = params?.page && params.page > 0 ? params.page : 1
-  const perPage = params?.perPage && params.perPage > 0 ? params.perPage : 20
-  return { page, perPage }
 }
 
 export function createExhibitionRepository(d1: D1Database): ExhibitionRepository {
@@ -84,10 +77,7 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
   /**
    * 公開中の出展一覧をページネーション付きで取得
    */
-  async findPublished(params?: FindPublishedParams): Promise<PaginatedResult<DomainExhibition>> {
-    const { page, perPage } = normalizePaginationParams(params)
-    const offset = (page - 1) * perPage
-
+  async findPublished(params?: FindPublishedParams): Promise<DomainExhibition[]> {
     const baseWhere = and(
       eq(exhibition.isPublished, 1),
       isNotNull(exhibition.exhibitionInformationId)
@@ -120,20 +110,6 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
 
       const whereCondition = and(...conditions)
 
-      const totalRow = await this.db
-        .select({
-          value: count(exhibition.id).as('value'),
-        })
-        .from(exhibition)
-        .innerJoin(
-          exhibitionInformation,
-          eq(exhibition.exhibitionInformationId, exhibitionInformation.id)
-        )
-        .where(whereCondition)
-        .get()
-
-      const total = totalRow?.value ?? 0
-
       const rows = await this.db
         .select({
           id: exhibition.id,
@@ -151,57 +127,14 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
           eq(exhibition.exhibitionInformationId, exhibitionInformation.id)
         )
         .where(whereCondition)
-        .limit(perPage)
-        .offset(offset)
         .all()
 
-      // デバッグ: 取得したデータを確認
-      console.log('Fetched rows:', rows)
-
-      return {
-        data: rows.map((row) => {
-          console.log('Mapping row:', row) // デバッグログ
-          return mapToDomain(row)
-        }),
-        meta: {
-          total,
-          page,
-          perPage,
-          totalPages: total === 0 ? 0 : Math.ceil(total / perPage),
-        },
-      }
+      return rows.map(mapToDomain)
     }
 
     // 検索もカテゴリフィルタもなし
-    const totalRow = await this.db
-      .select({
-        value: count(exhibition.id).as('value'),
-      })
-      .from(exhibition)
-      .where(baseWhere)
-      .get()
+    const rows = await this.db.select().from(exhibition).where(baseWhere).all()
 
-    const total = totalRow?.value ?? 0
-
-    const rows = await this.db
-      .select()
-      .from(exhibition)
-      .where(baseWhere)
-      .limit(perPage)
-      .offset(offset)
-      .all()
-
-    // デバッグ: 取得したデータを確認
-    console.log('Fetched rows (no filter):', rows)
-
-    return {
-      data: rows.map(mapToDomain),
-      meta: {
-        total,
-        page,
-        perPage,
-        totalPages: total === 0 ? 0 : Math.ceil(total / perPage),
-      },
-    }
+    return rows.map(mapToDomain)
   }
 }
