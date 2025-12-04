@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputWithLabel } from "@/components/inputWithLabel";
 import Link from "next/link";
 
 export function LoginForm() {
@@ -31,53 +32,45 @@ export function LoginForm() {
       </div>
       <div className="space-y-6 rounded-2xl bg-white p-8 shadow-sm">
         <form onSubmit={handleLogin} className="space-y-5">
-          <div className="space-y-2">
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
-            >
-              名前
-            </label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="名前を入力してください"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border-gray-200 bg-gray-50 focus-visible:ring-gray-300"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              パスワード
-            </label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="パスワードを入力してください"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-gray-200 bg-gray-50 pr-10 focus-visible:ring-gray-300"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
-              </button>
-            </div>
-          </div>
+          <InputWithLabel
+            label="名前"
+            id="name"
+            type="text"
+            placeholder="名前を入力してください"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            inputWrapper={(input) => (
+              <div className="relative">
+                {input}
+              </div>
+            )}
+            required
+          />
+          <InputWithLabel
+            label="パスワード"
+            id="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="パスワードを入力してください"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            inputWrapper={(input) => (
+              <div className="relative">
+                {input}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            )}
+          />
           <Button
             type="submit"
             className="w-full rounded-lg bg-red-400 py-6 font-medium text-white hover:bg-red-500"
