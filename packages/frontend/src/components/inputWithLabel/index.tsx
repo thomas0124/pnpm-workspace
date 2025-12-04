@@ -23,7 +23,7 @@ export function InputWithLabel({
       type={type}
       className={cn(
         "w-full border-gray-200 bg-gray-50 focus-visible:ring-gray-300",
-        className
+        className,
       )}
       {...props}
     />
@@ -31,14 +31,10 @@ export function InputWithLabel({
 
   return (
     <div className="space-y-2">
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700"
-      >
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
         {label}
       </label>
       {inputWrapper ? inputWrapper(input) : input}
     </div>
   );
 }
-

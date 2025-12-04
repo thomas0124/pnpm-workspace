@@ -24,9 +24,7 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold text-gray-900">
-          えあパンフ
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">えあパンフ</h1>
         <p className="text-sm text-gray-600">出展者ログイン</p>
       </div>
       <div className="space-y-6 rounded-2xl bg-white p-8 shadow-sm">
@@ -38,11 +36,7 @@ export function LoginForm() {
             placeholder="名前を入力してください"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            inputWrapper={(input) => (
-              <div className="relative">
-                {input}
-              </div>
-            )}
+            inputWrapper={(input) => <div className="relative">{input}</div>}
             required
           />
           <InputWithLabel
@@ -70,11 +64,7 @@ export function LoginForm() {
               </div>
             )}
           />
-          <Button
-            type="submit"
-            color="red"
-            className="w-full"
-          >
+          <Button type="submit" color="red" className="w-full">
             ログイン
           </Button>
         </form>
@@ -87,7 +77,7 @@ export function LoginForm() {
           </div>
         </div>
         <Link href="/register">
-        <Button
+          <Button
             type="button"
             variant="outline"
             color="pink"

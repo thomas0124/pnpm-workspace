@@ -32,9 +32,7 @@ export function RegisterForm() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold text-gray-900">
-          えあパンフ
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">えあパンフ</h1>
         <p className="text-sm text-gray-600">出展者新規登録</p>
       </div>
 
@@ -48,11 +46,7 @@ export function RegisterForm() {
             placeholder="名前を入力してください"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            inputWrapper={(input) => (
-              <div className="relative">
-                {input}
-              </div>
-            )}
+            inputWrapper={(input) => <div className="relative">{input}</div>}
             required
           />
 
@@ -109,11 +103,7 @@ export function RegisterForm() {
             )}
           />
 
-          <Button
-            type="submit"
-            color="pink"
-            className="w-full shadow-sm"
-          >
+          <Button type="submit" color="pink" className="w-full shadow-sm">
             新規登録
           </Button>
         </form>
@@ -123,11 +113,7 @@ export function RegisterForm() {
             すでにアカウントをお持ちの方
           </p>
           <Link href="/login" className="block">
-            <Button
-              variant="outline"
-              color="pink"
-              className="w-full"
-            >
+            <Button variant="outline" color="pink" className="w-full">
               ログイン
             </Button>
           </Link>
