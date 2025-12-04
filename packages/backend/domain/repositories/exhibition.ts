@@ -2,6 +2,14 @@ import type { Exhibition } from '../models/exhibition'
 
 export type ExhibitionCategory = '飲食' | '展示' | '体験' | 'ステージ'
 
+export const CATEGORY_MAPPING = {
+  food: '飲食',
+  exhibition: '展示',
+  experience: '体験',
+  stage: 'ステージ',
+} as const
+
+export type ExhibitionCategoryEn = keyof typeof CATEGORY_MAPPING
 /**
  * ページネーション情報の型定義
  */
