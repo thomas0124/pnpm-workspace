@@ -56,18 +56,18 @@ export async function updateExhibitionInformationUseCase(
   }
 
   // ARデザインIDの存在確認
-  await validateArDesignId(input.exhibition_ar_design_id, exhibitionArDesignRepository)
+  await validateArDesignId(input.exhibitionArDesignId, exhibitionArDesignRepository)
 
   // ExhibitionInformationを更新
   const updatedInformation = updateExhibitionInformation(existingInformation, {
-    exhibitorName: input.exhibitor_name,
+    exhibitorName: input.exhibitorName,
     title: input.title,
     category: input.category,
     location: input.location,
     price: input.price ?? null,
-    requiredTime: input.required_time ?? null,
+    requiredTime: input.requiredTime ?? null,
     comment: input.comment ?? null,
-    exhibitionArDesignId: input.exhibition_ar_design_id ?? null,
+    exhibitionArDesignId: input.exhibitionArDesignId ?? null,
     // 画像は更新しない（別途エンドポイントで管理）
   })
 

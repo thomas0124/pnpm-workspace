@@ -15,7 +15,7 @@ exhibitionRoutes.use('*', authMiddleware)
 exhibitionRoutes.route('/', exhibitionCoreRoutes)
 
 // 基本情報更新のルート
-exhibitionRoutes.route('/:exhibition_id/information', exhibitionInformationRoutes)
+exhibitionRoutes.route('/:exhibitionId/information', exhibitionInformationRoutes)
 
 // 画像関連のルート
-exhibitionRoutes.route('/:exhibition_id/information/image', exhibitionImageRoutes)
+exhibitionRoutes.route('/:exhibitionId/information/image', exhibitionImageRoutes)

@@ -1,58 +1,63 @@
+import { zValidator } from '@hono/zod-validator'
+
+import { PublicExhibitionListQuerySchema } from '../../application/dto/exhibition'
 import {
   getPublicExhibitionCategoryCountsUseCase,
   getPublicExhibitionUseCase,
   listPublicExhibitionsUseCase,
 } from '../../application/usecases/exhibition/public/publicExhibition'
-import type { HandlerContext } from './index'
-import { getContainer } from './index'
+import { ExhibitionIdSchema } from '../../domain/models/exhibition'
+import { getContainer, handlerFactory } from './index'
 
-export async function handleGetPublicExhibitions(c: HandlerContext) {
-  const container = getContainer(c)
+export const handleGetPublicExhibitions = handlerFactory.createHandlers(
+  zValidator('query', PublicExhibitionListQuerySchema),
+  async (c) => {
+    const container = getContainer(c)
 
-  const query = {
-    category: c.req.query('category') ?? undefined,
-    page: c.req.query('page') ?? undefined,
-    per_page: c.req.query('per_page') ?? undefined,
-  }
+    const query = c.req.valid('query')
 
-  const result = await listPublicExhibitionsUseCase(
-    query,
-    container.exhibitionRepository,
-    container.exhibitionInformationRepository,
-    container.exhibitionArDesignRepository
-  )
-
-  return c.json(result, 200)
-}
-
-export async function handleGetPublicExhibition(c: HandlerContext) {
-  const container = getContainer(c)
-  const exhibitionId = c.req.param('exhibition_id')
-
-  const result = await getPublicExhibitionUseCase(
-    exhibitionId,
-    container.exhibitionRepository,
-    container.exhibitionInformationRepository,
-    container.exhibitionArDesignRepository
-  )
-
-  if (!result) {
-    return c.json(
-      {
-        error: 'NOT_FOUND',
-        message: '出展が見つかりません、または非公開です',
-      },
-      404
+    const result = await listPublicExhibitionsUseCase(
+      query,
+      container.exhibitionRepository,
+      container.exhibitionInformationRepository,
+      container.exhibitionArDesignRepository
     )
+
+    return c.json(result, 200)
   }
+)
 
-  return c.json(result, 200)
-}
+export const handleGetPublicExhibition = handlerFactory.createHandlers(
+  zValidator('param', ExhibitionIdSchema),
+  async (c) => {
+    const container = getContainer(c)
+    const exhibitionId = c.req.valid('param')
 
-export async function handleGetPublicExhibitionCategories(c: HandlerContext) {
+    const result = await getPublicExhibitionUseCase(
+      exhibitionId,
+      container.exhibitionRepository,
+      container.exhibitionInformationRepository,
+      container.exhibitionArDesignRepository
+    )
+
+    if (!result) {
+      return c.json(
+        {
+          error: 'NOT_FOUND',
+          message: '出展が見つかりません、または非公開です',
+        },
+        404
+      )
+    }
+
+    return c.json(result, 200)
+  }
+)
+
+export const handleGetPublicExhibitionCategories = handlerFactory.createHandlers(async (c) => {
   const container = getContainer(c)
 
   const result = await getPublicExhibitionCategoryCountsUseCase(container.exhibitionRepository)
 
   return c.json(result, 200)
-}
+})

@@ -17,11 +17,11 @@ export function canPublish(exhibition: Exhibition): boolean {
  * @returns 下書きに遷移可能な場合true
  */
 export function canTransitionToDraft(exhibition: Exhibition): boolean {
-  // 公開中(is_published=true)の出展は下書きに戻せない
+  // 公開中(isPublished=true)の出展は下書きに戻せない
   if (exhibition.isPublished === 1) {
     return false
   }
-  // 非公開(is_draft=false, is_published=false) → 下書きは可能
+  // 非公開(isDraft=false, isPublished=false) → 下書きは可能
   return exhibition.isDraft === 0 && exhibition.isPublished === 0
 }
 
@@ -47,7 +47,7 @@ export function canTransitionToPublished(exhibition: Exhibition): boolean {
  * @returns 非公開に遷移可能な場合true
  */
 export function canTransitionToUnpublished(exhibition: Exhibition): boolean {
-  // 公開中(is_published=true)から非公開への遷移のみ可能
+  // 公開中(isPublished=true)から非公開への遷移のみ可能
   return exhibition.isPublished === 1
 }
 
