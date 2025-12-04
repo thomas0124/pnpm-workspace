@@ -9,7 +9,7 @@ import { createBcryptPasswordService } from '../external/passwordService'
 import { createExhibitionArDesignRepository } from '../persistence/drizzle/exhibitionArDesignRepository'
 import { createExhibitionInformationRepository } from '../persistence/drizzle/exhibitionInformationRepository'
 import { createExhibitionRepository } from '../persistence/drizzle/exhibitionRepository'
-import { createExhibitorRepository } from '../persistence/drizzle/ExhibitorRepository'
+import { createExhibitorRepository } from '../persistence/drizzle/exhibitorRepository'
 
 export function createContainer(d1: D1Database) {
   const exhibitorRepository: ExhibitorRepository = createExhibitorRepository(d1)
