@@ -1,7 +1,7 @@
-import { NotFoundError } from '../../../domain/errors'
-import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
-import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
+import { NotFoundError } from '../../../../domain/errors'
+import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
+import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
+import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwnershipCheck'
 
 export type ExhibitionImageResult = {
   image: Uint8Array

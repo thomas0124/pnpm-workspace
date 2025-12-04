@@ -1,9 +1,9 @@
-import { publish as publishExhibitionDomain } from '../../../domain/factories/exhibition'
-import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../domain/repositories/exhibitionArDesign'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
-import type { ExhibitionDto } from '../../dto/exhibition'
-import { loadExhibitionWithOwnership, saveAndBuildExhibitionDto } from './shared'
+import { publish as publishExhibitionDomain } from '../../../../domain/factories/exhibition'
+import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
+import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
+import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
+import type { ExhibitionDto } from '../../../dto/exhibition'
+import { loadExhibitionWithOwnership, saveAndBuildExhibitionDto } from '../shared'
 
 /**
  * 出展公開ユースケース
