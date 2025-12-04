@@ -4,21 +4,21 @@ import type {
   CategoryCount,
   ExhibitionRepository,
   FindPublishedParams,
-} from '../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../domain/repositories/exhibitionArDesign'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
+} from '../../../../domain/repositories/exhibition'
+import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
+import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type {
   CategoryCountListResponseDto,
   PublicExhibitionDto,
   PublicExhibitionListResponseDto,
-} from '../../dto/exhibition'
+} from '../../../dto/exhibition'
 import {
   CategoryCountListResponseSchema,
   CategoryCountSchema,
   PublicExhibitionArDesignSchema,
   PublicExhibitionListResponseSchema,
   PublicExhibitionSchema,
-} from '../../dto/exhibition'
+} from '../../../dto/exhibition'
 
 /**
  * 画像BLOB(Uint8Array)をBase64文字列に変換

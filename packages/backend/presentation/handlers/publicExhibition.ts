@@ -2,7 +2,7 @@ import {
   getPublicExhibitionCategoryCountsUseCase,
   getPublicExhibitionUseCase,
   listPublicExhibitionsUseCase,
-} from '../../application/usecases/exhibition/publicExhibition'
+} from '../../application/usecases/exhibition/public/publicExhibition'
 import type { HandlerContext } from './index'
 import { getContainer } from './index'
 

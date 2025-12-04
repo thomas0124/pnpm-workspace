@@ -1,5 +1,5 @@
-import type { ExhibitionRepository } from '../../../domain/repositories/exhibition'
-import type { ExhibitionInformationRepository } from '../../../domain/repositories/exhibitionInformation'
+import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
+import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
 
 /**
