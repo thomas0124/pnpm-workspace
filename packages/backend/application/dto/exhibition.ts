@@ -81,22 +81,13 @@ export const PublicExhibitionListResponseSchema = z.object({
 export type PublicExhibitionListResponseDto = z.infer<typeof PublicExhibitionListResponseSchema>
 
 /**
- * カテゴリ別件数レスポンス
- */
-export const CategoryCountListResponseSchema = z.object({
-  data: z.array(CategoryCountSchema),
-})
-
-export type CategoryCountListResponseDto = z.infer<typeof CategoryCountListResponseSchema>
-
-/**
  * 出展情報入力（作成・更新用）
  * api.yml の ExhibitionInformationInput に対応
  */
 export const ExhibitionInformationInputSchema = z.object({
   exhibitorName: z.string().min(1).max(100).trim(),
   title: z.string().min(1).max(200).trim(),
-  category: z.enum(['飲食', '展示', '体験', 'ステージ']),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']),
   location: z.string().min(1).max(100).trim(),
   price: z.number().int().min(0).nullable().optional(),
   requiredTime: z.number().int().min(1).nullable().optional(),
@@ -125,7 +116,7 @@ export const ExhibitionInformationDtoSchema = z.object({
   exhibitorId: z.uuid(),
   exhibitorName: z.string(),
   title: z.string(),
-  category: z.enum(['飲食', '展示', '体験', 'ステージ']),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']),
   location: z.string(),
   price: z.number().int().nullable(),
   requiredTime: z.number().int().nullable(),

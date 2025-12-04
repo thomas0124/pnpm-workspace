@@ -1,20 +1,13 @@
 import { z } from 'zod'
 
 import type {
-  CategoryCount,
   ExhibitionRepository,
   FindPublishedParams,
 } from '../../../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
-import type {
-  CategoryCountListResponseDto,
-  PublicExhibitionDto,
-  PublicExhibitionListResponseDto,
-} from '../../../dto/exhibition'
+import type { PublicExhibitionDto, PublicExhibitionListResponseDto } from '../../../dto/exhibition'
 import {
-  CategoryCountListResponseSchema,
-  CategoryCountSchema,
   PublicExhibitionArDesignSchema,
   PublicExhibitionListResponseSchema,
   PublicExhibitionSchema,
@@ -35,7 +28,7 @@ function toBase64OrNull(blob: Uint8Array | null): string | null {
 
 const ListQuerySchema = z.object({
   search: z.string().optional(),
-  category: z.enum(['飲食', '展示', '体験', 'ステージ']).optional(),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']).optional(),
   page: z.number().int().min(1).optional(),
   perPage: z.number().int().min(1).max(100).optional(),
 })
@@ -43,10 +36,10 @@ const ListQuerySchema = z.object({
 export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
 
 /**
- * 公開出展一覧取得ユースケース
+ * 公開出展一覧取得ユースケース飲食
  */
 export async function listPublicExhibitionsUseCase(
-  rawQuery: { search?: string; category?: string; page?: string; perPage?: string },
+  rawQuery: ListPublicExhibitionsQuery,
   exhibitionRepository: ExhibitionRepository,
   exhibitionInformationRepository: ExhibitionInformationRepository,
   exhibitionArDesignRepository: ExhibitionArDesignRepository
@@ -133,25 +126,5 @@ export async function listPublicExhibitionsUseCase(
       perPage: result.meta.perPage,
       totalPages: result.meta.totalPages,
     },
-  })
-}
-
-/**
- * カテゴリ別件数取得ユースケース
- */
-export async function getPublicExhibitionCategoryCountsUseCase(
-  exhibitionRepository: ExhibitionRepository
-): Promise<CategoryCountListResponseDto> {
-  const rows: CategoryCount[] = await exhibitionRepository.findCategoryCounts()
-
-  const data = rows.map((row) =>
-    CategoryCountSchema.parse({
-      category: row.category,
-      count: row.count,
-    })
-  )
-
-  return CategoryCountListResponseSchema.parse({
-    data,
   })
 }
