@@ -1,11 +1,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import type { z } from "zod";
-
-import { loginSchema } from "@/schema/exhibitors";
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { exhibitorSchema } from "@/schema/exhibitors";
+import type { ExhibitorSchema } from "@/schema/exhibitors";
 
 export function useLoginForm() {
   const router = useRouter();
@@ -17,24 +14,24 @@ export function useLoginForm() {
     handleSubmit,
     formState: { errors },
     setError,
-  } = useForm<LoginFormValues>({
+  } = useForm<ExhibitorSchema>({
     defaultValues: {
       name: "",
       password: "",
     },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
+  const onSubmit = async (values: ExhibitorSchema) => {
     setApiError(null);
     setIsSubmitting(true);
 
     try {
-      const parsed = loginSchema.safeParse(values);
+      const parsed = exhibitorSchema.safeParse(values);
       if (!parsed.success) {
         parsed.error.issues.forEach((issue) => {
           const fieldName = issue.path[0];
           if (!fieldName) return;
-          setError(fieldName as keyof LoginFormValues, {
+          setError(fieldName as keyof ExhibitorSchema, {
             type: "manual",
             message: issue.message,
           });
@@ -102,5 +99,3 @@ export function useLoginForm() {
     onSubmit,
   };
 }
-
-

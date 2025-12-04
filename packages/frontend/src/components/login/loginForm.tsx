@@ -27,9 +27,7 @@ export function LoginForm() {
             {...register("name")}
           />
           {errors.name && (
-            <p className="mt-1 text-sm text-red-500">
-              {errors.name.message}
-            </p>
+            <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
           )}
 
           <InputWithLabel
@@ -61,9 +59,7 @@ export function LoginForm() {
             </p>
           )}
 
-          {apiError && (
-            <p className="mt-2 text-sm text-red-500">{apiError}</p>
-          )}
+          {apiError && <p className="mt-2 text-sm text-red-500">{apiError}</p>}
 
           <Button
             type="submit"
