@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { exhibitorSchema } from "@/schema/exhibitors";
 import type { ExhibitorSchema } from "@/schema/exhibitors";
@@ -16,29 +17,18 @@ export function useRegisterForm() {
     formState: { errors },
     setError,
   } = useForm<ExhibitorSchema>({
+    resolver: zodResolver(exhibitorSchema),
     defaultValues: {
       name: "",
       password: "",
     },
+    mode: "onBlur",
   });
 
   const onSubmit = async (values: ExhibitorSchema) => {
     setIsSubmitting(true);
 
     try {
-      const parsed = exhibitorSchema.safeParse(values);
-      if (!parsed.success) {
-        parsed.error.issues.forEach((issue) => {
-          const fieldName = issue.path[0];
-          if (!fieldName) return;
-          setError(fieldName as keyof ExhibitorSchema, {
-            type: "manual",
-            message: issue.message,
-          });
-        });
-        return;
-      }
-
       const response = await client.exhibitors.register.$post({
         json: values,
       });
@@ -59,7 +49,7 @@ export function useRegisterForm() {
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
-        console.error(error);
+        console.error(error.message);
       }
     } finally {
       setIsSubmitting(false);
