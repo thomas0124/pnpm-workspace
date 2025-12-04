@@ -5,7 +5,9 @@
   "description": "Next.js frontend app that displays message from backend",
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next-on-pages",
+    "build": "next build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "start": "next start",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -30,7 +32,6 @@
     "hono": "^4.10.6",
     "lucide-react": "^0.554.0",
     "next": "14.2.3",
-    "next-on-pages": "^0.1.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.68.0",
@@ -40,6 +41,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.14.3",
     "@types/node": "^20",
     "@types/react": "^18",
     "autoprefixer": "^10.4.19",
@@ -49,6 +51,7 @@
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "tailwindcss": "^3.4.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.52.1"
   }
 }
