@@ -85,7 +85,7 @@ export const handleDeleteExhibition = handlerFactory.createHandlers(
 
 /**
  * 出展を下書き状態に戻すハンドラー
- * PUT /exhibitions/{exhibition_id}/draft
+ * PUT /exhibitions/{exhibitionId}/draft
  */
 export const handleDraftExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
@@ -108,7 +108,7 @@ export const handleDraftExhibition = handlerFactory.createHandlers(
 
 /**
  * 出展公開ハンドラー
- * PUT /exhibitions/{exhibition_id}/publish
+ * PUT /exhibitions/{exhibitionId}/publish
  */
 export const handlePublishExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
@@ -131,7 +131,7 @@ export const handlePublishExhibition = handlerFactory.createHandlers(
 
 /**
  * 出展非公開ハンドラー
- * PUT /exhibitions/{exhibition_id}/unpublish
+ * PUT /exhibitions/{exhibitionId}/unpublish
  */
 export const handleUnpublishExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
@@ -179,7 +179,7 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
 
 /**
  * 出展画像アップロードハンドラー
- * POST /exhibitions/{exhibition_id}/information/image
+ * POST /exhibitions/{exhibitionId}/information/image
  */
 export const handleUploadExhibitionImage = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
@@ -226,7 +226,7 @@ export const handleUploadExhibitionImage = handlerFactory.createHandlers(
 
 /**
  * 出展画像取得ハンドラー
- * GET /exhibitions/{exhibition_id}/information/image
+ * GET /exhibitions/{exhibitionId}/information/image
  */
 export const handleGetExhibitionImage = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
@@ -279,7 +279,7 @@ export const handleGetExhibitionImage = handlerFactory.createHandlers(
 
 /**
  * 出展画像削除ハンドラー
- * DELETE /exhibitions/{exhibition_id}/information/image
+ * DELETE /exhibitions/{exhibitionId}/information/image
  */
 export const handleDeleteExhibitionImage = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
