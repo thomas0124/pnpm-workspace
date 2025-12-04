@@ -198,26 +198,6 @@ export class DrizzleExhibitionRepository implements ExhibitionRepository {
   }
 
   /**
-   * 公開中かつ基本情報が存在する出展をIDで取得
-   */
-  async findPublishedById(id: string): Promise<DomainExhibition | null> {
-    const row = await this.db
-      .select()
-      .from(exhibition)
-      .where(
-        and(
-          eq(exhibition.id, id),
-          eq(exhibition.isPublished, 1),
-          isNotNull(exhibition.exhibitionInformationId)
-        )
-      )
-      .get()
-
-    if (!row) return null
-    return mapToDomain(row)
-  }
-
-  /**
    * 公開中出展のカテゴリ別件数
    */
   async findCategoryCounts(): Promise<CategoryCount[]> {

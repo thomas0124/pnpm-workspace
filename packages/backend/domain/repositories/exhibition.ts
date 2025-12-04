@@ -37,3 +37,15 @@ export type FindPublishedParams = {
   page?: number
   perPage?: number
 }
+
+/**
+ * Exhibitionリポジトリの型定義
+ */
+export type ExhibitionRepository = {
+  save: (exhibition: Exhibition) => Promise<void>
+  findById: (id: string) => Promise<Exhibition | null>
+  findByExhibitorId: (exhibitorId: string) => Promise<Exhibition[]>
+  delete: (id: string) => Promise<void>
+  findPublished: (params?: FindPublishedParams) => Promise<PaginatedResult<Exhibition>>
+  findCategoryCounts: () => Promise<CategoryCount[]>
+}

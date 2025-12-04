@@ -125,6 +125,17 @@ export async function listPublicExhibitionsUseCase(
     data.push(publicExhibition)
   }
 
+  return PublicExhibitionListResponseSchema.parse({
+    data,
+    meta: {
+      total: result.meta.total,
+      page: result.meta.page,
+      per_page: result.meta.perPage,
+      total_pages: result.meta.totalPages,
+    },
+  })
+}
+
 /**
  * カテゴリ別件数取得ユースケース
  */
