@@ -15,9 +15,9 @@ export const ExhibitionSchema = z.object({
   exhibitionInformationId: ExhibitionInformationIdSchema,
   isDraft: z.number().int().min(0).max(1), // true: 下書き, false: 確定（DBでは1/0で管理）
   isPublished: z.number().int().min(0).max(1), // true: 公開, false: 非公開（DBでは1/0で管理）
-  publishedAt: z.string().datetime().nullable(), // 修正: z.iso → z.string()
-  createdAt: z.string().datetime(), // 修正: z.iso → z.string()
-  updatedAt: z.string().datetime(), // 修正: z.iso → z.string()
+  publishedAt: z.iso.datetime().nullable(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 })
 
 // 型を生成
