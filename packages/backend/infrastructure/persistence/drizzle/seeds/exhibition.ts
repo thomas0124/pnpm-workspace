@@ -26,31 +26,31 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
   const { exhibition } = exhibitionSchema
 
   // 固定ID(テストしやすいように決め打ち・すべてUUID形式)
-const exhibitorIds = [
-  '7c64d3d8-2fe4-4042-8f3d-0c6840016f39', // ✅ 修正済み
-  '8d75e4e9-3af5-4153-8a4e-1d7951127f40', // ✅ 修正済み
-  '9e86f5fa-4ba6-4264-9a5f-2e8a6223a517', // ✅ 修正済み
-  'af97a6ab-5cb7-4375-8b6a-3f9b7334b62f', // ✅ 修正済み
-]
+  const exhibitorIds = [
+    '7c64d3d8-2fe4-4042-8f3d-0c6840016f39', // ✅ 修正済み
+    '8d75e4e9-3af5-4153-8a4e-1d7951127f40', // ✅ 修正済み
+    '9e86f5fa-4ba6-4264-9a5f-2e8a6223a517', // ✅ 修正済み
+    'af97a6ab-5cb7-4375-8b6a-3f9b7334b62f', // ✅ 修正済み
+  ]
 
-const arDesignIds = [
-  '53486767-131a-402f-92b2-629a7915765d', // ✅ そのまま
-  '35039280-460a-4104-9104-2716738437e4', // ✅ 修正済み
-]
+  const arDesignIds = [
+    '53486767-131a-402f-92b2-629a7915765d', // ✅ そのまま
+    '35039280-460a-4104-9104-2716738437e4', // ✅ 修正済み
+  ]
 
-const exhibitionInformationIds = [
-  '2b5d3536-9646-439f-8933-42803898c043', // ✅ そのまま
-  '39204500-3255-44a8-979f-195216201943', // ✅ そのまま
-  '72258994-75e2-493e-a766-134a10289512', // ✅ そのまま
-  'f4584736-71e9-435a-882e-876892601900', // ✅ そのまま
-]
+  const exhibitionInformationIds = [
+    '2b5d3536-9646-439f-8933-42803898c043', // ✅ そのまま
+    '39204500-3255-44a8-979f-195216201943', // ✅ そのまま
+    '72258994-75e2-493e-a766-134a10289512', // ✅ そのまま
+    'f4584736-71e9-435a-882e-876892601900', // ✅ そのまま
+  ]
 
-const exhibitionIds = [
-  '52097100-d270-4e17-8744-211c206f1327', // ✅ そのまま
-  '89761862-4706-4051-899e-a50e63989064', // ✅ そのまま
-  '07779520-190c-4e0f-8799-843355204935', // ✅ そのまま
-  '39204500-3255-44a8-979f-195216201943', // ✅ そのまま
-]
+  const exhibitionIds = [
+    '52097100-d270-4e17-8744-211c206f1327', // ✅ そのまま
+    '89761862-4706-4051-899e-a50e63989064', // ✅ そのまま
+    '07779520-190c-4e0f-8799-843355204935', // ✅ そのまま
+    '39204500-3255-44a8-979f-195216201943', // ✅ そのまま
+  ]
   const now = new Date().toISOString()
 
   // 既存データを削除（FK制約の都合上、子テーブルから順に削除）
@@ -103,7 +103,7 @@ const exhibitionIds = [
       exhibitionArDesignId: arDesignIds[0],
       exhibitorName: 'Seed Exhibitor 1',
       title: 'Seed Exhibition Title - 展示',
-      category: '展示',
+      category: 'Exhibition',
       location: 'A-01',
       price: 500,
       requiredTime: 30,
@@ -118,7 +118,7 @@ const exhibitionIds = [
       exhibitionArDesignId: arDesignIds[1],
       exhibitorName: 'Seed Exhibitor 2',
       title: 'Seed Exhibition Title - 体験',
-      category: '体験',
+      category: 'Experience',
       location: 'B-02',
       price: 0,
       requiredTime: 15,
@@ -133,7 +133,7 @@ const exhibitionIds = [
       exhibitionArDesignId: null,
       exhibitorName: 'Seed Exhibitor 3',
       title: 'Seed Exhibition Title - 飲食',
-      category: '飲食',
+      category: 'Food',
       location: 'C-03',
       price: 800,
       requiredTime: 10,
@@ -149,7 +149,7 @@ const exhibitionIds = [
       exhibitionArDesignId: null,
       exhibitorName: 'Seed Exhibitor 4',
       title: 'Draft Exhibition Title - 展示',
-      category: '展示',
+      category: 'Exhibition',
       location: 'D-04',
       price: 300,
       requiredTime: 20,
