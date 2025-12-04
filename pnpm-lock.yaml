@@ -111,6 +111,9 @@ importers:
       cmdk:
         specifier: ^1.1.1
         version: 1.1.1(@types/react@18.3.26)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      hono:
+        specifier: ^4.10.6
+        version: 4.10.6
       lucide-react:
         specifier: ^0.554.0
         version: 0.554.0(react@18.2.0)
