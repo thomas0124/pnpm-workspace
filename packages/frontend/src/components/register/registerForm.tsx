@@ -1,33 +1,16 @@
 "use client";
 
-import type React from "react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/button";
 import { InputWithLabel } from "@/components/inputWithLabel";
 import Link from "next/link";
+import { useRegisterForm } from "./_components/hooks/useRegisterForm";
 
 export function RegisterForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (password !== confirmPassword) {
-      alert("パスワードが一致しません");
-      return;
-    }
-
-    sessionStorage.setItem("isLoggedIn", "true");
-    sessionStorage.setItem("userName", name);
-    router.push("/events");
-  };
+  const { register, handleSubmit, errors, isSubmitting, apiError, onSubmit } =
+    useRegisterForm();
 
   return (
     <div className="w-full max-w-md space-y-8">
@@ -37,18 +20,19 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-        <form onSubmit={handleRegister} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Name Field */}
           <InputWithLabel
             label="名前"
             id="name"
             type="text"
             placeholder="名前を入力してください"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
             inputWrapper={(input) => <div className="relative">{input}</div>}
-            required
+            {...register("name")}
           />
+          {errors.name && (
+            <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+          )}
 
           {/* Password Field */}
           <InputWithLabel
@@ -56,9 +40,6 @@ export function RegisterForm() {
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="パスワードを入力してください"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
             inputWrapper={(input) => (
               <div className="relative">
                 {input}
@@ -75,36 +56,23 @@ export function RegisterForm() {
                 </button>
               </div>
             )}
+            {...register("password")}
           />
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.password.message}
+            </p>
+          )}
 
-          <InputWithLabel
-            label="パスワード（確認）"
-            id="confirmPassword"
-            type={showConfirmPassword ? "text" : "password"}
-            placeholder="もう一度パスワードを入力してください"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            inputWrapper={(input) => (
-              <div className="relative">
-                {input}
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            )}
-          />
+          {apiError && <p className="mt-2 text-sm text-red-500">{apiError}</p>}
 
-          <Button type="submit" color="pink" className="w-full shadow-sm">
-            新規登録
+          <Button
+            type="submit"
+            color="pink"
+            className="w-full shadow-sm"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "登録中..." : "新規登録"}
           </Button>
         </form>
 
