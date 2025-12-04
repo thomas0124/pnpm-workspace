@@ -20,8 +20,8 @@ export type ExhibitorLoginRequest = z.infer<typeof ExhibitorLoginRequestSchema>
 export const ExhibitorDtoSchema = z.object({
   id: z.uuid(),
   name: z.string(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 export type ExhibitorDto = z.infer<typeof ExhibitorDtoSchema>
