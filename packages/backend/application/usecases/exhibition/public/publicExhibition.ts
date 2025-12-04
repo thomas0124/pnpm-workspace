@@ -34,7 +34,7 @@ const ListQuerySchema = z.object({
 export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
 
 /**
- * 公開出展一覧取得ユースケース飲食
+ * 公開出展一覧取得ユースケース
  */
 export async function listPublicExhibitionsUseCase(
   rawQuery: ListPublicExhibitionsQuery,
