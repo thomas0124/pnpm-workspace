@@ -154,6 +154,8 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
           NODE_ENV: production
         run: |
+          echo "🧹 Cleaning frontend cache..."
+          rm -rf .next .vercel out
           echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
           pnpm run build
 
@@ -181,8 +183,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Cloudflare Pagesにデプロイ（静的エクスポートされたoutディレクトリをデプロイ）
-          wrangler pages deploy out --project-name=ar-pamph --branch=main
+          # Cloudflare Pagesにデプロイ（動的レンダリング対応の.vercel/output/staticディレクトリをデプロイ）
+          wrangler pages deploy .vercel/output/static --project-name=ar-pamph --branch=main
 
           # デプロイされたURLを生成
           PAGES_URL="https://ar-pamph.pages.dev"
