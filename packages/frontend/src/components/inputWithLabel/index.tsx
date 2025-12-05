@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface InputWithLabelProps
   extends Omit<React.ComponentProps<"input">, "id"> {
-  label: string;
+  label: React.ReactNode;
   id: string;
   inputWrapper?: (input: React.ReactElement) => React.ReactElement;
 }
