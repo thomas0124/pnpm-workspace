@@ -1,9 +1,8 @@
 import { eq } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 
-import type { ExhibitionArDesign, ExhibitionInformation, Exhibitor } from '../client'
+import type { ExhibitionInformation, Exhibitor } from '../client'
 import {
-  exhibitionArDesignSchema,
   exhibitionInformationSchema,
   exhibitionSchema,
   exhibitorSchema,
@@ -15,13 +14,11 @@ import {
 type SeedDb = BetterSQLite3Database<
   typeof exhibitorSchema &
     typeof exhibitionSchema &
-    typeof exhibitionInformationSchema &
-    typeof exhibitionArDesignSchema
+    typeof exhibitionInformationSchema
 >
 
 export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
   const { exhibitor } = exhibitorSchema
-  const { exhibitionArDesign } = exhibitionArDesignSchema
   const { exhibitionInformation } = exhibitionInformationSchema
   const { exhibition } = exhibitionSchema
 
@@ -31,11 +28,6 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     '8d75e4e9-3af5-4153-8a4e-1d7951127f40', // ✅ 修正済み
     '9e86f5fa-4ba6-4264-9a5f-2e8a6223a517', // ✅ 修正済み
     'af97a6ab-5cb7-4375-8b6a-3f9b7334b62f', // ✅ 修正済み
-  ]
-
-  const arDesignIds = [
-    '53486767-131a-402f-92b2-629a7915765d', // ✅ そのまま
-    '35039280-460a-4104-9104-2716738437e4', // ✅ 修正済み
   ]
 
   const exhibitionInformationIds = [
@@ -62,10 +54,6 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     await db.delete(exhibitionInformation).where(eq(exhibitionInformation.id, id)).run()
   }
 
-  for (const id of arDesignIds) {
-    await db.delete(exhibitionArDesign).where(eq(exhibitionArDesign.id, id)).run()
-  }
-
   for (const id of exhibitorIds) {
     await db.delete(exhibitor).where(eq(exhibitor.id, id)).run()
   }
@@ -81,26 +69,11 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
 
   await db.insert(exhibitor).values(exhibitorRows).run()
 
-  // ARデザイン（URLだけ持つシンプルなものを複数パターン用意）
-  const arDesignRows: ExhibitionArDesign[] = [
-    {
-      id: arDesignIds[0],
-      url: 'https://example.com/ar/seed-1',
-    },
-    {
-      id: arDesignIds[1],
-      url: 'https://example.com/ar/seed-2',
-    },
-  ]
-
-  await db.insert(exhibitionArDesign).values(arDesignRows).run()
-
   // 出展情報（カテゴリや金額・所要時間にバリエーションを持たせる）
   const exhibitionInformationRows: ExhibitionInformation[] = [
     {
       id: exhibitionInformationIds[0],
       exhibitorId: exhibitorIds[0],
-      exhibitionArDesignId: arDesignIds[0],
       exhibitorName: 'Seed Exhibitor 1',
       title: 'Seed Exhibition Title - 展示',
       category: 'Exhibition',
@@ -115,7 +88,6 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     {
       id: exhibitionInformationIds[1],
       exhibitorId: exhibitorIds[1],
-      exhibitionArDesignId: arDesignIds[1],
       exhibitorName: 'Seed Exhibitor 2',
       title: 'Seed Exhibition Title - 体験',
       category: 'Experience',
@@ -130,7 +102,6 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
     {
       id: exhibitionInformationIds[2],
       exhibitorId: exhibitorIds[2],
-      exhibitionArDesignId: null,
       exhibitorName: 'Seed Exhibitor 3',
       title: 'Seed Exhibition Title - 飲食',
       category: 'Food',
@@ -146,7 +117,6 @@ export async function seedPublicExhibitions(db: SeedDb): Promise<void> {
       // 非公開（ドラフト）用の出展情報
       id: exhibitionInformationIds[3],
       exhibitorId: exhibitorIds[3],
-      exhibitionArDesignId: null,
       exhibitorName: 'Seed Exhibitor 4',
       title: 'Draft Exhibition Title - 展示',
       category: 'Exhibition',

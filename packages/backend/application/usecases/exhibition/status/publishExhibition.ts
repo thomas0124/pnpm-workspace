@@ -1,6 +1,5 @@
 import { publish as publishExhibitionDomain } from '../../../../domain/factories/exhibition'
 import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type { ExhibitionDto } from '../../../dto/exhibition'
 import { loadExhibitionWithOwnership, saveAndBuildExhibitionDto } from '../shared'
@@ -12,8 +11,7 @@ export async function publishExhibitionUseCase(
   exhibitionId: string,
   exhibitorId: string,
   exhibitionRepository: ExhibitionRepository,
-  exhibitionInformationRepository: ExhibitionInformationRepository,
-  exhibitionArDesignRepository: ExhibitionArDesignRepository
+  exhibitionInformationRepository: ExhibitionInformationRepository
 ): Promise<ExhibitionDto> {
   const exhibition = await loadExhibitionWithOwnership(
     exhibitionId,
@@ -26,6 +24,5 @@ export async function publishExhibitionUseCase(
   return saveAndBuildExhibitionDto(published, {
     exhibitionRepository,
     exhibitionInformationRepository,
-    exhibitionArDesignRepository,
   })
 }

@@ -14,7 +14,6 @@ import { ExhibitionInformationSchema } from '../models/exhibitionInformation'
  * @param price 金額（円単位、nullの場合は無料）
  * @param requiredTime 所要時間（分単位、nullの場合は不明）
  * @param comment ひとことコメント（最大100文字、nullの場合はなし）
- * @param exhibitionArDesignId ARデザインID（nullの場合はARなし）
  * @param image 画像BLOB（nullの場合はなし）
  * @returns 新規ExhibitionInformationエンティティ
  * @throws zodバリデーションエラー時
@@ -28,7 +27,6 @@ export function createExhibitionInformation(
   price: number | null = null,
   requiredTime: number | null = null,
   comment: string | null = null,
-  exhibitionArDesignId: string | null = null,
   image: Uint8Array | null = null
 ): ExhibitionInformation {
   const now = new Date().toISOString()
@@ -36,7 +34,6 @@ export function createExhibitionInformation(
   return ExhibitionInformationSchema.parse({
     id: uuidv4(),
     exhibitorId,
-    exhibitionArDesignId,
     exhibitorName,
     title,
     category,
@@ -82,7 +79,6 @@ export function updateExhibitionInformation(
     price?: number | null
     requiredTime?: number | null
     comment?: string | null
-    exhibitionArDesignId?: string | null
     image?: Uint8Array | null
   }
 ): ExhibitionInformation {
@@ -91,7 +87,6 @@ export function updateExhibitionInformation(
   return ExhibitionInformationSchema.parse({
     id: existing.id,
     exhibitorId: existing.exhibitorId,
-    exhibitionArDesignId: updates.exhibitionArDesignId ?? existing.exhibitionArDesignId,
     exhibitorName: updates.exhibitorName ?? existing.exhibitorName,
     title: updates.title ?? existing.title,
     category: updates.category ?? existing.category,

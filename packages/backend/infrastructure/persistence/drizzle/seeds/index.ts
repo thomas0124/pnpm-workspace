@@ -5,7 +5,6 @@ import fs from 'fs'
 import path from 'path'
 
 import {
-  exhibitionArDesignSchema,
   exhibitionInformationSchema,
   exhibitionSchema,
   exhibitorSchema,
@@ -55,7 +54,6 @@ async function main() {
       ...exhibitorSchema,
       ...exhibitionSchema,
       ...exhibitionInformationSchema,
-      ...exhibitionArDesignSchema,
     },
   })
 

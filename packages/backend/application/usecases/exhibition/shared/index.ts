@@ -1,6 +1,5 @@
 import type { Exhibition } from '../../../../domain/models/exhibition'
 import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type { ExhibitionDto } from '../../../dto/exhibition'
 import { toExhibitionDto, toExhibitionInformationDto } from '../../../dto/exhibition'
@@ -9,7 +8,6 @@ import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwne
 export type CommonDeps = {
   exhibitionRepository: ExhibitionRepository
   exhibitionInformationRepository: ExhibitionInformationRepository
-  exhibitionArDesignRepository: ExhibitionArDesignRepository
 }
 
 export async function loadExhibitionWithOwnership(
@@ -24,8 +22,7 @@ export async function saveAndBuildExhibitionDto(
   exhibition: Exhibition,
   deps: CommonDeps
 ): Promise<ExhibitionDto> {
-  const { exhibitionRepository, exhibitionInformationRepository, exhibitionArDesignRepository } =
-    deps
+  const { exhibitionRepository, exhibitionInformationRepository } = deps
 
   await exhibitionRepository.save(exhibition)
 
@@ -35,10 +32,7 @@ export async function saveAndBuildExhibitionDto(
       exhibition.exhibitionInformationId
     )
     if (exhibitionInformation) {
-      exhibitionInformationDto = await toExhibitionInformationDto(
-        exhibitionInformation,
-        exhibitionArDesignRepository
-      )
+      exhibitionInformationDto = toExhibitionInformationDto(exhibitionInformation)
     }
   }
 

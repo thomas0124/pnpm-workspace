@@ -18,8 +18,6 @@ tags:
     description: 認証関連のエンドポイント
   - name: Exhibition Management
     description: 出展情報管理(出展者向け)
-  - name: AR Design
-    description: ARデザイン管理
   - name: Public
     description: 公開情報(ユーザー向け)
 
@@ -117,33 +115,6 @@ components:
           type: string
           format: date-time
           example: '2025-11-15T10:00:00Z'
-
-    # ARデザイン
-    ExhibitionArDesign:
-      type: object
-      required:
-        - id
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: '880e8400-e29b-41d4-a716-446655440003'
-        url:
-          type: string
-          format: uri
-          nullable: true
-          example: 'https://ar.example.com/designs/abc123'
-          description: 'ARのURL(NULLの場合はURLなし)'
-
-    ArDesignListResponse:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExhibitionArDesign'
 
     # 出展情報
     Exhibition:
@@ -262,11 +233,6 @@ components:
           nullable: true
           maxLength: 100
           example: '本格窯焼きピザをお楽しみください'
-        ar_design:
-          allOf:
-            - $ref: '#/components/schemas/ExhibitionArDesign'
-            - nullable: true
-          description: 'ARデザイン情報(NULLの場合はARなし)'
         image:
           type: string
           format: byte
@@ -321,12 +287,6 @@ components:
           nullable: true
           maxLength: 100
           example: '本格窯焼きピザをお楽しみください'
-        exhibition_ar_design_id:
-          type: string
-          format: uuid
-          nullable: true
-          example: '880e8400-e29b-41d4-a716-446655440003'
-          description: 'ARデザインID(NULLの場合はARなし)'
 
     # 公開用出展情報
     PublicExhibition:
@@ -369,11 +329,6 @@ components:
           type: string
           nullable: true
           example: '本格窯焼きピザをお楽しみください'
-        ar_design:
-          allOf:
-            - $ref: '#/components/schemas/ExhibitionArDesign'
-            - nullable: true
-          description: 'ARデザイン情報(NULLの場合はARなし)'
         image:
           type: string
           format: byte
@@ -465,31 +420,6 @@ paths:
       responses:
         '204':
           description: ログアウト成功
-        '401':
-          description: 認証エラー
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  # ==================== ARデザイン ====================
-  /ar-designs:
-    get:
-      tags:
-        - AR Design
-      summary: ARデザイン一覧取得
-      description: |
-        利用可能なARデザインの一覧を取得します。
-        出展者が出展情報作成・編集時にARデザインを選択するために使用します。
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: 取得成功
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ArDesignListResponse'
         '401':
           description: 認証エラー
           content:
@@ -842,9 +772,6 @@ paths:
                   price: 500
                   required_time: 15
                   comment: '本格窯焼きピザをお楽しみください'
-                  ar_design:
-                    id: '880e8400-e29b-41d4-a716-446655440003'
-                    url: 'https://ar.example.com/designs/abc123'
                   image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'
@@ -929,9 +856,6 @@ paths:
                   price: 500
                   required_time: 15
                   comment: '本格窯焼きピザをお楽しみください'
-                  ar_design:
-                    id: '880e8400-e29b-41d4-a716-446655440003'
-                    url: 'https://ar.example.com/designs/abc123'
                   image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'
@@ -1011,9 +935,6 @@ paths:
                   price: 500
                   required_time: 15
                   comment: '本格窯焼きピザをお楽しみください'
-                  ar_design:
-                    id: '880e8400-e29b-41d4-a716-446655440003'
-                    url: 'https://ar.example.com/designs/abc123'
                   image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'

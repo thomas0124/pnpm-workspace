@@ -4,7 +4,6 @@ import { cors } from 'hono/cors'
 import type { Bindings } from './presentation/handlers/index'
 import { errorHandler } from './presentation/middlewares/errorHandler'
 import { exhibitionRoutes } from './presentation/routes/exhibition/exhibition'
-import { arDesignRoutes } from './presentation/routes/exhibitionArDesign'
 import { exhibitorRoutes } from './presentation/routes/exhibitor'
 import { publicExhibitionRoutes } from './presentation/routes/publicExhibition'
 
@@ -28,8 +27,6 @@ app.get('/health', (c) => {
 export const routes = app
   // 出展者API (/exhibitors/...)
   .route('/exhibitors', exhibitorRoutes)
-  // ARデザインAPI (/ar-designs)
-  .route('/ar-designs', arDesignRoutes)
   // 出展管理API (/exhibitions/...)
   .route('/exhibitions', exhibitionRoutes)
   // 公開出展API (/public/...)

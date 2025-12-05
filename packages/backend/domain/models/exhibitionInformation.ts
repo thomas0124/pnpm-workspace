@@ -65,12 +65,6 @@ export const CommentSchema = z
   .nullable()
 
 /**
- * ExhibitionArDesignId スキーマ
- * API仕様: UUID、nullable（ARデザインがない場合はnull）
- */
-export const ExhibitionArDesignIdSchema = z.uuid('Invalid AR design ID format').nullable()
-
-/**
  * ExhibitorName スキーマ
  * 出展者名（1-100文字）
  */
@@ -86,7 +80,6 @@ export const ExhibitorNameSchema = z
 export const ExhibitionInformationSchema = z.object({
   id: ExhibitionInformationIdSchema,
   exhibitorId: z.uuid('Invalid exhibitor ID format'),
-  exhibitionArDesignId: ExhibitionArDesignIdSchema,
   exhibitorName: ExhibitorNameSchema,
   title: TitleSchema,
   category: CategorySchema,

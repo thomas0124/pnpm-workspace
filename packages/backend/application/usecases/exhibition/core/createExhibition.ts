@@ -2,12 +2,10 @@ import { ConflictError } from '../../../../domain/errors'
 import { createExhibition } from '../../../../domain/factories/exhibition'
 import { createExhibitionInformation } from '../../../../domain/factories/exhibitionInformation'
 import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type { ExhibitionDto, ExhibitionInformationInputDto } from '../../../dto/exhibition'
 import { toExhibitionDto, toExhibitionInformationDto } from '../../../dto/exhibition'
 import { base64ToUint8Array } from '../../../utils/imageUtils'
-import { validateArDesignId } from '../../shared/validateArDesignId'
 
 /**
  * 出展作成ユースケース
@@ -17,17 +15,14 @@ import { validateArDesignId } from '../../shared/validateArDesignId'
  * @param exhibitorId 出展者ID（認証済み）
  * @param exhibitionRepository Exhibitionリポジトリ
  * @param exhibitionInformationRepository ExhibitionInformationリポジトリ
- * @param exhibitionArDesignRepository ExhibitionArDesignリポジトリ（ARデザインID検証用）
  * @returns 作成されたExhibitionのDTO
- * @throws NotFoundError - ARデザインIDが指定されているが存在しない場合
  * @throws ConflictError - 既に出展情報が登録されている場合
  */
 export async function createExhibitionUseCase(
   input: ExhibitionInformationInputDto,
   exhibitorId: string,
   exhibitionRepository: ExhibitionRepository,
-  exhibitionInformationRepository: ExhibitionInformationRepository,
-  exhibitionArDesignRepository: ExhibitionArDesignRepository
+  exhibitionInformationRepository: ExhibitionInformationRepository
 ): Promise<ExhibitionDto> {
   // ✅ 画像データをBase64からUint8Arrayに変換
   const imageData = input.image ? base64ToUint8Array(input.image) : null
@@ -37,9 +32,6 @@ export async function createExhibitionUseCase(
   if (existingInformation.length > 0) {
     throw new ConflictError('この出展者は既に出展情報を登録しています')
   }
-
-  // ARデザインIDの存在確認
-  await validateArDesignId(input.exhibitionArDesignId, exhibitionArDesignRepository)
 
   // ExhibitionInformationを作成
   const exhibitionInformation = createExhibitionInformation(
@@ -51,7 +43,6 @@ export async function createExhibitionUseCase(
     input.price ?? null,
     input.requiredTime ?? null,
     input.comment ?? null,
-    input.exhibitionArDesignId ?? null,
     imageData
   )
 
@@ -63,10 +54,7 @@ export async function createExhibitionUseCase(
   await exhibitionRepository.save(exhibition)
 
   // DTOに変換
-  const exhibitionInformationDto = await toExhibitionInformationDto(
-    exhibitionInformation,
-    exhibitionArDesignRepository
-  )
+  const exhibitionInformationDto = toExhibitionInformationDto(exhibitionInformation)
 
   return toExhibitionDto(exhibition, exhibitionInformationDto)
 }

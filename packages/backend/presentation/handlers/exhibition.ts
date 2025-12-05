@@ -41,7 +41,6 @@ export const handleCreateExhibition = handlerFactory.createHandlers(async (c) =>
     price: toOptionalInt(body.price),
     requiredTime: toOptionalInt(body.requiredTime),
     comment: toNullableString(body.comment) ?? undefined,
-    exhibitionArDesignId: toNullableString(body.exhibitionArDesignId) ?? undefined,
     image: imageBase64,
   })
 
@@ -49,8 +48,7 @@ export const handleCreateExhibition = handlerFactory.createHandlers(async (c) =>
     parsedInput,
     exhibitorId,
     container.exhibitionRepository,
-    container.exhibitionInformationRepository,
-    container.exhibitionArDesignRepository
+    container.exhibitionInformationRepository
   )
 
   return c.json(result, 201)
@@ -71,8 +69,7 @@ export const handleGetExhibition = handlerFactory.createHandlers(
       exhibitionId,
       exhibitorId,
       container.exhibitionRepository,
-      container.exhibitionInformationRepository,
-      container.exhibitionArDesignRepository
+      container.exhibitionInformationRepository
     )
 
     return c.json(result, 200)
@@ -102,10 +99,6 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
       price: toOptionalInt(body.price),
       requiredTime: toOptionalInt(body.requiredTime),
       comment: body.comment !== undefined ? toNullableString(body.comment) : undefined,
-      exhibitionArDesignId:
-        body.exhibitionArDesignId !== undefined
-          ? toNullableString(body.exhibitionArDesignId)
-          : undefined,
       image: imageBase64,
     })
 
@@ -114,8 +107,7 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
       input,
       exhibitorId,
       container.exhibitionRepository,
-      container.exhibitionInformationRepository,
-      container.exhibitionArDesignRepository
+      container.exhibitionInformationRepository
     )
 
     return c.json(result, 200)
@@ -137,8 +129,7 @@ export const handleDraftExhibition = handlerFactory.createHandlers(
       exhibitionId,
       exhibitorId,
       container.exhibitionRepository,
-      container.exhibitionInformationRepository,
-      container.exhibitionArDesignRepository
+      container.exhibitionInformationRepository
     )
 
     return c.json(result, 200)
@@ -160,8 +151,7 @@ export const handlePublishExhibition = handlerFactory.createHandlers(
       exhibitionId,
       exhibitorId,
       container.exhibitionRepository,
-      container.exhibitionInformationRepository,
-      container.exhibitionArDesignRepository
+      container.exhibitionInformationRepository
     )
 
     return c.json(result, 200)
@@ -183,8 +173,7 @@ export const handleUnpublishExhibition = handlerFactory.createHandlers(
       exhibitionId,
       exhibitorId,
       container.exhibitionRepository,
-      container.exhibitionInformationRepository,
-      container.exhibitionArDesignRepository
+      container.exhibitionInformationRepository
     )
 
     return c.json(result, 200)
