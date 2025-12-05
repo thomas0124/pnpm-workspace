@@ -5,6 +5,33 @@ import * as THREE from "three";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 
+// シェーダー定義（頂点の位置を計算）
+const vertexShader = `
+  uniform float amplitude;
+  attribute vec3 displacement;
+  attribute vec3 customColor;
+
+  varying vec3 vColor;
+
+  void main() {
+    vec3 newPosition = position + amplitude * displacement;
+    vColor = customColor;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+  }
+`;
+
+// フラグメントシェーダー（色と透明度を計算）
+const fragmentShader = `
+  uniform vec3 color;
+  uniform float opacity;
+
+  varying vec3 vColor;
+
+  void main() {
+    gl_FragColor = vec4( vColor * color, opacity );
+  }
+`;
+
 export function OverlayText() {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -14,49 +41,118 @@ export function OverlayText() {
     const width = containerRef.current.clientWidth;
     const height = containerRef.current.clientHeight;
 
-    // シーン・カメラ・レンダラー
+    // --- 1. シーン・カメラ・レンダラー ---
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
-    camera.position.set(0, 0, 400);
+    // 背景は透明にして、Webサイトに馴染ませる
+    // scene.background = new THREE.Color(0x050505);
+
+    const camera = new THREE.PerspectiveCamera(30, width / height, 1, 10000);
+    camera.position.z = 400;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
     containerRef.current.appendChild(renderer.domElement);
 
-    // テキスト作成
+    // --- 2. 必要な変数 ---
+    let line: THREE.Line;
+    let uniforms: any;
+
+    // --- 3. フォント読み込みとオブジェクト作成 ---
     const loader = new FontLoader();
-    let mesh: THREE.Mesh;
 
     loader.load("/fonts/helvetiker_bold.typeface.json", (font) => {
+      // ユニフォーム変数の初期化（シェーダーに渡すパラメータ）
+      uniforms = {
+        amplitude: { value: 5.0 },
+        opacity: { value: 0.3 },
+        color: { value: new THREE.Color(0xffffff) },
+      };
+
+      // シェーダーマテリアルの作成
+      const shaderMaterial = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        blending: THREE.AdditiveBlending, // 加算合成（光るような表現）
+        depthTest: false,
+        transparent: true,
+      });
+
+      // ジオメトリ作成
       const geometry = new TextGeometry("IdeaxTech", {
         font: font,
-        size: 40,
-        depth: 10,
-        curveSegments: 12,
+        size: 50,
+        depth: 15,
+        curveSegments: 10,
+        bevelThickness: 5,
+        bevelSize: 1.5,
         bevelEnabled: true,
-        bevelThickness: 2,
-        bevelSize: 1,
-        bevelSegments: 5,
+        bevelSegments: 10,
       });
+
       geometry.center();
 
-      const material = new THREE.MeshNormalMaterial(); // カラフルなマテリアル
-      mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
+      // カスタム属性の追加（振動用変位とカラー）
+      const count = geometry.attributes.position.count;
+      const displacement = new THREE.Float32BufferAttribute(count * 3, 3);
+      geometry.setAttribute("displacement", displacement);
+
+      const customColor = new THREE.Float32BufferAttribute(count * 3, 3);
+      geometry.setAttribute("customColor", customColor);
+
+      const color = new THREE.Color(0xffffff);
+
+      // 色のグラデーションを作成
+      for (let i = 0, l = customColor.count; i < l; i++) {
+        color.setHSL(i / l, 0.5, 0.5);
+        color.toArray(customColor.array, i * customColor.itemSize);
+      }
+
+      // Lineオブジェクトとして作成（Meshではない）
+      line = new THREE.Line(geometry, shaderMaterial);
+      line.rotation.x = 0.2;
+      scene.add(line);
     });
 
-    // アニメーション
+    // --- 4. アニメーション ---
     let animationId: number;
+
     const animate = () => {
       animationId = requestAnimationFrame(animate);
-      if (mesh) {
-        mesh.rotation.y += 0.01; // 回転
-        mesh.rotation.x = Math.sin(Date.now() * 0.001) * 0.1;
+
+      const time = Date.now() * 0.001;
+
+      if (line && uniforms) {
+        // 回転
+        line.rotation.y = 0.25 * time;
+
+        // 振幅の変化（脈打つ動き）
+        uniforms.amplitude.value = Math.sin(0.5 * time);
+
+        // 色のシフト
+        uniforms.color.value.offsetHSL(0.0005, 0, 0);
+
+        // 頂点の振動（ノイズ）計算
+        const attributes = line.geometry.attributes;
+        const array = attributes.displacement.array as Float32Array;
+
+        for (let i = 0, l = array.length; i < l; i += 3) {
+          array[i] += 0.3 * (0.5 - Math.random());
+          array[i + 1] += 0.3 * (0.5 - Math.random());
+          array[i + 2] += 0.3 * (0.5 - Math.random());
+        }
+
+        // 属性の更新フラグを立てる（これが重要）
+        attributes.displacement.needsUpdate = true;
       }
+
       renderer.render(scene, camera);
     };
+
     animate();
 
+    // --- クリーンアップ ---
     return () => {
       cancelAnimationFrame(animationId);
       if (renderer && containerRef.current) {
@@ -68,13 +164,16 @@ export function OverlayText() {
 
   return (
     <div className="absolute left-1/2 top-1/2 flex h-80 w-full -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+      {/* 描画エリア: 背景が暗いほうがAdditiveBlendingの効果で綺麗に見えます */}
       <div
         ref={containerRef}
         className="h-full w-full duration-500 animate-in zoom-in"
       />
-      <div className="mt-[-50px] rounded-xl bg-white/90 p-4 shadow-lg">
+
+      {/* 情報パネル */}
+      <div className="mt-[-50px] rounded-xl bg-white/90 p-4 shadow-lg backdrop-blur">
         <h3 className="text-center font-bold">ID: 1 Detected</h3>
-        <p className="text-sm">3D Text Object</p>
+        <p className="text-sm">Shader Line Animation</p>
       </div>
     </div>
   );

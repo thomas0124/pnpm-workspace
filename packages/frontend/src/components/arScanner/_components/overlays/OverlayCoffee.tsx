@@ -59,7 +59,7 @@ export function OverlayCoffee() {
         .detectSupport(renderer);
 
       const loader = new GLTFLoader();
-      loader.setPath("/models/gltf"); // publicフォルダのパス
+      loader.setPath("/models/gltf/"); // publicフォルダのパス
       loader.setKTX2Loader(ktx2Loader);
       loader.setMeshoptDecoder(MeshoptDecoder);
 
