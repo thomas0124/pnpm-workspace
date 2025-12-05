@@ -1,4 +1,4 @@
-import type { ArDesign } from "@/app/exhibitor/information/types";
+import type { ArDesign } from "@/types/exhibitions";
 import { AR_DESIGNS } from "@/app/exhibitor/information/constants";
 
 interface ArDesignSelectorProps {

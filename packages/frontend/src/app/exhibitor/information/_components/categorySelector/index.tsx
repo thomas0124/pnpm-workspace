@@ -1,4 +1,4 @@
-import type { Category } from "@/app/exhibitor/information/types";
+import type { Category } from "@/types/exhibitions";
 import { CATEGORIES } from "@/app/exhibitor/information/constants";
 
 interface CategorySelectorProps {
