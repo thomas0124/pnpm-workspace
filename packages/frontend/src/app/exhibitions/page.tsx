@@ -1,11 +1,11 @@
 "use client";
 
-import { Search, Clock, MapPin, Camera } from "lucide-react";
+import { Clock, MapPin, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useState } from "react";
 import { CategoryButton } from "./_components/categoryButton";
+import { SearchBar } from "./_components/categoryButton/searchBar";
 
 export default function EventsPage() {
   const categories = ["飲食", "展示", "体験", "ステージ"];
@@ -51,15 +51,7 @@ export default function EventsPage() {
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Search Bar */}
       <div className="flex flex-col">
-        <div className="bg-white p-4">
-          <div className="relative rounded-lg border">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <Input
-              placeholder="出展を検索..."
-              className="border-gray-200 bg-gray-50 pl-10 text-base focus-visible:ring-0 focus-visible:ring-gray-300 focus-visible:ring-offset-0"
-            />
-          </div>
-        </div>
+        <SearchBar />
 
         {/* Category Buttons */}
         <div className="bg-white px-4 py-4">
