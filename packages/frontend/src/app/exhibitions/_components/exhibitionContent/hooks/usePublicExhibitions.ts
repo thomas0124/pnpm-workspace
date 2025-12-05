@@ -25,7 +25,6 @@ interface UsePublicExhibitionsParams {
 }
 
 async function fetcherExhibitions(
-  key: string,
   search?: string,
   category?: string,
 ): Promise<PublicExhibition[]> {
@@ -59,7 +58,7 @@ export function usePublicExhibitions({
   const { data, isLoading, error } = useSWR<PublicExhibition[], Error>(
     ["public-exhibitions", search, category],
     ([, search, category]: [string, string | undefined, string | undefined]) =>
-      fetcherExhibitions("public-exhibitions", search, category),
+      fetcherExhibitions(search, category),
   );
 
   return { data: data ?? [], isLoading, error: error ?? null };
