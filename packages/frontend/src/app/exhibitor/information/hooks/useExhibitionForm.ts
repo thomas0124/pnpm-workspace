@@ -6,14 +6,7 @@ import {
 } from "@/app/exhibitor/information/types";
 
 export function useExhibitionForm() {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-    ...rest
-  } = useForm<ExhibitionFormSchema>({
+  const form = useForm<ExhibitionFormSchema>({
     resolver: zodResolver(
       exhibitionFormSchema,
     ) as Resolver<ExhibitionFormSchema>,
@@ -32,15 +25,16 @@ export function useExhibitionForm() {
     },
   });
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = form;
+
   return {
-    form: {
-      register,
-      handleSubmit,
-      setValue,
-      watch,
-      formState: { errors, isSubmitting },
-      ...rest,
-    },
+    form,
     register,
     handleSubmit,
     setValue,

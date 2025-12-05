@@ -1,8 +1,10 @@
 import { Clock, MapPin } from "lucide-react";
 import Image from "next/image";
-import type { ExhibitionFormData } from "@/types/exhibitions";
+import type { ExhibitionFormSchema } from "@/app/exhibitor/information/types";
 
-type ExhibitionPreviewItem = ExhibitionFormData & { displayCategory?: string };
+type ExhibitionPreviewItem = ExhibitionFormSchema & {
+  displayCategory?: string;
+};
 
 export function ExhibitionPreview({ item }: { item: ExhibitionPreviewItem }) {
   return (

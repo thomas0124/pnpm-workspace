@@ -1,7 +1,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Clock, DollarSign } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
-import type { ExhibitionFormInput } from "@/app/exhibitor/information/hooks/useExhibitionForm";
+import type { ExhibitionFormSchema } from "@/app/exhibitor/information/types";
 import { DESCRIPTION_MAX_LENGTH } from "@/app/exhibitor/information/constants";
 import { CategorySelector } from "@/app/exhibitor/information/_components/categorySelector";
 import { ImageUpload } from "@/app/exhibitor/information/_components/imageUpload";
@@ -9,7 +9,7 @@ import { InputWithLabel } from "@/components/inputWithLabel";
 import * as React from "react";
 
 interface FormSectionProps {
-  form: UseFormReturn<ExhibitionFormInput>;
+  form: UseFormReturn<ExhibitionFormSchema>;
 }
 
 export function FormSection({ form }: FormSectionProps) {
