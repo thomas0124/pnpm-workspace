@@ -5,9 +5,10 @@ import type { ExhibitionArDesignRepository } from '../../../../domain/repositori
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type {
   ExhibitionInformationDto,
-  ExhibitionInformationInputDto,
+  ExhibitionInformationUpdateDto,
 } from '../../../dto/exhibition'
 import { toExhibitionInformationDto } from '../../../dto/exhibition'
+import { base64ToUint8Array } from '../../../utils/imageUtils'
 import { validateArDesignId } from '../../shared/validateArDesignId'
 import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwnershipCheck'
 
@@ -29,7 +30,7 @@ import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwne
  */
 export async function updateExhibitionInformationUseCase(
   exhibitionId: string,
-  input: ExhibitionInformationInputDto,
+  input: ExhibitionInformationUpdateDto,
   exhibitorId: string,
   exhibitionRepository: ExhibitionRepository,
   exhibitionInformationRepository: ExhibitionInformationRepository,
@@ -58,6 +59,14 @@ export async function updateExhibitionInformationUseCase(
   // ARデザインIDの存在確認
   await validateArDesignId(input.exhibitionArDesignId, exhibitionArDesignRepository)
 
+  // ✅ 画像データをBase64からUint8Arrayに変換
+  const imageData =
+    input.image !== undefined
+      ? input.image
+        ? base64ToUint8Array(input.image)
+        : null
+      : existingInformation.image // 画像が指定されていない場合は既存の画像を保持
+
   // ExhibitionInformationを更新
   const updatedInformation = updateExhibitionInformation(existingInformation, {
     exhibitorName: input.exhibitorName,
@@ -68,7 +77,7 @@ export async function updateExhibitionInformationUseCase(
     requiredTime: input.requiredTime ?? null,
     comment: input.comment ?? null,
     exhibitionArDesignId: input.exhibitionArDesignId ?? null,
-    // 画像は更新しない（別途エンドポイントで管理）
+    image: imageData,
   })
 
   // 保存
