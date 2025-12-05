@@ -21,7 +21,7 @@ function base64ToBlob(base64: string, mimeType: string = "image/png"): Blob {
 /**
  * 認証ヘッダーを取得
  */
-function getAuthHeaders(): { Authorization: string } {
+function getAuthHeader(): { Authorization: string } {
   // ブラウザ環境のチェックを追加
   if (typeof window === "undefined") {
     throw new Error(
@@ -117,11 +117,11 @@ export function useExhibitionApi() {
 
     try {
       const formData = buildFormData(data);
-      const headers = getAuthHeaders();
+      const header = getAuthHeader();
 
       const response = await client.exhibitions.$post({
         form: formData,
-        headers,
+        header,
       });
 
       if (!response.ok) {
@@ -151,11 +151,11 @@ export function useExhibitionApi() {
     setError(null);
 
     try {
-      const headers = getAuthHeaders();
+      const header = getAuthHeader();
 
       const response = await client.exhibitions[":exhibitionId"].$get({
         param: { exhibitionId },
-        header: headers, // header (単数形) を使用
+        header,
       });
 
       if (!response.ok) {
@@ -187,7 +187,7 @@ export function useExhibitionApi() {
 
       try {
         const formData = new FormData();
-        const headers = getAuthHeaders();
+        const header = getAuthHeader();
         // 部分更新のため、値が存在する場合のみ追加
         if (data.exhibitorName !== undefined) {
           formData.append("exhibitorName", data.exhibitorName); // キャメルケースに変更
@@ -239,7 +239,7 @@ export function useExhibitionApi() {
         ].information.$put({
           param: { exhibitionId },
           form: formData,
-          header: headers, // header (単数形) を使用
+          header,
         } as any); // 型エラー回避のため as any を追加
 
         if (!response.ok) {
@@ -271,11 +271,11 @@ export function useExhibitionApi() {
     setError(null);
 
     try {
-      const headers = getAuthHeaders();
+      const header = getAuthHeader();
 
       const response = await client.exhibitions[":exhibitionId"].draft.$put({
         param: { exhibitionId },
-        header: headers, // header (単数形) を使用
+        header,
       });
 
       if (!response.ok) {
@@ -305,11 +305,11 @@ export function useExhibitionApi() {
     setError(null);
 
     try {
-      const headers = getAuthHeaders();
+      const header = getAuthHeader();
 
       const response = await client.exhibitions[":exhibitionId"].publish.$put({
         param: { exhibitionId },
-        header: headers, // header (単数形) を使用
+        header,
       });
 
       if (!response.ok) {
@@ -337,12 +337,12 @@ export function useExhibitionApi() {
     setError(null);
 
     try {
-      const headers = getAuthHeaders();
+      const header = getAuthHeader();
 
       const response = await client.exhibitions[":exhibitionId"].unpublish.$put(
         {
           param: { exhibitionId },
-          header: headers, // header (単数形) を使用
+          header,
         },
       );
 
@@ -373,11 +373,11 @@ export function useExhibitionApi() {
     setError(null);
 
     try {
-      const headers = getAuthHeaders();
+      const header = getAuthHeader();
 
       const response = await client.exhibitions[":exhibitionId"].$delete({
         param: { exhibitionId },
-        header: headers, // header (単数形) を使用
+        header,
       });
 
       if (!response.ok) {
