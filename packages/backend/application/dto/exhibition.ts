@@ -79,6 +79,7 @@ export const ExhibitionInformationInputSchema = z.object({
   requiredTime: z.number().int().min(1).nullable().optional(),
   comment: z.string().max(100).trim().nullable().optional(),
   exhibitionArDesignId: z.uuid().nullable().optional(),
+  image: z.string().nullable().optional(), // Base64エンコードされた画像データ
 })
 
 export type ExhibitionInformationInputDto = z.infer<typeof ExhibitionInformationInputSchema>
@@ -110,6 +111,7 @@ export const ExhibitionInformationDtoSchema = z.object({
   arDesign: ExhibitionArDesignDtoSchema.nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  image: z.string().nullable(),
 })
 
 export type ExhibitionInformationDto = z.infer<typeof ExhibitionInformationDtoSchema>
