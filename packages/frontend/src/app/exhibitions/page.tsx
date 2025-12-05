@@ -25,7 +25,7 @@ export default function ExhibitionsPage() {
       </Suspense>
 
       {/* Floating Camera Button */}
-      <Link href="/arscanner">
+      <Link href="/arScanner">
         <Button
           size="icon"
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-teal-500 shadow-2xl hover:bg-teal-600"
