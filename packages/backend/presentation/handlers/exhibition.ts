@@ -1,5 +1,4 @@
 import { zValidator } from '@hono/zod-validator'
-
 import { ExhibitionInformationInputSchema } from '../../application/dto/exhibition'
 import { createExhibitionUseCase } from '../../application/usecases/exhibition/core/createExhibition'
 import { deleteExhibitionUseCase } from '../../application/usecases/exhibition/core/deleteExhibition'
@@ -8,6 +7,7 @@ import { deleteExhibitionImageUseCase } from '../../application/usecases/exhibit
 import { getExhibitionImageUseCase } from '../../application/usecases/exhibition/image/getExhibitionImage'
 import { uploadExhibitionImageUseCase } from '../../application/usecases/exhibition/image/uploadExhibitionImage'
 import { updateExhibitionInformationUseCase } from '../../application/usecases/exhibition/information/updateExhibitionInformation'
+import {updateExhibitionStatusUseCase} from '../../application/usecases/exhibition/status/updateExhibitionStatus'
 import { draftExhibitionUseCase } from '../../application/usecases/exhibition/status/draftExhibition'
 import { publishExhibitionUseCase } from '../../application/usecases/exhibition/status/publishExhibition'
 import { unpublishExhibitionUseCase } from '../../application/usecases/exhibition/status/unpublishExhibition'
@@ -15,6 +15,9 @@ import { ValidationError } from '../../domain/errors'
 import { ExhibitionIdSchema } from '../../domain/models/exhibition'
 import { getExhibitorId } from '../middlewares/authMiddleware'
 import { getContainer, handlerFactory } from './index'
+import {listExhibitionUseCase } from '../../application/usecases/exhibition/listExhibitions'
+import type { Context } from 'hono'
+import type { HonoEnv } from '../..'
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
 

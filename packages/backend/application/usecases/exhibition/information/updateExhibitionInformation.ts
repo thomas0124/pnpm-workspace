@@ -76,7 +76,7 @@ export async function updateExhibitionInformationUseCase(
     requiredTime: input.requiredTime ?? null,
     comment: input.comment ?? null,
     exhibitionArDesignId: input.exhibitionArDesignId ?? null,
-    // 画像は更新しない（別途エンドポイントで管理）
+    image: imageData,
   })
 
   // 保存
