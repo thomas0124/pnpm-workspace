@@ -11,8 +11,16 @@ export function PreviewSection({ formData }: PreviewSectionProps) {
       <div className="sticky top-8">
         <h3 className="mb-4 text-sm font-medium text-gray-700">プレビュー</h3>
         <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-yellow-400">
-            <span className="text-4xl">🍕</span>
+          <div className="mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl bg-yellow-400">
+            {formData.imagePreview ? (
+              <img
+                src={formData.imagePreview}
+                alt="プレビュー"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="text-4xl">🍕</span>
+            )}
           </div>
           <h4 className="mb-1 text-lg font-bold text-gray-900">
             {formData.title}

@@ -11,4 +11,6 @@ export interface ExhibitionFormData {
   price: string;
   duration: string;
   description: string;
+  image: File | null;
+  imagePreview: string | null;
 }

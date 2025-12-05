@@ -13,6 +13,8 @@ export const DEFAULT_FORM_DATA = {
   price: "500",
   duration: "約15分",
   description: "",
+  image: null,
+  imagePreview: null,
 };
 
 export const DESCRIPTION_MAX_LENGTH = 100;

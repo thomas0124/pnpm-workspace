@@ -49,7 +49,12 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
             />
           </div>
 
-          <ImageUpload />
+          <ImageUpload
+            onImageChange={(file, preview) => {
+              onUpdate("image", file);
+              onUpdate("imagePreview", preview);
+            }}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <InputWithLabel
