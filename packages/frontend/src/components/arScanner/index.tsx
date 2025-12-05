@@ -9,18 +9,23 @@ import { ScannerFrame } from "@/components/arScanner/_components/scannerFrame";
 import { Instructions } from "@/components/arScanner/_components/instructions";
 import { AR_JS_CDN_URL } from "@/components/arScanner/constants";
 import Image from "next/image";
+import { OverlayText } from "@/components/arScanner/_components/overlays/OverlayText";
+import { OverlayHorse } from "@/components/arScanner/_components/overlays/OverlayHorse";
+import { OverlayCoffee } from "@/components/arScanner/_components/overlays/OverlayCoffee";
 
 export default function ARScanner() {
   const [isARLoaded, setIsARLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useCamera(videoRef, isARLoaded);
-  const markerDetected = useARDetection(videoRef, canvasRef, isARLoaded);
+  // ★修正: useCamera の戻り値を受け取るように修正
+  const { error } = useCamera(videoRef, isARLoaded);
+  
+  // マーカーIDを取得 (1, 2, 3 または null)
+  const detectedMarkerId = useARDetection(videoRef, canvasRef, isARLoaded);
 
   return (
     <>
-      {/* AR.jsライブラリの読み込み */}
       <Script
         src={AR_JS_CDN_URL}
         onLoad={() => setIsARLoaded(true)}
@@ -33,28 +38,27 @@ export default function ARScanner() {
           className="absolute inset-0 h-full w-full object-cover"
           playsInline
           muted
+          autoPlay
         />
 
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30">
-          <Image
-            src="/AR-Marker.png"
-            alt="Debug Marker Target"
-            width={200}
-            height={200}
-            className="h-[200px] w-[200px] border-2 border-red-500 object-cover"
-          />
-          <p className="mt-1 bg-black/50 text-center text-xs text-white">
-            認識対象マーカー (デバッグ表示)
-          </p>
-        </div>
-
         <canvas ref={canvasRef} className="hidden" />
-
-        {/* グラデーションオーバーレイ */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 via-transparent to-slate-900/30" />
 
-        <ARHeader markerDetected={markerDetected} />
-        <ScannerFrame markerDetected={markerDetected} />
+        {error && (
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-red-500/90 p-6 text-center z-50">
+            <p className="text-sm font-medium text-white">{error}</p>
+          </div>
+        )}
+
+        {/* boolean型に変換して渡す */}
+        <ARHeader markerDetected={detectedMarkerId !== null} />
+        
+        <ScannerFrame markerDetected={detectedMarkerId !== null}>
+          {detectedMarkerId === 1 && <OverlayText />}
+          {detectedMarkerId === 2 && <OverlayHorse />}
+          {detectedMarkerId === 3 && <OverlayCoffee />}
+        </ScannerFrame>
+        
         <Instructions />
       </div>
     </>
