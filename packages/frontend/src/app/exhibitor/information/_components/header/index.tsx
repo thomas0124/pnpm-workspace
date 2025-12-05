@@ -6,7 +6,7 @@ export function Header() {
     <header className="border-b border-gray-200 bg-white px-6 py-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-medium text-gray-900">
-          デジタルパンフレット - 出展者管理
+          えあパンフ - 出展者管理
         </h1>
         <div className="flex items-center gap-3">
           <Button
