@@ -3,14 +3,14 @@ import { Clock, MapPin } from "lucide-react";
 export interface ExhibitionItemProps {
   item: {
     id: number;
-    name: string;
-    organization: string;
+    title: string;
+    exhibitorName: string;
     category: string;
     price: number;
     location: string;
-    duration: string;
-    description: string;
-    icon?: string;
+    requiredTime: number;
+    comment: string;
+    image: string;
   };
 }
 
@@ -22,8 +22,8 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
         <div className="flex-shrink-0">
           <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-yellow-400 text-4xl">
             <img
-              src={item.icon || "/placeholder.svg"}
-              alt={item.name}
+              src={item.image || "/placeholder.svg"}
+              alt={item.title}
               className="h-16 w-16 object-contain"
             />
           </div>
@@ -31,8 +31,8 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
 
         {/* Content */}
         <div className="min-w-0 flex-1">
-          <h3 className="mb-1 text-lg text-gray-900">{item.name}</h3>
-          <p className="mb-3 text-sm text-gray-600">{item.organization}</p>
+          <h3 className="mb-1 text-lg text-gray-900">{item.title}</h3>
+          <p className="mb-3 text-sm text-gray-600">{item.exhibitorName}</p>
 
           {/* Tags */}
           <div className="mb-3 flex flex-wrap gap-2">
@@ -51,11 +51,11 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
           {/* Duration */}
           <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600">
             <Clock className="h-4 w-4" />
-            <span>{item.duration}</span>
+            <span>{item.requiredTime}分</span>
           </div>
 
-          {/* Description */}
-          <p className="text-sm text-gray-700">{item.description}</p>
+          {/* Comment */}
+          <p className="text-sm text-gray-700">{item.comment}</p>
         </div>
       </div>
     </div>
