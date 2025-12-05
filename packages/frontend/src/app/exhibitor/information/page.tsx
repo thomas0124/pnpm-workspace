@@ -13,8 +13,15 @@ import type { Category } from "@/types/exhibitions";
 export default function BasicInfoPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuthGuard();
-  const { form, handleSubmit, exhibitionId, setExhibitionId, apiError } =
-    useExhibitionForm();
+  const {
+    form,
+    handleSubmit,
+    exhibitionId,
+    setExhibitionId,
+    apiError,
+    isPublished,
+    mutate,
+  } = useExhibitionForm();
   const watched = form.watch();
 
   const handleSaveForm = useCallback(async () => {
@@ -50,6 +57,8 @@ export default function BasicInfoPage() {
         onSaveForm={handleSaveForm}
         onExhibitionDeleted={handleExhibitionDeleted}
         formData={watched}
+        isPublished={isPublished}
+        onStatusChange={mutate}
       />
       {apiError && (
         <div className="mx-6 mt-4 border-l-4 border-red-400 bg-red-50 p-4">

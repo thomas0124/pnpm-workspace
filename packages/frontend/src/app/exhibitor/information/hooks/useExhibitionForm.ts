@@ -99,6 +99,7 @@ export function useExhibitionForm() {
     data: exhibitionData,
     isLoading: isLoadingExhibition,
     error: exhibitionError,
+    mutate,
   } = useSWR<ExhibitionDto | null, Error>(
     authToken ? ["my-exhibition", authToken] : null,
     () => fetcherMyExhibition(getMyExhibition),
@@ -197,6 +198,9 @@ export function useExhibitionForm() {
         ? String(exhibitionError)
         : null);
 
+  // isPublished の取得
+  const isPublished = exhibitionData?.isPublished ?? false;
+
   return {
     form,
     register,
@@ -211,5 +215,7 @@ export function useExhibitionForm() {
     setExhibitionData,
     onSubmit,
     apiError,
+    isPublished,
+    mutate,
   };
 }

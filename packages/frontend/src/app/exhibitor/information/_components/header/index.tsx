@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/button";
-import { Save, Share2, Trash2 } from "lucide-react";
+import { Save, Share2, Trash2, EyeOff } from "lucide-react";
 import { useExhibitionApi } from "../../hooks/useExhibitionApi";
 import { ExhibitionFormSchema } from "@/app/exhibitor/information/types";
 
@@ -12,6 +12,8 @@ interface HeaderProps {
   onSaveForm: () => Promise<void>;
   onExhibitionDeleted?: () => void;
   formData?: ExhibitionFormSchema;
+  isPublished?: boolean;
+  onStatusChange?: () => Promise<unknown>;
 }
 
 export function Header({
@@ -19,10 +21,18 @@ export function Header({
   onSaveForm,
   onExhibitionDeleted,
   formData,
+  isPublished = false,
+  onStatusChange,
 }: HeaderProps) {
   const router = useRouter();
-  const { createExhibition, saveDraft, publish, deleteExhibition, isLoading } =
-    useExhibitionApi();
+  const {
+    createExhibition,
+    saveDraft,
+    publish,
+    unpublish,
+    deleteExhibition,
+    isLoading,
+  } = useExhibitionApi();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleAction = useCallback(
@@ -30,6 +40,7 @@ export function Header({
       action: () => Promise<unknown>,
       successMessage: string,
       errorMessage: string,
+      onSuccess?: () => Promise<unknown>,
     ) => {
       try {
         await onSaveForm();
@@ -41,6 +52,11 @@ export function Header({
 
         await action();
         alert(successMessage);
+
+        // 成功後のコールバックを実行
+        if (onSuccess) {
+          await onSuccess();
+        }
       } catch (err) {
         console.error(`${errorMessage}:`, err);
         const message = err instanceof Error ? err.message : errorMessage;
@@ -92,8 +108,18 @@ export function Header({
       () => publish(exhibitionId),
       "公開しました",
       "公開に失敗しました",
+      onStatusChange,
     );
-  }, [exhibitionId, publish, handleAction]);
+  }, [exhibitionId, publish, handleAction, onStatusChange]);
+
+  const handleUnpublish = useCallback(() => {
+    return handleAction(
+      () => unpublish(exhibitionId),
+      "非公開にしました",
+      "非公開に失敗しました",
+      onStatusChange,
+    );
+  }, [exhibitionId, unpublish, handleAction, onStatusChange]);
 
   const handleDelete = useCallback(async () => {
     if (!exhibitionId) {
@@ -145,9 +171,22 @@ export function Header({
             <Save className="h-4 w-4" />
             下書き保存
           </Button>
-          <Button color="teal" onClick={handlePublish} disabled={isProcessing}>
-            <Share2 className="h-4 w-4" />
-            公開
+          <Button
+            color="teal"
+            onClick={isPublished ? handleUnpublish : handlePublish}
+            disabled={isProcessing}
+          >
+            {isPublished ? (
+              <>
+                <EyeOff className="h-4 w-4" />
+                非公開
+              </>
+            ) : (
+              <>
+                <Share2 className="h-4 w-4" />
+                公開
+              </>
+            )}
           </Button>
           <Button
             variant="outline"
