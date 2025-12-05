@@ -36,38 +36,44 @@ export function FormSection({ form }: FormSectionProps) {
         </div>
 
         <div className="space-y-6">
-          <CategorySelector
-            selectedCategory={category}
-            onSelect={(selectedCategory) =>
-              setValue("category", selectedCategory, {
-                shouldValidate: true,
-                shouldDirty: true,
-              })
-            }
-          />
-          {errors.category && (
-            <p className="text-sm text-red-500">{errors.category.message}</p>
-          )}
+          <div className="space-y-1">
+            <CategorySelector
+              selectedCategory={category}
+              onSelect={(selectedCategory) =>
+                setValue("category", selectedCategory, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+            />
+            {errors.category && (
+              <p className="text-sm text-red-500">{errors.category.message}</p>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <InputWithLabel
-              id="title"
-              label="出展タイトル"
-              {...register("title")}
-            />
-            {errors.title && (
-              <p className="text-sm text-red-500">{errors.title.message}</p>
-            )}
-            <InputWithLabel
-              id="circle"
-              label="サークル名"
-              {...register("exhibitorName")}
-            />
-            {errors.exhibitorName && (
-              <p className="text-sm text-red-500">
-                {errors.exhibitorName.message}
-              </p>
-            )}
+            <div className="space-y-1">
+              <InputWithLabel
+                id="title"
+                label="出展タイトル"
+                {...register("title")}
+              />
+              {errors.title && (
+                <p className="text-sm text-red-500">{errors.title.message}</p>
+              )}
+            </div>
+            <div className="space-y-1">
+              <InputWithLabel
+                id="circle"
+                label="サークル名"
+                {...register("exhibitorName")}
+              />
+              {errors.exhibitorName && (
+                <p className="text-sm text-red-500">
+                  {errors.exhibitorName.message}
+                </p>
+              )}
+            </div>
           </div>
 
           <ImageUpload
@@ -80,84 +86,90 @@ export function FormSection({ form }: FormSectionProps) {
           />
 
           <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <InputWithLabel
+                id="location"
+                label={
+                  <>
+                    <MapPin className="mr-1 inline h-4 w-4" />
+                    場所
+                  </>
+                }
+                {...register("location")}
+              />
+              {errors.location && (
+                <p className="text-sm text-red-500">{errors.location.message}</p>
+              )}
+            </div>
+            <div className="space-y-1">
+              <InputWithLabel
+                id="price"
+                label={
+                  <>
+                    <DollarSign className="mr-1 inline h-4 w-4" />
+                    金額
+                  </>
+                }
+                type="number"
+                min="0"
+                {...register("price", {
+                  setValueAs: (v) => (v === "" ? null : Number(v)),
+                })}
+                inputWrapper={(input) => (
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                      ¥
+                    </span>
+                    {React.cloneElement(input, {
+                      className: `${input.props.className} pl-8`,
+                    })}
+                  </div>
+                )}
+              />
+              {errors.price && (
+                <p className="text-sm text-red-500">{errors.price.message}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1">
             <InputWithLabel
-              id="location"
+              id="duration"
               label={
                 <>
-                  <MapPin className="mr-1 inline h-4 w-4" />
-                  場所
-                </>
-              }
-              {...register("location")}
-            />
-            {errors.location && (
-              <p className="text-sm text-red-500">{errors.location.message}</p>
-            )}
-            <InputWithLabel
-              id="price"
-              label={
-                <>
-                  <DollarSign className="mr-1 inline h-4 w-4" />
-                  金額
+                  <Clock className="mr-1 inline h-4 w-4" />
+                  所要時間
                 </>
               }
               type="number"
               min="0"
-              {...register("price", {
+              {...register("requiredTime", {
                 setValueAs: (v) => (v === "" ? null : Number(v)),
               })}
               inputWrapper={(input) => (
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    ¥
-                  </span>
                   {React.cloneElement(input, {
-                    className: `${input.props.className} pl-8`,
+                    className: `${input.props.className} pr-8`,
                   })}
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    分
+                  </span>
                 </div>
               )}
             />
-            {errors.price && (
-              <p className="text-sm text-red-500">{errors.price.message}</p>
+            {errors.requiredTime && (
+              <p className="text-sm text-red-500">
+                {errors.requiredTime.message}
+              </p>
             )}
           </div>
-
-          <InputWithLabel
-            id="duration"
-            label={
-              <>
-                <Clock className="mr-1 inline h-4 w-4" />
-                所要時間
-              </>
-            }
-            type="number"
-            min="0"
-            {...register("requiredTime", {
-              setValueAs: (v) => (v === "" ? null : Number(v)),
-            })}
-            inputWrapper={(input) => (
-              <div className="relative">
-                {React.cloneElement(input, {
-                  className: `${input.props.className} pr-8`,
-                })}
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                  分
-                </span>
-              </div>
-            )}
-          />
-          {errors.requiredTime && (
-            <p className="text-sm text-red-500">
-              {errors.requiredTime.message}
-            </p>
-          )}
 
           {/* <ArDesignSelector
             selectedArDesign={formData.selectedArDesign}
             onSelect={(design) => onUpdate("selectedArDesign", design)}
           /> */}
 
-          <div>
+          <div className="space-y-1">
             <label
               htmlFor="description"
               className="mb-2 block text-sm font-medium text-gray-700"
