@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import useSWR from "swr";
 import client from "@/lib/apiClient";
 
 type Category = "Food" | "Exhibition" | "Experience" | "Stage";
@@ -24,48 +24,40 @@ interface UsePublicExhibitionsParams {
   category?: string;
 }
 
+async function fetcherExhibitions(
+  key: string,
+  search?: string,
+  category?: string,
+): Promise<PublicExhibition[]> {
+  const query: { search?: string; category?: Category } = {};
+  if (search) {
+    query.search = search;
+  }
+  if (category) {
+    query.category = category as Category;
+  }
+
+  const response = await client.public.exhibitions.$get({
+    query,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch exhibitions");
+  }
+
+  const result = await response.json();
+  return result.data;
+}
+
 export function usePublicExhibitions({
   search,
   category,
 }: UsePublicExhibitionsParams) {
-  const [data, setData] = useState<PublicExhibition[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data, isLoading, error } = useSWR<PublicExhibition[], Error>(
+    ["public-exhibitions", search, category],
+    ([, search, category]: [string, string | undefined, string | undefined]) =>
+      fetcherExhibitions("public-exhibitions", search, category),
+  );
 
-  useEffect(() => {
-    const fetchExhibitions = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const query: { search?: string; category?: Category } = {};
-        if (search) {
-          query.search = search;
-        }
-        if (category) {
-          query.category = category as Category;
-        }
-
-        const response = await client.public.exhibitions.$get({
-          query,
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch exhibitions");
-        }
-
-        const result = await response.json();
-        setData(result.data);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error("Unknown error"));
-        console.error("Failed to fetch exhibitions:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchExhibitions();
-  }, [search, category]);
-
-  return { data, isLoading, error };
+  return { data: data ?? [], isLoading, error: error ?? null };
 }
