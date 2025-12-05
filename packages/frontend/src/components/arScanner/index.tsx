@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { useCamera } from "@/components/arScanner/hooks/useCamera";
 import { useARDetection } from "@/components/arScanner/hooks/useARDetection";
@@ -8,24 +9,47 @@ import { ARHeader } from "@/components/arScanner/_components/arHeader";
 import { ScannerFrame } from "@/components/arScanner/_components/scannerFrame";
 import { Instructions } from "@/components/arScanner/_components/instructions";
 import { AR_JS_CDN_URL } from "@/components/arScanner/constants";
-// Imageコンポーネントは未使用であれば削除、使うなら残す
-// import Image from "next/image";
 import { OverlayText } from "@/components/arScanner/_components/overlays/OverlayText";
 import { OverlayHorse } from "@/components/arScanner/_components/overlays/OverlayHorse";
 import { OverlayCoffee } from "@/components/arScanner/_components/overlays/OverlayCoffee";
+
+/**
+ * マーカーIDとオーバーレイコンポーネントのマッピング
+ */
+const MARKER_OVERLAYS: Record<number, React.ComponentType> = {
+  1: OverlayText,
+  2: OverlayHorse,
+  3: OverlayCoffee,
+};
+
 export default function ARScanner() {
+  const searchParams = useSearchParams();
+  const autoStart = searchParams.get("autoStart") === "true";
   const [isARLoaded, setIsARLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const { error } = useCamera(videoRef, isARLoaded);
+  const { error, isCameraActive, startCamera } = useCamera(
+    videoRef,
+    isARLoaded,
+  );
 
-  // 検出IDとリセット関数を取得
+  // 自動起動が有効で、ARが読み込まれ、カメラがまだ起動していない場合、自動的にカメラを起動
+  useEffect(() => {
+    if (autoStart && isARLoaded && !isCameraActive) {
+      startCamera();
+    }
+  }, [autoStart, isARLoaded, isCameraActive, startCamera]);
+
   const { detectedMarkerId, resetDetection } = useARDetection(
     videoRef,
     canvasRef,
     isARLoaded,
   );
+
+  const OverlayComponent = detectedMarkerId
+    ? MARKER_OVERLAYS[detectedMarkerId]
+    : null;
 
   return (
     <>
@@ -36,13 +60,15 @@ export default function ARScanner() {
       />
 
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        <video
-          ref={videoRef}
-          className="absolute inset-0 h-full w-full object-cover"
-          playsInline
-          muted
-          autoPlay
-        />
+        {isCameraActive && (
+          <video
+            ref={videoRef}
+            className="absolute inset-0 h-full w-full object-cover"
+            playsInline
+            muted
+            autoPlay
+          />
+        )}
 
         <canvas ref={canvasRef} className="hidden" />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 via-transparent to-slate-900/30" />
@@ -56,9 +82,7 @@ export default function ARScanner() {
         <ARHeader markerDetected={detectedMarkerId !== null} />
 
         <ScannerFrame markerDetected={detectedMarkerId !== null}>
-          {detectedMarkerId === 1 && <OverlayText />}
-          {detectedMarkerId === 2 && <OverlayHorse />}
-          {detectedMarkerId === 3 && <OverlayCoffee />}
+          {OverlayComponent && <OverlayComponent />}
         </ScannerFrame>
 
         {/* 検出時のみ表示されるリセットボタンエリア */}
@@ -73,8 +97,8 @@ export default function ARScanner() {
           </div>
         )}
 
-        {/* 未検出時のみインストラクションを表示 */}
-        {detectedMarkerId === null && <Instructions />}
+        {/* 未検出時かつカメラ起動時のみインストラクションを表示 */}
+        {detectedMarkerId === null && isCameraActive && <Instructions />}
       </div>
     </>
   );
