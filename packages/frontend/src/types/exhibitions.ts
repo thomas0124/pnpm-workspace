@@ -12,5 +12,4 @@ export interface ExhibitionFormData {
   requiredTime: number | null;
   comment: string | null;
   image: string | null;
-  arDesign: { id: string; url: string | null } | null;
 }
