@@ -41,7 +41,7 @@ export function ExhibitionPreview({ item }: { item: ExhibitionPreviewItem }) {
             </span>
             {item.price !== undefined && (
               <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">
-                ¥{item.price}
+                ¥{item.price ?? 0}
               </span>
             )}
             <span className="inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs text-cyan-600">
@@ -54,7 +54,7 @@ export function ExhibitionPreview({ item }: { item: ExhibitionPreviewItem }) {
           {item.requiredTime !== undefined && (
             <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600">
               <Clock className="h-4 w-4" />
-              <span>{item.requiredTime}分</span>
+              <span>{item.requiredTime ?? 0}分</span>
             </div>
           )}
 
