@@ -28,6 +28,10 @@ export async function deleteExhibitionUseCase(
   // ExhibitionInformationのIDを保存（削除前に）
   const exhibitionInformationId = exhibition.exhibitionInformationId
 
+  if (exhibition.exhibitionInformationId) {
+    await exhibitionInformationRepository.delete(exhibition.exhibitionInformationId)
+  }
+
   // Exhibitionを先に削除（外部キー制約を回避するため）
   await exhibitionRepository.delete(exhibitionId)
 

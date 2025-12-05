@@ -7,7 +7,6 @@ import type { ExhibitionInformationRepository } from '../../../../domain/reposit
 import type { ExhibitionDto, ExhibitionInformationInputDto } from '../../../dto/exhibition'
 import { toExhibitionDto, toExhibitionInformationDto } from '../../../dto/exhibition'
 import { validateArDesignId } from '../../shared/validateArDesignId'
-/**
 
 /**
  * 出展作成ユースケース
@@ -55,7 +54,7 @@ export async function createExhibitionUseCase(
     input.requiredTime ?? null,
     input.comment ?? null,
     input.exhibitionArDesignId ?? null,
-    image: imageData,
+    imageData,
   )
 
   // Exhibitionを作成（下書き状態）

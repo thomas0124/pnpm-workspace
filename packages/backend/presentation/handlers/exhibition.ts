@@ -3,26 +3,17 @@ import { ExhibitionInformationInputSchema } from '../../application/dto/exhibiti
 import { createExhibitionUseCase } from '../../application/usecases/exhibition/core/createExhibition'
 import { deleteExhibitionUseCase } from '../../application/usecases/exhibition/core/deleteExhibition'
 import { getExhibitionUseCase } from '../../application/usecases/exhibition/core/getExhibition'
-import { deleteExhibitionImageUseCase } from '../../application/usecases/exhibition/image/deleteExhibitionImage'
-import { getExhibitionImageUseCase } from '../../application/usecases/exhibition/image/getExhibitionImage'
-import { uploadExhibitionImageUseCase } from '../../application/usecases/exhibition/image/uploadExhibitionImage'
 import { updateExhibitionInformationUseCase } from '../../application/usecases/exhibition/information/updateExhibitionInformation'
-import {updateExhibitionStatusUseCase} from '../../application/usecases/exhibition/status/updateExhibitionStatus'
 import { draftExhibitionUseCase } from '../../application/usecases/exhibition/status/draftExhibition'
 import { publishExhibitionUseCase } from '../../application/usecases/exhibition/status/publishExhibition'
 import { unpublishExhibitionUseCase } from '../../application/usecases/exhibition/status/unpublishExhibition'
-import { ValidationError } from '../../domain/errors'
 import { ExhibitionIdSchema } from '../../domain/models/exhibition'
 import { getExhibitorId } from '../middlewares/authMiddleware'
 import { getContainer, handlerFactory } from './index'
-import {listExhibitionUseCase } from '../../application/usecases/exhibition/listExhibitions'
-import type { Context } from 'hono'
-import type { HonoEnv } from '../..'
-
-const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
 
 /**
- * 出展作成ハンドラー
+ * ✅ 出展作成ハンドラー（画像含む）
+ * POST /exhibitions
  */
 export const handleCreateExhibition = handlerFactory.createHandlers(
   zValidator('json', ExhibitionInformationInputSchema),
@@ -44,7 +35,8 @@ export const handleCreateExhibition = handlerFactory.createHandlers(
 )
 
 /**
- * 出展取得ハンドラー
+ * ✅ 出展取得ハンドラー（画像含む）
+ * GET /exhibitions/{exhibitionId}
  */
 export const handleGetExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
@@ -66,97 +58,8 @@ export const handleGetExhibition = handlerFactory.createHandlers(
 )
 
 /**
- * 出展削除ハンドラー
- */
-export const handleDeleteExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdSchema),
-  async (c) => {
-    const container = getContainer(c)
-    const exhibitorId = getExhibitorId(c)
-    const exhibitionId = c.req.valid('param')
-
-    await deleteExhibitionUseCase(
-      exhibitionId,
-      exhibitorId,
-      container.exhibitionRepository,
-      container.exhibitionInformationRepository
-    )
-
-    return c.body(null, 204)
-  }
-)
-
-/**
- * 出展を下書き状態に戻すハンドラー
- * PUT /exhibitions/{exhibitionId}/draft
- */
-export const handleDraftExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdSchema),
-  async (c) => {
-    const container = getContainer(c)
-    const exhibitorId = getExhibitorId(c)
-    const exhibitionId = c.req.valid('param')
-
-    const result = await draftExhibitionUseCase(
-      exhibitionId,
-      exhibitorId,
-      container.exhibitionRepository,
-      container.exhibitionInformationRepository,
-      container.exhibitionArDesignRepository
-    )
-
-    return c.json(result, 200)
-  }
-)
-
-/**
- * 出展公開ハンドラー
- * PUT /exhibitions/{exhibitionId}/publish
- */
-export const handlePublishExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdSchema),
-  async (c) => {
-    const container = getContainer(c)
-    const exhibitorId = getExhibitorId(c)
-    const exhibitionId = c.req.valid('param')
-
-    const result = await publishExhibitionUseCase(
-      exhibitionId,
-      exhibitorId,
-      container.exhibitionRepository,
-      container.exhibitionInformationRepository,
-      container.exhibitionArDesignRepository
-    )
-
-    return c.json(result, 200)
-  }
-)
-
-/**
- * 出展非公開ハンドラー
- * PUT /exhibitions/{exhibitionId}/unpublish
- */
-export const handleUnpublishExhibition = handlerFactory.createHandlers(
-  zValidator('param', ExhibitionIdSchema),
-  async (c) => {
-    const container = getContainer(c)
-    const exhibitorId = getExhibitorId(c)
-    const exhibitionId = c.req.valid('param')
-
-    const result = await unpublishExhibitionUseCase(
-      exhibitionId,
-      exhibitorId,
-      container.exhibitionRepository,
-      container.exhibitionInformationRepository,
-      container.exhibitionArDesignRepository
-    )
-
-    return c.json(result, 200)
-  }
-)
-
-/**
- * 出展基本情報更新ハンドラー
+ * ✅ 出展情報更新ハンドラー（画像含む）
+ * PUT /exhibitions/{exhibitionId}/information
  */
 export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
@@ -181,117 +84,86 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
 )
 
 /**
- * 出展画像アップロードハンドラー
- * POST /exhibitions/{exhibitionId}/information/image
+ * ✅ 出展を下書き状態に戻すハンドラー（画像含むレスポンス）
+ * PUT /exhibitions/{exhibitionId}/draft
  */
-export const handleUploadExhibitionImage = handlerFactory.createHandlers(
+export const handleDraftExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
     const exhibitionId = c.req.valid('param')
 
-    const body = await c.req.parseBody()
-    const file = body['image']
-
-    if (!(file instanceof File)) {
-      throw new ValidationError('画像ファイルが指定されていません')
-    }
-
-    if (file.size > MAX_SIZE_BYTES) {
-      throw new ValidationError('画像ファイルのサイズが大きすぎます（最大5MB）')
-    }
-
-    const contentType = file.type
-    if (!['image/png', 'image/jpeg', 'image/gif'].includes(contentType)) {
-      throw new ValidationError('サポートされていない画像形式です（PNG, JPEG, GIFのみ）')
-    }
-
-    const buffer = await file.arrayBuffer()
-    const image = new Uint8Array(buffer)
-
-    await uploadExhibitionImageUseCase(
+    const result = await draftExhibitionUseCase(
       exhibitionId,
       exhibitorId,
-      image,
       container.exhibitionRepository,
-      container.exhibitionInformationRepository
+      container.exhibitionInformationRepository,
+      container.exhibitionArDesignRepository
     )
 
-    return c.json(
-      {
-        message: '画像が正常にアップロードされました',
-      },
-      200
-    )
+    return c.json(result, 200)
   }
 )
 
 /**
- * 出展画像取得ハンドラー
- * GET /exhibitions/{exhibitionId}/information/image
+ * ✅ 出展公開ハンドラー（画像含むレスポンス）
+ * PUT /exhibitions/{exhibitionId}/publish
  */
-export const handleGetExhibitionImage = handlerFactory.createHandlers(
+export const handlePublishExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
   async (c) => {
-    // 画像バイナリを返却する専用エンドポイント。
-    // Hono RPC ではこのルートは `Response` として扱い、JSON ベースの型付きレスポンスの対象外とする。
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
     const exhibitionId = c.req.valid('param')
 
-    const { image } = await getExhibitionImageUseCase(
+    const result = await publishExhibitionUseCase(
       exhibitionId,
       exhibitorId,
       container.exhibitionRepository,
-      container.exhibitionInformationRepository
+      container.exhibitionInformationRepository,
+      container.exhibitionArDesignRepository
     )
 
-    // シグネチャから簡易的にContent-Typeを判定
-    let contentType = 'application/octet-stream'
-    if (image.length >= 4) {
-      const sig = image.subarray(0, 4)
-      // PNG: 89 50 4E 47
-      if (sig[0] === 0x89 && sig[1] === 0x50 && sig[2] === 0x4e && sig[3] === 0x47) {
-        contentType = 'image/png'
-      }
-      // JPEG: FF D8 FF
-      else if (sig[0] === 0xff && sig[1] === 0xd8 && sig[2] === 0xff) {
-        contentType = 'image/jpeg'
-      }
-      // GIF: 'GIF8'
-      else if (sig[0] === 0x47 && sig[1] === 0x49 && sig[2] === 0x46 && sig[3] === 0x38) {
-        contentType = 'image/gif'
-      }
-    }
-
-    const arrayBuffer = image.buffer.slice(
-      image.byteOffset,
-      image.byteOffset + image.byteLength
-    ) as ArrayBuffer
-    const blob = new Blob([arrayBuffer], { type: contentType })
-
-    return new Response(blob, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-      },
-    })
+    return c.json(result, 200)
   }
 )
 
 /**
- * 出展画像削除ハンドラー
- * DELETE /exhibitions/{exhibitionId}/information/image
+ * ✅ 出展非公開ハンドラー（画像含むレスポンス）
+ * PUT /exhibitions/{exhibitionId}/unpublish
  */
-export const handleDeleteExhibitionImage = handlerFactory.createHandlers(
+export const handleUnpublishExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
     const exhibitionId = c.req.valid('param')
 
-    await deleteExhibitionImageUseCase(
+    const result = await unpublishExhibitionUseCase(
+      exhibitionId,
+      exhibitorId,
+      container.exhibitionRepository,
+      container.exhibitionInformationRepository,
+      container.exhibitionArDesignRepository
+    )
+
+    return c.json(result, 200)
+  }
+)
+
+/**
+ * ✅ 出展削除ハンドラー（画像も含めて削除）
+ * DELETE /exhibitions/{exhibitionId}
+ */
+export const handleDeleteExhibition = handlerFactory.createHandlers(
+  zValidator('param', ExhibitionIdSchema),
+  async (c) => {
+    const container = getContainer(c)
+    const exhibitorId = getExhibitorId(c)
+    const exhibitionId = c.req.valid('param')
+
+    await deleteExhibitionUseCase(
       exhibitionId,
       exhibitorId,
       container.exhibitionRepository,
@@ -301,3 +173,8 @@ export const handleDeleteExhibitionImage = handlerFactory.createHandlers(
     return c.body(null, 204)
   }
 )
+
+// ❌ 以下の画像専用ハンドラーは削除
+// - handleUploadExhibitionImage (POST /exhibitions/{exhibitionId}/information/image)
+// - handleGetExhibitionImage (GET /exhibitions/{exhibitionId}/information/image)
+// - handleDeleteExhibitionImage (DELETE /exhibitions/{exhibitionId}/information/image)
