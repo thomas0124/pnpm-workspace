@@ -66,9 +66,9 @@ export async function updateExhibitionInformationUseCase(
     title: input.title,
     category: input.category,
     location: input.location,
-    price: input.price ?? null,
-    requiredTime: input.requiredTime ?? null,
-    comment: input.comment ?? null,
+    price: input.price,
+    requiredTime: input.requiredTime,
+    comment: input.comment,
     image: imageData,
   })
 
