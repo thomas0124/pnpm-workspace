@@ -8,24 +8,25 @@ import { usePublicExhibitions } from "./hooks/usePublicExhibitions";
 
 type Category = "Food" | "Exhibition" | "Experience" | "Stage";
 
+// カテゴリのマッピング（表示名 → URLパラメータ）
+const categoryMap = {
+  飲食: "Food",
+  展示: "Exhibition",
+  体験: "Experience",
+  ステージ: "Stage",
+} as const;
+
+// カテゴリの逆マッピング（APIパラメータ → 日本語表示名）
+const categoryDisplayMap: Record<Category, string> = {
+  Food: "飲食",
+  Exhibition: "展示",
+  Experience: "体験",
+  Stage: "ステージ",
+};
+
+const categories = ["飲食", "展示", "体験", "ステージ"] as const;
+
 export function ExhibitionsContent() {
-  // カテゴリのマッピング（表示名 → URLパラメータ）
-  const categoryMap = {
-    飲食: "Food",
-    展示: "Exhibition",
-    体験: "Experience",
-    ステージ: "Stage",
-  } as const;
-
-  // カテゴリの逆マッピング（APIパラメータ → 日本語表示名）
-  const categoryDisplayMap: Record<Category, string> = {
-    Food: "飲食",
-    Exhibition: "展示",
-    Experience: "体験",
-    Stage: "ステージ",
-  };
-
-  const categories = ["飲食", "展示", "体験", "ステージ"] as const;
   const [{ category, search }, setQuery] = useQueryStates({
     category: parseAsString.withDefault(""),
     search: parseAsString.withDefault(""),
