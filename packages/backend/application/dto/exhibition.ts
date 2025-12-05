@@ -168,6 +168,10 @@ export async function toExhibitionInformationDto(
     exhibitionInformation.exhibitionArDesignId,
     arDesignRepository
   )
+    // ✅ 画像データをBase64エンコード
+  const imageBase64 = exhibitionInformation.image
+    ? Buffer.from(exhibitionInformation.image).toString('base64')
+    : null
 
   return ExhibitionInformationDtoSchema.parse({
     id: exhibitionInformation.id,
@@ -180,6 +184,7 @@ export async function toExhibitionInformationDto(
     requiredTime: exhibitionInformation.requiredTime,
     comment: exhibitionInformation.comment,
     arDesign: arDesignDto,
+    image: exhibitionInformation.image,
     createdAt: exhibitionInformation.createdAt,
     updatedAt: exhibitionInformation.updatedAt,
   })
