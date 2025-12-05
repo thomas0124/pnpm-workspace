@@ -1,121 +1,172 @@
-import { useEffect, useState, RefObject } from "react";
-import {
-  CAMERA_PARAM_URL,
-  MARKER_RESET_TIME_MS,
-} from "@/components/arScanner/constants";
-import type { ARController } from "@/components/arScanner/types";
+import { useEffect, useState, useRef, type RefObject } from "react";
+
+// 3つのマーカー定義
+// public/markers/フォルダに配置されている前提です
+const MARKERS = [
+  { id: 1, src: "/AR-Marker.png" },
+  { id: 2, src: "/AR-Marker2.png" },
+  { id: 3, src: "/AR-Marker3.png" },
+];
 
 export function useARDetection(
   videoRef: RefObject<HTMLVideoElement>,
   canvasRef: RefObject<HTMLCanvasElement>,
-  isARLoaded: boolean,
-) {
-  const [markerDetected, setMarkerDetected] = useState(false);
+  isReady: boolean,
+): number | null {
+  // 戻り値を検知したマーカーID(number)またはnullに変更
+  const [detectedMarkerId, setDetectedMarkerId] = useState<number | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // 読み込んだ画像オブジェクトを保持するRef
+  const loadedImagesRef = useRef<HTMLImageElement[]>([]);
+
+  // マーカー画像の読み込み
+  useEffect(() => {
+    const loadImages = () => {
+      const images: HTMLImageElement[] = [];
+      MARKERS.forEach((marker) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = marker.src;
+        // 読み込み完了を待たずに配列に追加し、検出ループ内でcompleteプロパティをチェックします
+        images.push(img);
+      });
+      loadedImagesRef.current = images;
+    };
+
+    loadImages();
+  }, []);
 
   useEffect(() => {
-    if (!isARLoaded || !videoRef.current || !canvasRef.current) return;
+    if (!isReady || !videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
 
-    if (!context) {
-      console.error("2Dコンテキストの取得に失敗しました。");
-      return;
-    }
+    if (!context) return;
 
-    // クリーンアップ用の変数
-    let animationFrameId: number | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
-    let arController: ARController | null = null;
-    let markerEventHandler: ((event: any) => void) | null = null;
-    let metadataEventHandler: (() => void) | null = null;
+    let animationId: number;
 
-    // AR.jsの初期化
-    const initAR = async () => {
-      if (typeof window !== "undefined" && window.ARController) {
-        try {
-          arController = new window.ARController(canvas, CAMERA_PARAM_URL);
+    const detectMarker = () => {
+      // 処理中または動画の準備ができていない場合はスキップ
+      if (video.readyState !== video.HAVE_ENOUGH_DATA || isProcessing) {
+        animationId = requestAnimationFrame(detectMarker);
+        return;
+      }
 
-          // マーカー検出イベントハンドラー
-          markerEventHandler = (event) => {
-            console.log("[v0] マーカー検出:", event.data.marker.id);
-            setMarkerDetected(true);
+      // ビデオフレームを描画
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // 既存のタイマーをクリア
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-            }
+      // 中央部分を比較用データとして取得
+      const sampleSize = 200;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
 
-            // 3秒後にリセット
-            timeoutId = setTimeout(
-              () => setMarkerDetected(false),
-              MARKER_RESET_TIME_MS,
-            );
-          };
+      const videoData = context.getImageData(
+        centerX - sampleSize / 2,
+        centerY - sampleSize / 2,
+        sampleSize,
+        sampleSize,
+      );
 
-          arController.addEventListener("getMarker", markerEventHandler);
+      // 比較用の一時Canvasを作成
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = sampleSize;
+      tempCanvas.height = sampleSize;
+      const tempContext = tempCanvas.getContext("2d");
 
-          // ビデオフレームの処理
-          const processFrame = () => {
-            if (video.readyState === video.HAVE_ENOUGH_DATA && context) {
-              canvas.width = video.videoWidth;
-              canvas.height = video.videoHeight;
-              context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      if (!tempContext) {
+        animationId = requestAnimationFrame(detectMarker);
+        return;
+      }
 
-              // AR処理
-              arController?.detectMarker(
-                context.getImageData(0, 0, canvas.width, canvas.height),
-              );
-            }
-            animationFrameId = requestAnimationFrame(processFrame);
-          };
+      // 全てのマーカー画像と比較
+      for (let i = 0; i < loadedImagesRef.current.length; i++) {
+        const markerImg = loadedImagesRef.current[i];
 
-          // メタデータ読み込みイベントハンドラー
-          metadataEventHandler = () => {
-            processFrame();
-          };
+        // 画像が読み込まれていなければスキップ
+        if (!markerImg.complete || markerImg.naturalWidth === 0) continue;
 
-          video.addEventListener("loadedmetadata", metadataEventHandler);
-        } catch (error) {
-          console.error("[v0] AR初期化エラー:", error);
+        // --- 画像のトリミングと描画 ---
+        const size = Math.min(markerImg.width, markerImg.height);
+        const sx = (markerImg.width - size) / 2;
+        const sy = (markerImg.height - size) / 2;
+
+        tempContext.clearRect(0, 0, sampleSize, sampleSize);
+        tempContext.drawImage(
+          markerImg,
+          sx,
+          sy,
+          size,
+          size,
+          0,
+          0,
+          sampleSize,
+          sampleSize,
+        );
+
+        const markerData = tempContext.getImageData(
+          0,
+          0,
+          sampleSize,
+          sampleSize,
+        );
+
+        // --- 色差分比較 ---
+        let difference = 0;
+        // 高速化のため、全ピクセルではなく間引いて比較しても良いが、ここでは全ピクセル比較
+        for (let j = 0; j < videoData.data.length; j += 4) {
+          const rDiff = Math.abs(videoData.data[j] - markerData.data[j]);
+          const gDiff = Math.abs(
+            videoData.data[j + 1] - markerData.data[j + 1],
+          );
+          const bDiff = Math.abs(
+            videoData.data[j + 2] - markerData.data[j + 2],
+          );
+          difference += rDiff + gDiff + bDiff;
+        }
+
+        const similarity = 1 - difference / (sampleSize * sampleSize * 3 * 255);
+
+        // 類似度が75%以上の場合、このマーカーを検出したとみなす
+        if (similarity > 0.75) {
+          setIsProcessing(true);
+          setDetectedMarkerId(MARKERS[i].id); // IDをセット (1, 2, or 3)
+          console.log(
+            `Marker ${MARKERS[i].id} detected! Similarity: ${similarity}`,
+          );
+
+          // 5秒間検出状態を保持してからリセット
+          setTimeout(() => {
+            setDetectedMarkerId(null);
+            setIsProcessing(false);
+          }, 5000);
+
+          // ループを抜ける（同時に複数のマーカーは検出しない）
+          break;
         }
       }
+
+      if (!isProcessing) {
+        animationId = requestAnimationFrame(detectMarker);
+      }
     };
 
-    initAR();
+    // 検出開始
+    if (video.readyState >= video.HAVE_METADATA) {
+      detectMarker();
+    } else {
+      video.addEventListener("loadedmetadata", detectMarker);
+    }
 
-    // クリーンアップ関数
     return () => {
-      // requestAnimationFrameの停止
-      if (animationFrameId !== null) {
-        cancelAnimationFrame(animationFrameId);
-      }
-
-      // setTimeoutのキャンセル
-      if (timeoutId !== null) {
-        clearTimeout(timeoutId);
-      }
-
-      // イベントリスナーの削除
-      if (
-        arController &&
-        markerEventHandler &&
-        arController.removeEventListener
-      ) {
-        arController.removeEventListener("getMarker", markerEventHandler);
-      }
-
-      if (video && metadataEventHandler) {
-        video.removeEventListener("loadedmetadata", metadataEventHandler);
-      }
-
-      // ARControllerの破棄（可能な場合）
-      if (arController?.dispose) {
-        arController.dispose();
-      }
+      cancelAnimationFrame(animationId);
+      video.removeEventListener("loadedmetadata", detectMarker);
     };
-  }, [isARLoaded, videoRef, canvasRef]);
+  }, [videoRef, canvasRef, isReady, isProcessing]);
 
-  return markerDetected;
+  return detectedMarkerId;
 }

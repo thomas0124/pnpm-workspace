@@ -1,10 +1,11 @@
-import { MarkerDetectedOverlay } from "@/components/arScanner/_components/markerDetectedOverlay";
+import { ReactNode } from "react";
 
 interface ScannerFrameProps {
   markerDetected: boolean;
+  children?: ReactNode;
 }
 
-export function ScannerFrame({ markerDetected }: ScannerFrameProps) {
+export function ScannerFrame({ markerDetected, children }: ScannerFrameProps) {
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-8">
       <div className="relative aspect-square w-full max-w-md">
@@ -32,7 +33,8 @@ export function ScannerFrame({ markerDetected }: ScannerFrameProps) {
           <div className="absolute bottom-0 right-0 h-full w-1 rounded-full bg-teal-400" />
         </div>
 
-        {markerDetected && <MarkerDetectedOverlay />}
+        {/* ★修正: MarkerDetectedOverlay コンポーネントではなく、渡された children を表示する */}
+        {markerDetected && children}
       </div>
     </div>
   );
