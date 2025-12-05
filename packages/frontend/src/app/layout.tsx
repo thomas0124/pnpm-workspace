@@ -17,9 +17,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={inter.className}>
-        <NuqsAdapter>{children}</NuqsAdapter>
-      </body>
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content="えあパンフ" />
+      <meta property="og:description" content="AR機能付きデジタルパンフレット" />
+      <meta property="og:url" content="https://ar-pamph-frontend-preview-pr-65.sekibun3109.workers.dev/" />
+      <meta property="og:site_name" content="えあパンフ" />
+      <meta property="og:image" content="https://ar-pamph-frontend-preview-pr-65.sekibun3109.workers.dev/opengraph-image.png" />
+      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+        <body className={inter.className}>
+          <NuqsAdapter>{children}</NuqsAdapter>
+        </body>
     </html>
   );
 }
