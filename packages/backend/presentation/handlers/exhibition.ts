@@ -13,6 +13,12 @@ import { draftExhibitionUseCase } from '../../application/usecases/exhibition/st
 import { publishExhibitionUseCase } from '../../application/usecases/exhibition/status/publishExhibition'
 import { unpublishExhibitionUseCase } from '../../application/usecases/exhibition/status/unpublishExhibition'
 import { getExhibitorId } from '../middlewares/authMiddleware'
+import {
+  parseImageToBase64,
+  toNullableString,
+  toOptionalInt,
+  toStringOrUndefined,
+} from '../utils/formDataParser'
 import { getContainer, handlerFactory } from './index'
 
 /**
@@ -25,37 +31,7 @@ export const handleCreateExhibition = handlerFactory.createHandlers(async (c) =>
 
   const body = await c.req.parseBody()
 
-  const toStringOrUndefined = (value: unknown) => {
-    if (value === undefined || value === null) return undefined
-    if (typeof value === 'string') return value
-    return undefined
-  }
-
-  const toNullableString = (value: unknown) => {
-    const str = toStringOrUndefined(value)
-    return str === undefined || str === '' ? null : str
-  }
-
-  const toOptionalInt = (value: unknown) => {
-    const str = toStringOrUndefined(value)
-    if (str === undefined || str === '') return undefined
-    const num = Number(str)
-    return Number.isFinite(num) ? num : undefined
-  }
-
-  let imageBase64: string | undefined
-  const image = body.image
-  if (image instanceof File) {
-    const arrayBuffer = await image.arrayBuffer()
-    imageBase64 = Buffer.from(arrayBuffer).toString('base64')
-  } else if (image && typeof image === 'object' && 'byteLength' in (image as ArrayBufferView)) {
-    // parseBody が Uint8Array などの TypedArray を返す場合に対応
-    const view = image as ArrayBufferView
-    imageBase64 = Buffer.from(view.buffer).toString('base64')
-  } else if (typeof image === 'string' && image.trim() !== '') {
-    // 既にBase64が送られているケースも許容
-    imageBase64 = image
-  }
+  const imageBase64 = await parseImageToBase64(body.image)
 
   const parsedInput = ExhibitionInformationInputSchema.parse({
     exhibitorName: toStringOrUndefined(body.exhibitorName),
@@ -116,35 +92,7 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
 
     const body = await c.req.parseBody()
 
-    const toStringOrUndefined = (value: unknown) => {
-      if (value === undefined || value === null) return undefined
-      if (typeof value === 'string') return value
-      return undefined
-    }
-
-    const toNullableString = (value: unknown) => {
-      const str = toStringOrUndefined(value)
-      return str === undefined || str === '' ? null : str
-    }
-
-    const toOptionalInt = (value: unknown) => {
-      const str = toStringOrUndefined(value)
-      if (str === undefined || str === '') return undefined
-      const num = Number(str)
-      return Number.isFinite(num) ? num : undefined
-    }
-
-    let imageBase64: string | undefined
-    const image = body.image
-    if (image instanceof File) {
-      const arrayBuffer = await image.arrayBuffer()
-      imageBase64 = Buffer.from(arrayBuffer).toString('base64')
-    } else if (image && typeof image === 'object' && 'byteLength' in (image as ArrayBufferView)) {
-      const view = image as ArrayBufferView
-      imageBase64 = Buffer.from(view.buffer).toString('base64')
-    } else if (typeof image === 'string' && image.trim() !== '') {
-      imageBase64 = image
-    }
+    const imageBase64 = await parseImageToBase64(body.image)
 
     const input = ExhibitionInformationUpdateSchema.parse({
       exhibitorName: toStringOrUndefined(body.exhibitorName),

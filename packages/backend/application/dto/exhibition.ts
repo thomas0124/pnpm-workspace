@@ -4,6 +4,7 @@ import type { Exhibition } from '../../domain/models/exhibition'
 import type { ExhibitionInformation } from '../../domain/models/exhibitionInformation'
 import type { ExhibitionCategory } from '../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
+import { uint8ArrayToBase64 } from '../utils/imageUtils'
 
 export const ExhibitionIdParamSchema = z.object({
   exhibitionId: z.uuid(),
@@ -177,9 +178,7 @@ export async function toExhibitionInformationDto(
     arDesignRepository
   )
   // ✅ 画像データをBase64エンコード
-  const imageBase64 = exhibitionInformation.image
-    ? Buffer.from(exhibitionInformation.image).toString('base64')
-    : null
+  const imageBase64 = uint8ArrayToBase64(exhibitionInformation.image)
 
   return ExhibitionInformationDtoSchema.parse({
     id: exhibitionInformation.id,

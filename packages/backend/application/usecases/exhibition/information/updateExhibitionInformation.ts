@@ -8,6 +8,7 @@ import type {
   ExhibitionInformationUpdateDto,
 } from '../../../dto/exhibition'
 import { toExhibitionInformationDto } from '../../../dto/exhibition'
+import { base64ToUint8Array } from '../../../utils/imageUtils'
 import { validateArDesignId } from '../../shared/validateArDesignId'
 import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwnershipCheck'
 
@@ -62,7 +63,7 @@ export async function updateExhibitionInformationUseCase(
   const imageData =
     input.image !== undefined
       ? input.image
-        ? Uint8Array.from(Buffer.from(input.image, 'base64'))
+        ? base64ToUint8Array(input.image)
         : null
       : existingInformation.image // 画像が指定されていない場合は既存の画像を保持
 

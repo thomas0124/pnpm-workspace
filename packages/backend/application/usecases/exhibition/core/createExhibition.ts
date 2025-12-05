@@ -6,6 +6,7 @@ import type { ExhibitionArDesignRepository } from '../../../../domain/repositori
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type { ExhibitionDto, ExhibitionInformationInputDto } from '../../../dto/exhibition'
 import { toExhibitionDto, toExhibitionInformationDto } from '../../../dto/exhibition'
+import { base64ToUint8Array } from '../../../utils/imageUtils'
 import { validateArDesignId } from '../../shared/validateArDesignId'
 
 /**
@@ -29,7 +30,7 @@ export async function createExhibitionUseCase(
   exhibitionArDesignRepository: ExhibitionArDesignRepository
 ): Promise<ExhibitionDto> {
   // ✅ 画像データをBase64からUint8Arrayに変換
-  const imageData = input.image ? Uint8Array.from(Buffer.from(input.image, 'base64')) : null
+  const imageData = input.image ? base64ToUint8Array(input.image) : null
 
   // 既存の出展情報が存在するかチェック
   const existingInformation = await exhibitionInformationRepository.findByExhibitorId(exhibitorId)
