@@ -19,22 +19,37 @@ export function useARDetection(
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
 
+    // クリーンアップ用の変数
+    let animationFrameId: number | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let arController: ARController | null = null;
+    let markerEventHandler: ((event: any) => void) | null = null;
+    let metadataEventHandler: (() => void) | null = null;
+
     // AR.jsの初期化
     const initAR = async () => {
       if (typeof window !== "undefined" && window.ARController) {
         try {
-          const arController: ARController = new window.ARController(
-            canvas,
-            CAMERA_PARAM_URL,
-          );
+          arController = new window.ARController(canvas, CAMERA_PARAM_URL);
 
-          arController.addEventListener("getMarker", (event) => {
+          // マーカー検出イベントハンドラー
+          markerEventHandler = (event) => {
             console.log("[v0] マーカー検出:", event.data.marker.id);
             setMarkerDetected(true);
 
+            // 既存のタイマーをクリア
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
+
             // 3秒後にリセット
-            setTimeout(() => setMarkerDetected(false), MARKER_RESET_TIME_MS);
-          });
+            timeoutId = setTimeout(
+              () => setMarkerDetected(false),
+              MARKER_RESET_TIME_MS,
+            );
+          };
+
+          arController.addEventListener("getMarker", markerEventHandler);
 
           // ビデオフレームの処理
           const processFrame = () => {
@@ -44,16 +59,19 @@ export function useARDetection(
               context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
               // AR処理
-              arController.detectMarker(
+              arController?.detectMarker(
                 context.getImageData(0, 0, canvas.width, canvas.height),
               );
             }
-            requestAnimationFrame(processFrame);
+            animationFrameId = requestAnimationFrame(processFrame);
           };
 
-          video.addEventListener("loadedmetadata", () => {
+          // メタデータ読み込みイベントハンドラー
+          metadataEventHandler = () => {
             processFrame();
-          });
+          };
+
+          video.addEventListener("loadedmetadata", metadataEventHandler);
         } catch (error) {
           console.error("[v0] AR初期化エラー:", error);
         }
@@ -61,6 +79,37 @@ export function useARDetection(
     };
 
     initAR();
+
+    // クリーンアップ関数
+    return () => {
+      // requestAnimationFrameの停止
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      // setTimeoutのキャンセル
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+
+      // イベントリスナーの削除
+      if (
+        arController &&
+        markerEventHandler &&
+        arController.removeEventListener
+      ) {
+        arController.removeEventListener("getMarker", markerEventHandler);
+      }
+
+      if (video && metadataEventHandler) {
+        video.removeEventListener("loadedmetadata", metadataEventHandler);
+      }
+
+      // ARControllerの破棄（可能な場合）
+      if (arController?.dispose) {
+        arController.dispose();
+      }
+    };
   }, [isARLoaded, videoRef, canvasRef]);
 
   return markerDetected;

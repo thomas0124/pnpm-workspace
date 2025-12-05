@@ -6,6 +6,11 @@ export interface ARController {
     event: "getMarker",
     callback: (event: ARMarkerEvent) => void,
   ): void;
+  removeEventListener?(
+    event: "getMarker",
+    callback: (event: ARMarkerEvent) => void,
+  ): void;
+  dispose?(): void;
 }
 
 export interface ARMarkerEvent {
