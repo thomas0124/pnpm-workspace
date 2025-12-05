@@ -40,4 +40,3 @@ export async function getMyExhibitionUseCase(
 
   return toExhibitionDto(exhibition, exhibitionInformationDto)
 }
-
