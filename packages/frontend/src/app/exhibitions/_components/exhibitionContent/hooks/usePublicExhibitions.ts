@@ -33,7 +33,10 @@ async function fetcherExhibitions(
   if (search) {
     query.search = search;
   }
-  if (category) {
+  if (
+    category &&
+    ["Food", "Exhibition", "Experience", "Stage"].includes(category)
+  ) {
     query.category = category as Category;
   }
 
