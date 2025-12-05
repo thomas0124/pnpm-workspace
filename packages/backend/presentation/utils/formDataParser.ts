@@ -32,6 +32,19 @@ export function toOptionalInt(value: unknown): number | undefined {
 }
 
 /**
+ * 値をnull許容のオプショナルな整数に変換
+ * 空文字列または"null"の場合はnullを返す
+ * 変換できない場合はundefinedを返す
+ */
+export function toOptionalNullableInt(value: unknown): number | null | undefined {
+  const str = toStringOrUndefined(value)
+  if (str === undefined) return undefined
+  if (str === '' || str === 'null') return null
+  const num = Number(str)
+  return Number.isFinite(num) ? num : undefined
+}
+
+/**
  * 画像データをBase64文字列に変換
  * File、ArrayBufferView、または既にBase64文字列のいずれかを受け取る
  */

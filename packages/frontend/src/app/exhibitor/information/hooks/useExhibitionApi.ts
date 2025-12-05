@@ -72,17 +72,16 @@ function buildFormData(data: ExhibitionFormSchema): FormData {
   formData.append("location", data.location);
 
   // オプショナルフィールド
-  if (data.price !== null && data.price !== undefined) {
-    formData.append("price", data.price.toString());
+  if (data.price !== undefined) {
+    formData.append("price", data.price === null ? "" : data.price.toString());
   }
-  if (data.requiredTime !== null && data.requiredTime !== undefined) {
-    formData.append("requiredTime", data.requiredTime.toString());
+  if (data.requiredTime !== undefined) {
+    formData.append(
+      "requiredTime",
+      data.requiredTime === null ? "" : data.requiredTime.toString(),
+    );
   }
-  if (
-    data.comment !== null &&
-    data.comment !== undefined &&
-    data.comment !== ""
-  ) {
+  if (data.comment !== undefined && data.comment !== null) {
     formData.append("comment", data.comment);
   }
 
@@ -116,11 +115,14 @@ function buildFormDataForUpdate(data: Partial<ExhibitionFormSchema>): FormData {
   if (data.location !== undefined) {
     formData.append("location", data.location);
   }
-  if (data.price !== undefined && data.price !== null) {
-    formData.append("price", data.price.toString());
+  if (data.price !== undefined) {
+    formData.append("price", data.price === null ? "" : data.price.toString());
   }
-  if (data.requiredTime !== undefined && data.requiredTime !== null) {
-    formData.append("requiredTime", data.requiredTime.toString());
+  if (data.requiredTime !== undefined) {
+    formData.append(
+      "requiredTime",
+      data.requiredTime === null ? "" : data.requiredTime.toString(),
+    );
   }
   if (data.comment !== undefined) {
     formData.append("comment", data.comment || "");

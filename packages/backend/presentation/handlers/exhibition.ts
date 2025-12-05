@@ -18,7 +18,7 @@ import { getExhibitorId } from '../middlewares/authMiddleware'
 import {
   parseImageToBase64,
   toNullableString,
-  toOptionalInt,
+  toOptionalNullableInt,
   toStringOrUndefined,
 } from '../utils/formDataParser'
 import { getContainer, handlerFactory } from './index'
@@ -39,8 +39,8 @@ export const handleCreateExhibition = handlerFactory.createHandlers(async (c) =>
     title: toStringOrUndefined(formData.get('title')),
     category: toStringOrUndefined(formData.get('category')),
     location: toStringOrUndefined(formData.get('location')),
-    price: toOptionalInt(formData.get('price')),
-    requiredTime: toOptionalInt(formData.get('requiredTime')),
+    price: toOptionalNullableInt(formData.get('price')),
+    requiredTime: toOptionalNullableInt(formData.get('requiredTime')),
     comment: toNullableString(formData.get('comment')) ?? undefined,
     image: imageBase64,
   })
@@ -123,8 +123,8 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
       title: toStringOrUndefined(body.title),
       category: toStringOrUndefined(body.category),
       location: toStringOrUndefined(body.location),
-      price: toOptionalInt(body.price),
-      requiredTime: toOptionalInt(body.requiredTime),
+      price: toOptionalNullableInt(body.price),
+      requiredTime: toOptionalNullableInt(body.requiredTime),
       comment: toNullableString(body.comment),
       image: imageBase64,
     })

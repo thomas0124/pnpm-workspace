@@ -115,7 +115,11 @@ export function FormSection({ form }: FormSectionProps) {
                 type="number"
                 min="0"
                 {...register("price", {
-                  setValueAs: (v) => (v === "" ? null : Number(v)),
+                  setValueAs: (v) => {
+                    if (v === "" || v === null || v === undefined) return null;
+                    const num = Number(v);
+                    return isNaN(num) ? null : num;
+                  },
                 })}
                 inputWrapper={(input) => (
                   <div className="relative">
@@ -146,7 +150,11 @@ export function FormSection({ form }: FormSectionProps) {
               type="number"
               min="0"
               {...register("requiredTime", {
-                setValueAs: (v) => (v === "" ? null : Number(v)),
+                setValueAs: (v) => {
+                  if (v === "" || v === null || v === undefined) return null;
+                  const num = Number(v);
+                  return isNaN(num) ? null : num;
+                },
               })}
               inputWrapper={(input) => (
                 <div className="relative">

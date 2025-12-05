@@ -23,12 +23,16 @@ export const exhibitionFormSchema = z.object({
     .min(1, "場所は必須です")
     .max(100, "100文字以内で入力してください"),
   price: z
-    .number()
+    .number({
+      invalid_type_error: "数値を入力してください",
+    })
     .int("整数で入力してください")
     .min(0, "0以上で入力してください")
     .nullable(),
   requiredTime: z
-    .number()
+    .number({
+      invalid_type_error: "数値を入力してください",
+    })
     .int("整数で入力してください")
     .min(0, "0以上で入力してください")
     .nullable(),

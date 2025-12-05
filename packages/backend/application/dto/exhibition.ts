@@ -69,7 +69,7 @@ export const ExhibitionInformationInputSchema = z.object({
   category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']),
   location: z.string().min(1).max(100).trim(),
   price: z.number().int().min(0).nullable().optional(),
-  requiredTime: z.number().int().min(1).nullable().optional(),
+  requiredTime: z.number().int().min(0).nullable().optional(),
   comment: z.string().max(100).trim().nullable().optional(),
   image: z.string().nullable().optional(), // Base64エンコードされた画像データ
 })
