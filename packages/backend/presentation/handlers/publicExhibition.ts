@@ -1,58 +1,33 @@
-import {
-  getPublicExhibitionCategoryCountsUseCase,
-  getPublicExhibitionUseCase,
-  listPublicExhibitionsUseCase,
-} from '../../application/usecases/exhibition/public/publicExhibition'
-import type { HandlerContext } from './index'
-import { getContainer } from './index'
+import { zValidator } from '@hono/zod-validator'
 
-export async function handleGetPublicExhibitions(c: HandlerContext) {
-  const container = getContainer(c)
+import { PublicExhibitionListQuerySchema } from '../../application/dto/exhibition'
+import type { ListPublicExhibitionsQuery } from '../../application/usecases/exhibition/public/publicExhibition'
+import { listPublicExhibitionsUseCase } from '../../application/usecases/exhibition/public/publicExhibition'
+import type { Category } from '../../domain/models/exhibitionInformation'
+import { getContainer, handlerFactory } from './index'
 
-  const query = {
-    category: c.req.query('category') ?? undefined,
-    page: c.req.query('page') ?? undefined,
-    per_page: c.req.query('per_page') ?? undefined,
+export const handleGetPublicExhibitions = handlerFactory.createHandlers(
+  zValidator('query', PublicExhibitionListQuerySchema),
+  async (c) => {
+    try {
+      const container = getContainer(c)
+
+      const query: ListPublicExhibitionsQuery = {
+        search: c.req.query('search') ?? undefined,
+        category: (c.req.query('category') as Category) ?? undefined,
+      }
+
+      const result = await listPublicExhibitionsUseCase(
+        query,
+        container.exhibitionRepository,
+        container.exhibitionInformationRepository,
+        container.exhibitionArDesignRepository
+      )
+
+      return c.json(result, 200)
+    } catch (error) {
+      console.error('❌ Error in handleGetPublicExhibitions:', error)
+      throw error
+    }
   }
-
-  const result = await listPublicExhibitionsUseCase(
-    query,
-    container.exhibitionRepository,
-    container.exhibitionInformationRepository,
-    container.exhibitionArDesignRepository
-  )
-
-  return c.json(result, 200)
-}
-
-export async function handleGetPublicExhibition(c: HandlerContext) {
-  const container = getContainer(c)
-  const exhibitionId = c.req.param('exhibition_id')
-
-  const result = await getPublicExhibitionUseCase(
-    exhibitionId,
-    container.exhibitionRepository,
-    container.exhibitionInformationRepository,
-    container.exhibitionArDesignRepository
-  )
-
-  if (!result) {
-    return c.json(
-      {
-        error: 'NOT_FOUND',
-        message: '出展が見つかりません、または非公開です',
-      },
-      404
-    )
-  }
-
-  return c.json(result, 200)
-}
-
-export async function handleGetPublicExhibitionCategories(c: HandlerContext) {
-  const container = getContainer(c)
-
-  const result = await getPublicExhibitionCategoryCountsUseCase(container.exhibitionRepository)
-
-  return c.json(result, 200)
-}
+)

@@ -3,11 +3,12 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { exhibitorSchema } from "@/schema/exhibitors";
 import type { ExhibitorSchema } from "@/schema/exhibitors";
+import client from "@/lib/apiClient";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export function useLoginForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -15,76 +16,39 @@ export function useLoginForm() {
     formState: { errors },
     setError,
   } = useForm<ExhibitorSchema>({
+    resolver: zodResolver(exhibitorSchema),
     defaultValues: {
       name: "",
       password: "",
     },
+    mode: "onBlur",
   });
 
   const onSubmit = async (values: ExhibitorSchema) => {
-    setApiError(null);
     setIsSubmitting(true);
 
     try {
-      const parsed = exhibitorSchema.safeParse(values);
-      if (!parsed.success) {
-        parsed.error.issues.forEach((issue) => {
-          const fieldName = issue.path[0];
-          if (!fieldName) return;
-          setError(fieldName as keyof ExhibitorSchema, {
-            type: "manual",
-            message: issue.message,
-          });
+      // API リクエスト
+      const response = await client.exhibitors.login.$post({
+        json: values,
+      });
+
+      // HTTP ステータスでの判定
+      if (!response.ok) {
+        setError("password", {
+          type: "manual",
+          message: "名前またはパスワードが正しくありません",
         });
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!baseUrl) {
-        throw new Error("バックエンドURLが設定されていません");
-      }
-
-      const response = await fetch(`${baseUrl}/api/exhibitors/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          setError("password", {
-            type: "manual",
-            message: "名前またはパスワードが正しくありません",
-          });
-          return;
-        }
-
-        throw new Error("ログインに失敗しました");
-      }
-
-      const data: {
-        token: string;
-        exhibitor: {
-          id: string;
-          name: string;
-        };
-      } = await response.json();
+      const data = await response.json();
 
       sessionStorage.setItem("authToken", data.token);
-      sessionStorage.setItem("exhibitorId", data.exhibitor.id);
-      sessionStorage.setItem("userName", data.exhibitor.name);
-      sessionStorage.setItem("isLoggedIn", "true");
 
       router.push("/exhibitor/basic-info");
     } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        setApiError(error.message);
-      } else {
-        setApiError("予期せぬエラーが発生しました");
-      }
+      console.error("Login failed:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -95,7 +59,6 @@ export function useLoginForm() {
     handleSubmit,
     errors,
     isSubmitting,
-    apiError,
     onSubmit,
   };
 }

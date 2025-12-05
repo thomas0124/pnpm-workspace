@@ -7,7 +7,7 @@ import { useLoginForm } from "./_components/hooks/useLoginForm";
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, errors, isSubmitting, apiError, onSubmit } =
+  const { register, handleSubmit, errors, isSubmitting, onSubmit } =
     useLoginForm();
 
   return (
@@ -58,8 +58,6 @@ export function LoginForm() {
               {errors.password.message}
             </p>
           )}
-
-          {apiError && <p className="mt-2 text-sm text-red-500">{apiError}</p>}
 
           <Button
             type="submit"

@@ -34,19 +34,19 @@ export async function createExhibitionUseCase(
   }
 
   // ARデザインIDの存在確認
-  await validateArDesignId(input.exhibition_ar_design_id, exhibitionArDesignRepository)
+  await validateArDesignId(input.exhibitionArDesignId, exhibitionArDesignRepository)
 
   // ExhibitionInformationを作成
   const exhibitionInformation = createExhibitionInformation(
     exhibitorId,
-    input.exhibitor_name,
+    input.exhibitorName,
     input.title,
     input.category,
     input.location,
     input.price ?? null,
-    input.required_time ?? null,
+    input.requiredTime ?? null,
     input.comment ?? null,
-    input.exhibition_ar_design_id ?? null,
+    input.exhibitionArDesignId ?? null,
     null // 画像は別途アップロード
   )
 

@@ -5,17 +5,15 @@ import type { ExhibitionInformation } from '../../domain/models/exhibitionInform
 import type { ExhibitionCategory } from '../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
 
-/**
- * ページネーションメタ情報（公開API用）
- */
-export const PaginationMetaSchema = z.object({
-  total: z.number().int().nonnegative(),
-  page: z.number().int().min(1),
-  per_page: z.number().int().min(1),
-  total_pages: z.number().int().nonnegative(),
+export const ExhibitionIdParamSchema = z.object({
+  exhibitionId: z.uuid(),
 })
 
-export type PaginationMetaDto = z.infer<typeof PaginationMetaSchema>
+// 公開出展一覧クエリ用スキーマ（文字列クエリのまま受け取り、ユースケース側で数値変換を行う）
+export const PublicExhibitionListQuerySchema = z.object({
+  search: z.string().optional(),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']).optional(),
+})
 
 /**
  * 公開用ARデザイン
@@ -37,12 +35,12 @@ export const PublicExhibitionSchema = z.object({
   id: z.uuid(),
   title: z.string(),
   category: z.custom<ExhibitionCategory>(),
-  exhibitor_name: z.string(),
+  exhibitorName: z.string(),
   location: z.string(),
   price: z.number().int().nullable(),
-  required_time: z.number().int().nullable(),
+  requiredTime: z.number().int().nullable(),
   comment: z.string().nullable(),
-  ar_design: PublicExhibitionArDesignSchema,
+  arDesign: PublicExhibitionArDesignSchema,
   image: z.string().nullable(),
 })
 
@@ -64,33 +62,23 @@ export type CategoryCountDto = z.infer<typeof CategoryCountSchema>
  */
 export const PublicExhibitionListResponseSchema = z.object({
   data: z.array(PublicExhibitionSchema),
-  meta: PaginationMetaSchema,
 })
 
 export type PublicExhibitionListResponseDto = z.infer<typeof PublicExhibitionListResponseSchema>
-
-/**
- * カテゴリ別件数レスポンス
- */
-export const CategoryCountListResponseSchema = z.object({
-  data: z.array(CategoryCountSchema),
-})
-
-export type CategoryCountListResponseDto = z.infer<typeof CategoryCountListResponseSchema>
 
 /**
  * 出展情報入力（作成・更新用）
  * api.yml の ExhibitionInformationInput に対応
  */
 export const ExhibitionInformationInputSchema = z.object({
-  exhibitor_name: z.string().min(1).max(100).trim(),
+  exhibitorName: z.string().min(1).max(100).trim(),
   title: z.string().min(1).max(200).trim(),
-  category: z.enum(['飲食', '展示', '体験', 'ステージ']),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']),
   location: z.string().min(1).max(100).trim(),
   price: z.number().int().min(0).nullable().optional(),
-  required_time: z.number().int().min(1).nullable().optional(),
+  requiredTime: z.number().int().min(1).nullable().optional(),
   comment: z.string().max(100).trim().nullable().optional(),
-  exhibition_ar_design_id: z.uuid().nullable().optional(),
+  exhibitionArDesignId: z.uuid().nullable().optional(),
 })
 
 export type ExhibitionInformationInputDto = z.infer<typeof ExhibitionInformationInputSchema>
@@ -111,17 +99,17 @@ export type ExhibitionArDesignDto = z.infer<typeof ExhibitionArDesignDtoSchema>
  */
 export const ExhibitionInformationDtoSchema = z.object({
   id: z.uuid(),
-  exhibitor_id: z.uuid(),
-  exhibitor_name: z.string(),
+  exhibitorId: z.uuid(),
+  exhibitorName: z.string(),
   title: z.string(),
-  category: z.enum(['飲食', '展示', '体験', 'ステージ']),
+  category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']),
   location: z.string(),
   price: z.number().int().nullable(),
-  required_time: z.number().int().nullable(),
+  requiredTime: z.number().int().nullable(),
   comment: z.string().nullable(),
-  ar_design: ExhibitionArDesignDtoSchema.nullable(),
-  created_at: z.string(),
-  updated_at: z.string(),
+  arDesign: ExhibitionArDesignDtoSchema.nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 export type ExhibitionInformationDto = z.infer<typeof ExhibitionInformationDtoSchema>
@@ -132,14 +120,14 @@ export type ExhibitionInformationDto = z.infer<typeof ExhibitionInformationDtoSc
  */
 export const ExhibitionDtoSchema = z.object({
   id: z.uuid(),
-  exhibitor_id: z.uuid(),
-  exhibition_information_id: z.uuid().nullable(),
-  exhibition_information: ExhibitionInformationDtoSchema.nullable(),
-  is_draft: z.boolean(),
-  is_published: z.boolean(),
-  published_at: z.string().nullable(),
-  created_at: z.string(),
-  updated_at: z.string(),
+  exhibitorId: z.uuid(),
+  exhibitionInformationId: z.uuid().nullable(),
+  exhibitionInformation: ExhibitionInformationDtoSchema.nullable(),
+  isDraft: z.boolean(),
+  isPublished: z.boolean(),
+  publishedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 export type ExhibitionDto = z.infer<typeof ExhibitionDtoSchema>
@@ -181,17 +169,17 @@ export async function toExhibitionInformationDto(
 
   return ExhibitionInformationDtoSchema.parse({
     id: exhibitionInformation.id,
-    exhibitor_id: exhibitionInformation.exhibitorId,
-    exhibitor_name: exhibitionInformation.exhibitorName,
+    exhibitorId: exhibitionInformation.exhibitorId,
+    exhibitorName: exhibitionInformation.exhibitorName,
     title: exhibitionInformation.title,
     category: exhibitionInformation.category,
     location: exhibitionInformation.location,
     price: exhibitionInformation.price,
-    required_time: exhibitionInformation.requiredTime,
+    requiredTime: exhibitionInformation.requiredTime,
     comment: exhibitionInformation.comment,
-    ar_design: arDesignDto,
-    created_at: exhibitionInformation.createdAt,
-    updated_at: exhibitionInformation.updatedAt,
+    arDesign: arDesignDto,
+    createdAt: exhibitionInformation.createdAt,
+    updatedAt: exhibitionInformation.updatedAt,
   })
 }
 
@@ -205,13 +193,13 @@ export function toExhibitionDto(
 ): ExhibitionDto {
   return ExhibitionDtoSchema.parse({
     id: exhibition.id,
-    exhibitor_id: exhibition.exhibitorId,
-    exhibition_information_id: exhibition.exhibitionInformationId,
-    exhibition_information: exhibitionInformationDto,
-    is_draft: exhibition.isDraft === 1,
-    is_published: exhibition.isPublished === 1,
-    published_at: exhibition.publishedAt,
-    created_at: exhibition.createdAt,
-    updated_at: exhibition.updatedAt,
+    exhibitorId: exhibition.exhibitorId,
+    exhibitionInformationId: exhibition.exhibitionInformationId,
+    exhibitionInformation: exhibitionInformationDto,
+    isDraft: exhibition.isDraft === 1,
+    isPublished: exhibition.isPublished === 1,
+    publishedAt: exhibition.publishedAt,
+    createdAt: exhibition.createdAt,
+    updatedAt: exhibition.updatedAt,
   })
 }

@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types'
 import type { Context } from 'hono'
+import { createFactory } from 'hono/factory'
 
 import type { Container } from '../../infrastructure/di/container'
 import { createContainer } from '../../infrastructure/di/container'
@@ -12,17 +13,14 @@ export type Bindings = {
   JWT_SECRET: string
 }
 
-/**
- * ハンドラーで使用する共通のContext型
- */
-export type HandlerContext = Context<{ Bindings: Bindings }>
+export const handlerFactory = createFactory<{ Bindings: Bindings }>()
 
 /**
  * ContextからDIコンテナを取得するヘルパー関数
  *
- * @param c HandlerContext
+ * @param c Context<{ Bindings: Bindings }>
  * @returns DIコンテナ
  */
-export function getContainer(c: HandlerContext): Container {
+export function getContainer(c: Context<{ Bindings: Bindings }>): Container {
   return createContainer(c.env.DB)
 }

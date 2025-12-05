@@ -9,7 +9,7 @@ import { useRegisterForm } from "./_components/hooks/useRegisterForm";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, errors, isSubmitting, apiError, onSubmit } =
+  const { register, handleSubmit, errors, isSubmitting, onSubmit } =
     useRegisterForm();
 
   return (
@@ -63,8 +63,6 @@ export function RegisterForm() {
               {errors.password.message}
             </p>
           )}
-
-          {apiError && <p className="mt-2 text-sm text-red-500">{apiError}</p>}
 
           <Button
             type="submit"
