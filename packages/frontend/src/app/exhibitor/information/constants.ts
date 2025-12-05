@@ -9,4 +9,6 @@ export const CATEGORIES: Category[] = [
 
 export const AR_DESIGNS: ArDesign[] = ["なし", "1番", "2番", "3番"];
 
+export const AUTH_TOKEN_KEY = "authToken";
+
 export const DESCRIPTION_MAX_LENGTH = 100;
