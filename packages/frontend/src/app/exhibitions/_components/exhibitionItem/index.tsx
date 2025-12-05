@@ -27,7 +27,7 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
       <div className="flex gap-4">
         {/* Icon */}
         <div className="flex-shrink-0">
-          <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-yellow-400 text-4xl">
+          <div className="rounded-2x flex h-24 w-24 items-center justify-center text-4xl">
             <Image
               width={48}
               height={48}
