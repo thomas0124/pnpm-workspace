@@ -3,7 +3,6 @@ import { MapPin, Clock, DollarSign } from "lucide-react";
 import type { ExhibitionFormData } from "@/app/exhibitor/information/types";
 import { DESCRIPTION_MAX_LENGTH } from "@/app/exhibitor/information/constants";
 import { CategorySelector } from "@/app/exhibitor/information/_components/categorySelector";
-import { ArDesignSelector } from "@/app/exhibitor/information/_components/arDesignSelector";
 import { ImageUpload } from "@/app/exhibitor/information/_components/imageUpload";
 import { InputWithLabel } from "@/components/inputWithLabel";
 import * as React from "react";
@@ -100,10 +99,10 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
             onChange={(e) => onUpdate("duration", e.target.value)}
           />
 
-          <ArDesignSelector
+          {/* <ArDesignSelector
             selectedArDesign={formData.selectedArDesign}
             onSelect={(design) => onUpdate("selectedArDesign", design)}
-          />
+          /> */}
 
           <div>
             <label
