@@ -22,26 +22,17 @@ export const exhibitionFormSchema = z.object({
     .string()
     .min(1, "場所は必須です")
     .max(100, "100文字以内で入力してください"),
-  price: z.preprocess(
-    (v) => (v === "" || v === undefined ? null : Number(v)),
-    z
-      .number()
-      .int("整数で入力してください")
-      .min(0, "0以上で入力してください")
-      .nullable(),
-  ),
-  requiredTime: z.preprocess(
-    (v) => (v === "" || v === undefined ? null : Number(v)),
-    z
-      .number()
-      .int("整数で入力してください")
-      .min(0, "0以上で入力してください")
-      .nullable(),
-  ),
-  comment: z.preprocess(
-    (v) => (v === "" || v === undefined ? null : v),
-    z.string().max(100, "100文字以内で入力してください").nullable(),
-  ),
+  price: z
+    .number()
+    .int("整数で入力してください")
+    .min(0, "0以上で入力してください")
+    .nullable(),
+  requiredTime: z
+    .number()
+    .int("整数で入力してください")
+    .min(0, "0以上で入力してください")
+    .nullable(),
+  comment: z.string().max(100, "100文字以内で入力してください").nullable(),
   image: z.string().optional().nullable(),
   arDesign: z
     .object({
