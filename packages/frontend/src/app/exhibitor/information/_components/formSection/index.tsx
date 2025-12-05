@@ -113,7 +113,7 @@ export function FormSection({ form }: FormSectionProps) {
                   </>
                 }
                 type="number"
-                min="0"
+                min="1"
                 {...register("price", {
                   setValueAs: (v) => {
                     if (v === "" || v === null || v === undefined) return null;
@@ -148,7 +148,7 @@ export function FormSection({ form }: FormSectionProps) {
                 </>
               }
               type="number"
-              min="0"
+              min="1"
               {...register("requiredTime", {
                 setValueAs: (v) => {
                   if (v === "" || v === null || v === undefined) return null;
