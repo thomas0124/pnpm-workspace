@@ -12,10 +12,6 @@ export interface PublicExhibition {
   price: number | null;
   requiredTime: number | null;
   comment: string | null;
-  arDesign: {
-    id: string;
-    url: string | null;
-  } | null;
   image: string | null;
 }
 
