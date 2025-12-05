@@ -17,7 +17,7 @@ function ExhibitionsLoading() {
   );
 }
 
-export default function EventsPage() {
+export default function ExhibitionsPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <Suspense fallback={<ExhibitionsLoading />}>
