@@ -4,9 +4,12 @@ import { Search, Clock, MapPin, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useState } from "react";
+import { CategoryButton } from "./_components/categoryButton";
 
 export default function EventsPage() {
   const categories = ["飲食", "展示", "体験", "ステージ"];
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const items = [
     {
@@ -61,18 +64,13 @@ export default function EventsPage() {
         {/* Category Buttons */}
         <div className="bg-white px-4 py-4">
           <div className="flex gap-3">
-            {categories.map((category, index) => (
-              <Button
+            {categories.map((category) => (
+              <CategoryButton
                 key={category}
-                variant={index === 0 ? "default" : "outline"}
-                className={`flex-1 whitespace-nowrap rounded-full px-4 ${
-                  index === 0
-                    ? "bg-red-400 text-white hover:bg-red-500"
-                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                {category}
-              </Button>
+                category={category}
+                isSelected={selectedCategory === category}
+                onClick={() => setSelectedCategory(category)}
+              />
             ))}
           </div>
         </div>
