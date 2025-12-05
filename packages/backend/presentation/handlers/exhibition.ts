@@ -101,8 +101,11 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
       location: toStringOrUndefined(body.location),
       price: toOptionalInt(body.price),
       requiredTime: toOptionalInt(body.requiredTime),
-      comment: toNullableString(body.comment) ?? undefined,
-      exhibitionArDesignId: toNullableString(body.exhibitionArDesignId) ?? undefined,
+      comment: body.comment !== undefined ? toNullableString(body.comment) : undefined,
+      exhibitionArDesignId:
+        body.exhibitionArDesignId !== undefined
+          ? toNullableString(body.exhibitionArDesignId)
+          : undefined,
       image: imageBase64,
     })
 
