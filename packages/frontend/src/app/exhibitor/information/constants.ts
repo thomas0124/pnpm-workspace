@@ -1,4 +1,4 @@
-import type { Category, ArDesign } from "@/types/exhibitions";
+import type { Category } from "@/types/exhibitions";
 
 export const CATEGORIES: Category[] = [
   "Food",
@@ -6,8 +6,6 @@ export const CATEGORIES: Category[] = [
   "Experience",
   "Stage",
 ];
-
-export const AR_DESIGNS: ArDesign[] = ["なし", "1番", "2番", "3番"];
 
 export const AUTH_TOKEN_KEY = "authToken";
 
