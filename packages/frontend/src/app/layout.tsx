@@ -5,11 +5,35 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// 例: 環境変数からベースURLを取得
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
 export const metadata: Metadata = {
   title: "えあパンフ",
-  description: "学祭に使えるデジタルパンフレット",
+  description: "AR機能付きデジタルパンフレット",
+  openGraph: {
+    title: "えあパンフ",
+    description: "AR機能付きデジタルパンフレット",
+    url: baseUrl,
+    siteName: "えあパンフ",
+    images: [
+      {
+        url: `${baseUrl}/opengraph-image.png`,
+        width: 1200,
+        height: 630,
+        type: "image/png",
+      },
+    ],
+    type: "website",
+  },
+  // Twitterカードも設定すると、Twitterでの共有時により良い表示になります
+  twitter: {
+    card: "summary_large_image",
+    title: "えあパンフ",
+    description: "AR機能付きデジタルパンフレット",
+    images: [`${baseUrl}/opengraph-image.png`],
+  },
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,18 +41,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <meta property="og:type" content="website" />
-      <meta property="og:title" content="えあパンフ" />
-      <meta property="og:description" content="AR機能付きデジタルパンフレット" />
-      <meta property="og:url" content="https://ar-pamph-frontend-preview-pr-65.sekibun3109.workers.dev/" />
-      <meta property="og:site_name" content="えあパンフ" />
-      <meta property="og:image" content="https://ar-pamph-frontend-preview-pr-65.sekibun3109.workers.dev/opengraph-image.png" />
-      <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-        <body className={inter.className}>
-          <NuqsAdapter>{children}</NuqsAdapter>
-        </body>
+      <body className={inter.className}>
+        <NuqsAdapter>{children}</NuqsAdapter>
+      </body>
     </html>
   );
 }
