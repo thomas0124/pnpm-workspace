@@ -45,7 +45,7 @@ export function useRegisterForm() {
 
       sessionStorage.setItem("authToken", data.token);
 
-      router.push("/exhibitor/basic-info");
+      router.push("/exhibitor/information");
     } catch (error) {
       console.error("Register failed:", error);
     } finally {

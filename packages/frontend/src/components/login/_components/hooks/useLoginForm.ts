@@ -46,7 +46,7 @@ export function useLoginForm() {
 
       sessionStorage.setItem("authToken", data.token);
 
-      router.push("/exhibitor/basic-info");
+      router.push("/exhibitor/information");
     } catch (error) {
       console.error("Login failed:", error);
     } finally {
