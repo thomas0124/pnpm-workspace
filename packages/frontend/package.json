@@ -33,6 +33,7 @@
     "hono": "^4.10.6",
     "lucide-react": "^0.554.0",
     "next": "14.2.3",
+    "nuqs": "^2.8.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.68.0",
