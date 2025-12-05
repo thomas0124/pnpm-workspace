@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/button";
 import { Save, Share2, Trash2, EyeOff } from "lucide-react";
 import { useExhibitionApi } from "../../hooks/useExhibitionApi";
@@ -9,7 +8,7 @@ import { ExhibitionFormSchema } from "@/app/exhibitor/information/types";
 
 interface HeaderProps {
   exhibitionId: string;
-  onSaveForm: () => Promise<void>;
+  onSaveForm: () => Promise<string>;
   onExhibitionDeleted?: () => void;
   formData?: ExhibitionFormSchema;
   isPublished?: boolean;
@@ -24,7 +23,6 @@ export function Header({
   isPublished = false,
   onStatusChange,
 }: HeaderProps) {
-  const router = useRouter();
   const {
     createExhibition,
     saveDraft,
@@ -37,20 +35,22 @@ export function Header({
 
   const handleAction = useCallback(
     async (
-      action: () => Promise<unknown>,
+      action: (id: string) => Promise<unknown>,
       successMessage: string,
       errorMessage: string,
       onSuccess?: () => Promise<unknown>,
     ) => {
       try {
-        await onSaveForm();
+        // フォームを保存してexhibitionIdを取得
+        const savedExhibitionId = await onSaveForm();
 
-        if (!exhibitionId) {
+        if (!savedExhibitionId) {
           alert("出展情報を先に保存してください");
           return;
         }
 
-        await action();
+        // 保存されたexhibitionIdを使用してアクションを実行
+        await action(savedExhibitionId);
         alert(successMessage);
 
         // 成功後のコールバックを実行
@@ -63,7 +63,7 @@ export function Header({
         alert(message);
       }
     },
-    [exhibitionId, onSaveForm],
+    [onSaveForm],
   );
 
   const handleSaveDraft = useCallback(async () => {
@@ -89,12 +89,14 @@ export function Header({
       if (!exhibitionId) {
         await createExhibition(formData);
         alert("下書きとして保存しました");
+        // 初回保存後はリロード
+        window.location.reload();
         return;
       }
 
       // 既存の場合は、まずフォーム内容を保存してからsaveDraftを呼び出す
-      await onSaveForm();
-      await saveDraft(exhibitionId);
+      const savedExhibitionId = await onSaveForm();
+      await saveDraft(savedExhibitionId || exhibitionId);
       alert("下書きとして保存しました");
     } catch (err) {
       console.error("下書き保存に失敗しました:", err);
@@ -106,21 +108,21 @@ export function Header({
 
   const handlePublish = useCallback(() => {
     return handleAction(
-      () => publish(exhibitionId),
+      (id: string) => publish(id),
       "公開しました",
       "公開に失敗しました",
       onStatusChange,
     );
-  }, [exhibitionId, publish, handleAction, onStatusChange]);
+  }, [publish, handleAction, onStatusChange]);
 
   const handleUnpublish = useCallback(() => {
     return handleAction(
-      () => unpublish(exhibitionId),
+      (id: string) => unpublish(id),
       "非公開にしました",
       "非公開に失敗しました",
       onStatusChange,
     );
-  }, [exhibitionId, unpublish, handleAction, onStatusChange]);
+  }, [unpublish, handleAction, onStatusChange]);
 
   const handleDelete = useCallback(async () => {
     if (!exhibitionId) {
@@ -142,8 +144,6 @@ export function Header({
       alert("削除しました");
       if (onExhibitionDeleted) {
         onExhibitionDeleted();
-      } else {
-        router.push("/exhibitor/information");
       }
     } catch (err) {
       console.error("削除に失敗しました:", err);
@@ -152,7 +152,7 @@ export function Header({
     } finally {
       setIsDeleting(false);
     }
-  }, [exhibitionId, deleteExhibition, onExhibitionDeleted, router]);
+  }, [exhibitionId, deleteExhibition, onExhibitionDeleted]);
 
   const isProcessing = isLoading || isDeleting;
 

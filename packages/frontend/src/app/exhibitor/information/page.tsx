@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Header } from "@/app/exhibitor/information/_components/header";
 import { Sidebar } from "@/app/exhibitor/information/_components/sidebar";
 import { FormSection } from "@/app/exhibitor/information/_components/formSection";
@@ -11,11 +10,10 @@ import { useExhibitionForm } from "@/app/exhibitor/information/hooks/useExhibiti
 import type { Category } from "@/types/exhibitions";
 
 export default function BasicInfoPage() {
-  const router = useRouter();
   const { isAuthenticated } = useAuthGuard();
   const {
     form,
-    handleSubmit,
+    onSubmit,
     exhibitionId,
     setExhibitionId,
     apiError,
@@ -24,15 +22,19 @@ export default function BasicInfoPage() {
   } = useExhibitionForm();
   const watched = form.watch();
 
-  const handleSaveForm = useCallback(async () => {
-    await handleSubmit();
-  }, [handleSubmit]);
+  const handleSaveForm = useCallback(async (): Promise<string> => {
+    const formData = form.getValues();
+    return await onSubmit(formData);
+  }, [form, onSubmit]);
 
-  const handleExhibitionDeleted = useCallback(() => {
+  const handleExhibitionDeleted = useCallback(async () => {
     setExhibitionId("");
     form.reset();
-    router.push("/exhibitor/information");
-  }, [form, router, setExhibitionId]);
+    // データを再取得してexhibitionDataをnullにする
+    await mutate();
+    // ページをリロード
+    window.location.reload();
+  }, [form, setExhibitionId, mutate]);
 
   if (isAuthenticated !== true) {
     return null;

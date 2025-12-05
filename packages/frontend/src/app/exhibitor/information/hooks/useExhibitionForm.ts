@@ -129,11 +129,10 @@ export function useExhibitionForm() {
   });
 
   const {
-    register,
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = form;
 
   /**
@@ -158,21 +157,25 @@ export function useExhibitionForm() {
   /**
    * フォーム送信ハンドラー
    * 新規作成時はcreateExhibition、更新時はupdateExhibitionInformationを呼び出す
+   * @returns 作成または更新されたexhibitionId
    */
   const onSubmit = useCallback(
-    async (data: ExhibitionFormSchema) => {
+    async (data: ExhibitionFormSchema): Promise<string> => {
       try {
+        let resultId = exhibitionId;
         if (exhibitionId) {
           await updateExhibitionInformation(exhibitionId, data);
         } else {
           const result = await createExhibition(data);
           if (result?.id) {
+            resultId = result.id;
             setExhibitionId(result.id);
             setValue("id", result.id);
           }
         }
         // データを再取得してUIを更新
         await mutate();
+        return resultId;
       } catch (err) {
         console.error("Form submission failed:", err);
         throw err;
@@ -211,16 +214,12 @@ export function useExhibitionForm() {
 
   return {
     form,
-    register,
     handleSubmit: handleSubmit(onSubmit),
     setValue,
     watch,
-    errors,
     isSubmitting: isSubmitting || isLoading,
-    isLoadingExhibition,
     exhibitionId,
     setExhibitionId,
-    setExhibitionData,
     onSubmit,
     apiError,
     isPublished,
