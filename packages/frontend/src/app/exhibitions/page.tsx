@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import { CategoryButton } from "./_components/categoryButton";
-import { SearchBar } from "./_components/categoryButton/searchBar";
+import { SearchBar } from "./_components/searchBar";
 
 export default function EventsPage() {
   const categories = ["飲食", "展示", "体験", "ステージ"];
