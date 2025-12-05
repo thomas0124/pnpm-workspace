@@ -20,8 +20,7 @@ export const handleGetPublicExhibitions = handlerFactory.createHandlers(
       const result = await listPublicExhibitionsUseCase(
         query,
         container.exhibitionRepository,
-        container.exhibitionInformationRepository,
-        container.exhibitionArDesignRepository
+        container.exhibitionInformationRepository
       )
 
       return c.json(result, 200)

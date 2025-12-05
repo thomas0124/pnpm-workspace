@@ -3,7 +3,6 @@ import { z } from 'zod'
 import type { Exhibition } from '../../domain/models/exhibition'
 import type { ExhibitionInformation } from '../../domain/models/exhibitionInformation'
 import type { ExhibitionCategory } from '../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
 import { uint8ArrayToBase64 } from '../utils/imageUtils'
 
 export const ExhibitionIdParamSchema = z.object({
@@ -15,18 +14,6 @@ export const PublicExhibitionListQuerySchema = z.object({
   search: z.string().optional(),
   category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']).optional(),
 })
-
-/**
- * 公開用ARデザイン
- */
-export const PublicExhibitionArDesignSchema = z
-  .object({
-    id: z.uuid(),
-    url: z.url().nullable(),
-  })
-  .nullable()
-
-export type PublicExhibitionArDesignDto = z.infer<typeof PublicExhibitionArDesignSchema>
 
 /**
  * 公開用出展情報
@@ -41,7 +28,6 @@ export const PublicExhibitionSchema = z.object({
   price: z.number().int().nullable(),
   requiredTime: z.number().int().nullable(),
   comment: z.string().nullable(),
-  arDesign: PublicExhibitionArDesignSchema,
   image: z.string().nullable(),
 })
 
@@ -79,7 +65,6 @@ export const ExhibitionInformationInputSchema = z.object({
   price: z.number().int().min(0).nullable().optional(),
   requiredTime: z.number().int().min(1).nullable().optional(),
   comment: z.string().max(100).trim().nullable().optional(),
-  exhibitionArDesignId: z.uuid().nullable().optional(),
   image: z.string().nullable().optional(), // Base64エンコードされた画像データ
 })
 
@@ -92,16 +77,6 @@ export type ExhibitionInformationInputDto = z.infer<typeof ExhibitionInformation
 export const ExhibitionInformationUpdateSchema = ExhibitionInformationInputSchema.partial()
 
 export type ExhibitionInformationUpdateDto = z.infer<typeof ExhibitionInformationUpdateSchema>
-
-/**
- * ARデザイン（管理API用）
- */
-export const ExhibitionArDesignDtoSchema = z.object({
-  id: z.uuid(),
-  url: z.url().nullable(),
-})
-
-export type ExhibitionArDesignDto = z.infer<typeof ExhibitionArDesignDtoSchema>
 
 /**
  * 出展情報（管理API用）
@@ -117,7 +92,6 @@ export const ExhibitionInformationDtoSchema = z.object({
   price: z.number().int().nullable(),
   requiredTime: z.number().int().nullable(),
   comment: z.string().nullable(),
-  arDesign: ExhibitionArDesignDtoSchema.nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
   image: z.string().nullable(),
@@ -144,39 +118,11 @@ export const ExhibitionDtoSchema = z.object({
 export type ExhibitionDto = z.infer<typeof ExhibitionDtoSchema>
 
 /**
- * ExhibitionArDesignエンティティからDTOに変換
- */
-export async function toExhibitionArDesignDto(
-  arDesignId: string | null,
-  arDesignRepository: ExhibitionArDesignRepository
-): Promise<ExhibitionArDesignDto | null> {
-  if (!arDesignId) {
-    return null
-  }
-
-  const arDesign = await arDesignRepository.findById(arDesignId)
-  if (!arDesign) {
-    return null
-  }
-
-  return ExhibitionArDesignDtoSchema.parse({
-    id: arDesign.id,
-    url: arDesign.url,
-  })
-}
-
-/**
  * ExhibitionInformationエンティティからDTOに変換
- * ARデザイン情報も含めて取得・変換する
  */
-export async function toExhibitionInformationDto(
-  exhibitionInformation: ExhibitionInformation,
-  arDesignRepository: ExhibitionArDesignRepository
-): Promise<ExhibitionInformationDto> {
-  const arDesignDto = await toExhibitionArDesignDto(
-    exhibitionInformation.exhibitionArDesignId,
-    arDesignRepository
-  )
+export function toExhibitionInformationDto(
+  exhibitionInformation: ExhibitionInformation
+): ExhibitionInformationDto {
   // ✅ 画像データをBase64エンコード
   const imageBase64 = uint8ArrayToBase64(exhibitionInformation.image)
 
@@ -190,7 +136,6 @@ export async function toExhibitionInformationDto(
     price: exhibitionInformation.price,
     requiredTime: exhibitionInformation.requiredTime,
     comment: exhibitionInformation.comment,
-    arDesign: arDesignDto,
     image: imageBase64,
     createdAt: exhibitionInformation.createdAt,
     updatedAt: exhibitionInformation.updatedAt,
