@@ -1,18 +1,18 @@
 import { useState } from "react";
-import type { ExhibitionFormData } from "@/app/exhibitor/information/types";
+import type { ExhibitionFormData } from "@/types/exhibitions";
 
 export function useExhibitionForm() {
   const [formData, setFormData] = useState<ExhibitionFormData>({
     id: "",
     title: "",
     exhibitorName: "",
-    category: "飲食",
-    price: undefined,
+    category: "Food",
+    price: null,
     location: "",
-    requiredTime: undefined,
+    requiredTime: null,
     comment: "",
     image: "",
-    arDesign: undefined,
+    arDesign: null,
   });
 
   const updateField = <K extends keyof ExhibitionFormData>(
