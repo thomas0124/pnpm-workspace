@@ -4,11 +4,17 @@ import { Header } from "@/app/exhibitor/information/_components/header";
 import { Sidebar } from "@/app/exhibitor/information/_components/sidebar";
 import { FormSection } from "@/app/exhibitor/information/_components/formSection";
 import { ExhibitionPreview } from "@/components/exhibitionPreview";
+import { useAuthGuard } from "@/app/exhibitor/information/hooks/useAuthGuard";
 import { useExhibitionForm } from "@/app/exhibitor/information/hooks/useExhibitionForm";
 import type { Category } from "@/types/exhibitions";
 
 export default function BasicInfoPage() {
+  const { isAuthenticated } = useAuthGuard();
   const { formData, updateField } = useExhibitionForm();
+
+  if (isAuthenticated !== true) {
+    return null;
+  }
 
   const categoryDisplayMap: Record<Category, string> = {
     Food: "飲食",
