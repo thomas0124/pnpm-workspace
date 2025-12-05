@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+
 import type { Bindings } from '../../handlers/index'
 import { authMiddleware } from '../../middlewares/authMiddleware'
 import { exhibitionCoreRoutes } from './exhibitionCore'
@@ -12,4 +13,3 @@ export const exhibitionRoutes = new Hono<{ Bindings: Bindings }>()
   .route('/', exhibitionCoreRoutes)
   // 基本情報更新のルート
   .route('/:exhibitionId/information', exhibitionInformationRoutes)
-

@@ -11,7 +11,6 @@ import { toExhibitionInformationDto } from '../../../dto/exhibition'
 import { validateArDesignId } from '../../shared/validateArDesignId'
 import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwnershipCheck'
 
-
 /**
  * 出展基本情報更新ユースケース
  *
@@ -59,12 +58,13 @@ export async function updateExhibitionInformationUseCase(
   // ARデザインIDの存在確認
   await validateArDesignId(input.exhibitionArDesignId, exhibitionArDesignRepository)
 
- // ✅ 画像データをBase64からUint8Arrayに変換
-  const imageData = input.image !== undefined
-    ? input.image
-      ? Uint8Array.from(Buffer.from(input.image, 'base64'))
-      : null
-    : existingInformation.image // 画像が指定されていない場合は既存の画像を保持
+  // ✅ 画像データをBase64からUint8Arrayに変換
+  const imageData =
+    input.image !== undefined
+      ? input.image
+        ? Uint8Array.from(Buffer.from(input.image, 'base64'))
+        : null
+      : existingInformation.image // 画像が指定されていない場合は既存の画像を保持
 
   // ExhibitionInformationを更新
   const updatedInformation = updateExhibitionInformation(existingInformation, {

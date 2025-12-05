@@ -1,4 +1,5 @@
 import { zValidator } from '@hono/zod-validator'
+
 import {
   ExhibitionIdParamSchema,
   ExhibitionInformationInputSchema,
@@ -10,7 +11,6 @@ import { updateExhibitionInformationUseCase } from '../../application/usecases/e
 import { draftExhibitionUseCase } from '../../application/usecases/exhibition/status/draftExhibition'
 import { publishExhibitionUseCase } from '../../application/usecases/exhibition/status/publishExhibition'
 import { unpublishExhibitionUseCase } from '../../application/usecases/exhibition/status/unpublishExhibition'
-import { ExhibitionIdSchema } from '../../domain/models/exhibition'
 import { getExhibitorId } from '../middlewares/authMiddleware'
 import { getContainer, handlerFactory } from './index'
 

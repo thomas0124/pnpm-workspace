@@ -168,7 +168,7 @@ export async function toExhibitionInformationDto(
     exhibitionInformation.exhibitionArDesignId,
     arDesignRepository
   )
-    // ✅ 画像データをBase64エンコード
+  // ✅ 画像データをBase64エンコード
   const imageBase64 = exhibitionInformation.image
     ? Buffer.from(exhibitionInformation.image).toString('base64')
     : null

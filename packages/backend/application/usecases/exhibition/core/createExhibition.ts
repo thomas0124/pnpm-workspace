@@ -29,10 +29,7 @@ export async function createExhibitionUseCase(
   exhibitionArDesignRepository: ExhibitionArDesignRepository
 ): Promise<ExhibitionDto> {
   // ✅ 画像データをBase64からUint8Arrayに変換
-  const imageData = input.image
-    ? Uint8Array.from(Buffer.from(input.image, 'base64'))
-    : null
-
+  const imageData = input.image ? Uint8Array.from(Buffer.from(input.image, 'base64')) : null
 
   // 既存の出展情報が存在するかチェック
   const existingInformation = await exhibitionInformationRepository.findByExhibitorId(exhibitorId)
@@ -54,7 +51,7 @@ export async function createExhibitionUseCase(
     input.requiredTime ?? null,
     input.comment ?? null,
     input.exhibitionArDesignId ?? null,
-    imageData,
+    imageData
   )
 
   // Exhibitionを作成（下書き状態）
