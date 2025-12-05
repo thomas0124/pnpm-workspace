@@ -1,16 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { LogOut, FileText } from "lucide-react";
 
-export function Sidebar() {
-  const router = useRouter();
+import { useLogout } from "../../hooks/useLogout";
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("isLoggedIn");
-    sessionStorage.removeItem("userName");
-    router.push("/login");
-  };
+export function Sidebar() {
+  const { logout, isLoading } = useLogout();
 
   return (
     <aside className="min-h-[calc(100vh-73px)] w-64 border-r border-gray-200 bg-white">
@@ -25,8 +20,9 @@ export function Sidebar() {
       </div>
       <div className="absolute bottom-4 left-4">
         <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+          onClick={logout}
+          disabled={isLoading}
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 disabled:opacity-60"
         >
           <LogOut className="h-4 w-4" />
           ログアウト
