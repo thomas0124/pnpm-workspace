@@ -3,7 +3,7 @@
 import { useQueryStates, parseAsString } from "nuqs";
 import { CategoryButton } from "@/app/exhibitions/_components/categoryButton";
 import { SearchBar } from "@/app/exhibitions/_components/searchBar";
-import { ExhibitionItem } from "@/app/exhibitions/_components/exhibitionItem";
+import { ExhibitionPreview } from "@/components/exhibitionPreview";
 import { usePublicExhibitions } from "./hooks/usePublicExhibitions";
 
 type Category = "Food" | "Exhibition" | "Experience" | "Stage";
@@ -41,7 +41,7 @@ export function ExhibitionsContent() {
   // APIから取得したデータを表示用に変換
   const displayItems = data.map((item) => ({
     ...item,
-    category: categoryDisplayMap[item.category as Category] || item.category,
+    displayCategory: categoryDisplayMap[item.category as Category],
   }));
 
   return (
@@ -94,7 +94,7 @@ export function ExhibitionsContent() {
           </div>
         ) : (
           displayItems.map((item) => (
-            <ExhibitionItem key={item.id} item={item} />
+            <ExhibitionPreview key={item.id} item={item} />
           ))
         )}
       </div>

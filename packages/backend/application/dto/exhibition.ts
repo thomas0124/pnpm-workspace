@@ -9,6 +9,12 @@ export const ExhibitionIdParamSchema = z.object({
   exhibitionId: z.uuid(),
 })
 
+// 認証ヘッダースキーマ（Hono clientの型推論用）
+// 実際の認証チェックはauthMiddlewareで行われる
+export const AuthorizationHeaderSchema = z.object({
+  authorization: z.string().optional(),
+})
+
 // 公開出展一覧クエリ用スキーマ（文字列クエリのまま受け取り、ユースケース側で数値変換を行う）
 export const PublicExhibitionListQuerySchema = z.object({
   search: z.string().optional(),
@@ -63,7 +69,7 @@ export const ExhibitionInformationInputSchema = z.object({
   category: z.enum(['Food', 'Exhibition', 'Experience', 'Stage']),
   location: z.string().min(1).max(100).trim(),
   price: z.number().int().min(0).nullable().optional(),
-  requiredTime: z.number().int().min(1).nullable().optional(),
+  requiredTime: z.number().int().min(0).nullable().optional(),
   comment: z.string().max(100).trim().nullable().optional(),
   image: z.string().nullable().optional(), // Base64エンコードされた画像データ
 })

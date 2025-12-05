@@ -1,19 +1,6 @@
 import useSWR from "swr";
 import client from "@/lib/apiClient";
-
-type Category = "Food" | "Exhibition" | "Experience" | "Stage";
-
-export interface PublicExhibition {
-  id: string;
-  title: string;
-  category: Category;
-  exhibitorName: string;
-  location: string;
-  price: number | null;
-  requiredTime: number | null;
-  comment: string | null;
-  image: string | null;
-}
+import type { Category, ExhibitionFormData } from "@/types/exhibitions";
 
 interface UsePublicExhibitionsParams {
   search?: string;
@@ -23,11 +10,12 @@ interface UsePublicExhibitionsParams {
 async function fetcherExhibitions(
   search?: string,
   category?: string,
-): Promise<PublicExhibition[]> {
+): Promise<ExhibitionFormData[]> {
   const query: { search?: string; category?: Category } = {};
   if (search) {
     query.search = search;
   }
+  // API expects english Category enum values
   if (
     category &&
     ["Food", "Exhibition", "Experience", "Stage"].includes(category)
@@ -51,7 +39,7 @@ export function usePublicExhibitions({
   search,
   category,
 }: UsePublicExhibitionsParams) {
-  const { data, isLoading, error } = useSWR<PublicExhibition[], Error>(
+  const { data, isLoading, error } = useSWR<ExhibitionFormData[], Error>(
     ["public-exhibitions", search, category],
     ([, search, category]: [string, string | undefined, string | undefined]) =>
       fetcherExhibitions(search, category),
