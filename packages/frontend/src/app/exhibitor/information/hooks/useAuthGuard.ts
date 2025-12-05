@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const AUTH_TOKEN_KEY = "authToken";
+import { AUTH_TOKEN_KEY } from "../constants";
 
 /**
  * Exhibitor 向けページの簡易ログインガード。
