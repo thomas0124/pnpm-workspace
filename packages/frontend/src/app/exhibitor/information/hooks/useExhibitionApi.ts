@@ -203,6 +203,44 @@ export function useExhibitionApi() {
   }, []);
 
   /**
+   * 認証済み出展者の出展情報の取得
+   */
+  const getMyExhibition = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const header = getAuthHeader();
+
+      // 型定義が更新されるまでの一時的な対応
+      const response = await (client.exhibitions as any).me.$get({
+        header,
+      });
+
+      if (!response.ok) {
+        // 404の場合は出展情報が存在しないため、nullを返す
+        if (response.status === 404) {
+          return null;
+        }
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          extractErrorMessage(errorData) || "出展情報の取得に失敗しました",
+        );
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "出展情報の取得に失敗しました";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  /**
    * 出展情報の更新
    */
   const updateExhibitionInformation = useCallback(
@@ -424,6 +462,7 @@ export function useExhibitionApi() {
   return {
     createExhibition,
     getExhibition,
+    getMyExhibition,
     updateExhibitionInformation,
     saveDraft,
     publish,

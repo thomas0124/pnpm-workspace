@@ -9,6 +9,7 @@ import {
 import { createExhibitionUseCase } from '../../application/usecases/exhibition/core/createExhibition'
 import { deleteExhibitionUseCase } from '../../application/usecases/exhibition/core/deleteExhibition'
 import { getExhibitionUseCase } from '../../application/usecases/exhibition/core/getExhibition'
+import { getMyExhibitionUseCase } from '../../application/usecases/exhibition/core/getMyExhibition'
 import { updateExhibitionInformationUseCase } from '../../application/usecases/exhibition/information/updateExhibitionInformation'
 import { draftExhibitionUseCase } from '../../application/usecases/exhibition/status/draftExhibition'
 import { publishExhibitionUseCase } from '../../application/usecases/exhibition/status/publishExhibition'
@@ -73,6 +74,31 @@ export const handleGetExhibition = handlerFactory.createHandlers(
       container.exhibitionRepository,
       container.exhibitionInformationRepository
     )
+
+    return c.json(result, 200)
+  }
+)
+
+/**
+ * ✅ 認証済み出展者の出展情報取得ハンドラー（画像含む）
+ * GET /exhibitions/me
+ */
+export const handleGetMyExhibition = handlerFactory.createHandlers(
+  zValidator('header', AuthorizationHeaderSchema),
+  async (c) => {
+    const container = getContainer(c)
+    const exhibitorId = getExhibitorId(c)
+
+    const result = await getMyExhibitionUseCase(
+      exhibitorId,
+      container.exhibitionRepository,
+      container.exhibitionInformationRepository
+    )
+
+    // 出展情報が存在しない場合は404を返す
+    if (!result) {
+      return c.json({ message: '出展情報が見つかりません' }, 404)
+    }
 
     return c.json(result, 200)
   }

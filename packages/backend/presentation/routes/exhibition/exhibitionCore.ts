@@ -5,6 +5,7 @@ import {
   handleDeleteExhibition,
   handleDraftExhibition,
   handleGetExhibition,
+  handleGetMyExhibition,
   handlePublishExhibition,
   handleUnpublishExhibition,
 } from '../../handlers/exhibition'
@@ -14,6 +15,9 @@ export const exhibitionCoreRoutes = new Hono<{ Bindings: Bindings }>()
 
   // POST / - 出展情報の新規作成
   .post('/', ...handleCreateExhibition)
+
+  // GET /me - 認証済み出展者の出展情報の取得
+  .get('/me', ...handleGetMyExhibition)
 
   // GET /:exhibitionId - 出展情報の取得
   .get('/:exhibitionId', ...handleGetExhibition)
