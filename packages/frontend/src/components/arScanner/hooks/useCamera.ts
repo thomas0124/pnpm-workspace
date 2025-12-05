@@ -1,5 +1,5 @@
 import { useEffect, RefObject } from "react";
-import { CAMERA_CONFIG } from "@/components/arscanner/constants";
+import { CAMERA_CONFIG } from "@/components/arScanner/constants";
 
 export function useCamera(
   videoRef: RefObject<HTMLVideoElement>,
