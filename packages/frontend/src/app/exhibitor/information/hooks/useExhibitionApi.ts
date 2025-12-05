@@ -34,9 +34,6 @@ function getAuthHeader(): { authorization: string } {
 
   const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
   if (!token) {
-    // デバッグ用：sessionStorageの内容を確認
-    console.error("AUTH_TOKEN_KEY:", AUTH_TOKEN_KEY);
-    console.error("sessionStorage keys:", Object.keys(sessionStorage));
     throw new Error("認証トークンが取得できませんでした");
   }
   return {
