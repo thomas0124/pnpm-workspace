@@ -4,6 +4,9 @@ import { useQueryStates, parseAsString } from "nuqs";
 import { CategoryButton } from "@/app/exhibitions/_components/categoryButton";
 import { SearchBar } from "@/app/exhibitions/_components/searchBar";
 import { ExhibitionItem } from "@/app/exhibitions/_components/exhibitionItem";
+import { usePublicExhibitions } from "./hooks/usePublicExhibitions";
+
+type Category = "Food" | "Exhibition" | "Experience" | "Stage";
 
 export function ExhibitionsContent() {
   // カテゴリのマッピング（表示名 → URLパラメータ）
@@ -14,74 +17,31 @@ export function ExhibitionsContent() {
     ステージ: "Stage",
   } as const;
 
+  // カテゴリの逆マッピング（APIパラメータ → 日本語表示名）
+  const categoryDisplayMap: Record<Category, string> = {
+    Food: "飲食",
+    Exhibition: "展示",
+    Experience: "体験",
+    Stage: "ステージ",
+  };
+
   const categories = ["飲食", "展示", "体験", "ステージ"] as const;
   const [{ category, search }, setQuery] = useQueryStates({
     category: parseAsString.withDefault(""),
     search: parseAsString.withDefault(""),
   });
 
-  const items = [
-    {
-      id: 1,
-      title: "マルゲリータピザ",
-      exhibitorName: "イタリア料理研究会",
-      category: "飲食",
-      price: 500,
-      location: "1号館",
-      requiredTime: 15,
-      comment: "本格窯焼きピザをお楽しみください",
-      arDesign: {
-        id: "1",
-        url: "https://example.com/ar-design.glb",
-      },
-      image: "/images/pizza-icon.jpg",
-    },
-    {
-      id: 2,
-      title: "特製ラーメン",
-      exhibitorName: "ラーメン愛好会",
-      category: "飲食",
-      price: 400,
-      location: "2号館",
-      requiredTime: 20,
-      comment: "こだわりスープの本格派ラーメン",
-      arDesign: {
-        id: "2",
-        url: "https://example.com/ar-design.glb",
-      },
-      image: "/images/ramen-icon.jpg",
-    },
-    {
-      id: 3,
-      title: "フルーツスムージー",
-      exhibitorName: "健康科学サークル",
-      category: "飲食",
-      price: 300,
-      location: "1号館",
-      requiredTime: 10,
-      comment: "新鮮フルーツのヘルシードリンク",
-      arDesign: {
-        id: "3",
-        url: "https://example.com/ar-design.glb",
-      },
-      image: "/images/smoothie-icon.jpg",
-    },
-  ];
-
-  // フィルタリングロジック
-  const filteredItems = items.filter((item) => {
-    // カテゴリフィルタ（item.categoryは日本語、categoryは英語のパラメータ）
-    const itemCategoryParam =
-      categoryMap[item.category as keyof typeof categoryMap];
-    const matchesCategory = !category || itemCategoryParam === category;
-
-    // 検索フィルタ（名前、組織、説明に部分一致）
-    const searchLower = search.toLowerCase();
-    const matchesSearch =
-      !search || item.title.toLowerCase().includes(searchLower);
-
-    return matchesCategory && matchesSearch;
+  // APIからデータを取得
+  const { data, isLoading, error } = usePublicExhibitions({
+    search: search || undefined,
+    category: category || undefined,
   });
+
+  // APIから取得したデータを表示用に変換
+  const displayItems = data.map((item) => ({
+    ...item,
+    category: categoryDisplayMap[item.category as Category] || item.category,
+  }));
 
   return (
     <>
@@ -117,9 +77,25 @@ export function ExhibitionsContent() {
 
       {/* Items List */}
       <div className="space-y-4 p-4">
-        {filteredItems.map((item) => (
-          <ExhibitionItem key={item.id} item={item} />
-        ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <p className="text-gray-500">読み込み中...</p>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-8">
+            <p className="text-red-500">
+              エラーが発生しました: {error.message}
+            </p>
+          </div>
+        ) : displayItems.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <p className="text-gray-500">出展が見つかりませんでした</p>
+          </div>
+        ) : (
+          displayItems.map((item) => (
+            <ExhibitionItem key={item.id} item={item} />
+          ))
+        )}
       </div>
     </>
   );

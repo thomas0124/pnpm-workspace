@@ -1,16 +1,22 @@
 import { Clock, MapPin } from "lucide-react";
 
+type Category = "Food" | "Exhibition" | "Experience" | "Stage";
+
 export interface ExhibitionItemProps {
   item: {
-    id: number;
+    id: string;
     title: string;
     exhibitorName: string;
-    category: string;
-    price: number;
+    category: Category | string; // APIからはCategory、表示時は日本語文字列
+    price: number | null;
     location: string;
-    requiredTime: number;
-    comment: string;
-    image: string;
+    requiredTime: number | null;
+    comment: string | null;
+    image: string | null;
+    arDesign?: {
+      id: string;
+      url: string | null;
+    } | null;
   };
 }
 
@@ -22,7 +28,13 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
         <div className="flex-shrink-0">
           <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-yellow-400 text-4xl">
             <img
-              src={item.image || "/placeholder.svg"}
+              src={
+                item.image
+                  ? item.image.startsWith("data:")
+                    ? item.image
+                    : `data:image/jpeg;base64,${item.image}`
+                  : "/placeholder.svg"
+              }
               alt={item.title}
               className="h-16 w-16 object-contain"
             />
@@ -39,9 +51,11 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
             <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs text-red-500">
               {item.category}
             </span>
-            <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">
-              ¥{item.price}
-            </span>
+            {item.price !== null && (
+              <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">
+                ¥{item.price}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs text-cyan-600">
               <MapPin className="h-3 w-3" />
               {item.location}
@@ -49,13 +63,17 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
           </div>
 
           {/* Duration */}
-          <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600">
-            <Clock className="h-4 w-4" />
-            <span>{item.requiredTime}分</span>
-          </div>
+          {item.requiredTime !== null && (
+            <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600">
+              <Clock className="h-4 w-4" />
+              <span>{item.requiredTime}分</span>
+            </div>
+          )}
 
           {/* Comment */}
-          <p className="text-sm text-gray-700">{item.comment}</p>
+          {item.comment && (
+            <p className="text-sm text-gray-700">{item.comment}</p>
+          )}
         </div>
       </div>
     </div>
