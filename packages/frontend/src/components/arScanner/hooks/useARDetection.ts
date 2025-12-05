@@ -1,7 +1,12 @@
-import { useEffect, useState, useRef, type RefObject } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  type RefObject,
+  useCallback,
+} from "react";
 
 // 3つのマーカー定義
-// public/markers/フォルダに配置されている前提です
 const MARKERS = [
   { id: 1, src: "/AR-Marker.png" },
   { id: 2, src: "/AR-Marker2.png" },
@@ -12,15 +17,17 @@ export function useARDetection(
   videoRef: RefObject<HTMLVideoElement>,
   canvasRef: RefObject<HTMLCanvasElement>,
   isReady: boolean,
-): number | null {
-  // 戻り値を検知したマーカーID(number)またはnullに変更
+) {
+  // 検出したマーカーID
   const [detectedMarkerId, setDetectedMarkerId] = useState<number | null>(null);
+
+  // 処理中フラグ（検出成功後もtrueのままにして再検出を防ぐ＝ロックする）
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // 読み込んだ画像オブジェクトを保持するRef
+  // 読み込んだ画像オブジェクトを保持するRef（元のロジックに戻す）
   const loadedImagesRef = useRef<HTMLImageElement[]>([]);
 
-  // マーカー画像の読み込み
+  // マーカー画像の読み込み（元のロジックに戻す）
   useEffect(() => {
     const loadImages = () => {
       const images: HTMLImageElement[] = [];
@@ -28,13 +35,18 @@ export function useARDetection(
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.src = marker.src;
-        // 読み込み完了を待たずに配列に追加し、検出ループ内でcompleteプロパティをチェックします
         images.push(img);
       });
       loadedImagesRef.current = images;
     };
 
     loadImages();
+  }, []);
+
+  // 検出のリセット関数（永続化解除用）
+  const resetDetection = useCallback(() => {
+    setDetectedMarkerId(null);
+    setIsProcessing(false);
   }, []);
 
   useEffect(() => {
@@ -49,18 +61,22 @@ export function useARDetection(
     let animationId: number;
 
     const detectMarker = () => {
-      // 処理中または動画の準備ができていない場合はスキップ
-      if (video.readyState !== video.HAVE_ENOUGH_DATA || isProcessing) {
+      // 既に検出済み（ロック中）ならループを止める
+      if (isProcessing) {
+        return;
+      }
+
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) {
         animationId = requestAnimationFrame(detectMarker);
         return;
       }
 
-      // ビデオフレームを描画
+      // ビデオフレームを描画（元のロジック）
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // 中央部分を比較用データとして取得
+      // 中央部分を比較用データとして取得（元のロジック）
       const sampleSize = 200;
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
@@ -115,9 +131,8 @@ export function useARDetection(
           sampleSize,
         );
 
-        // --- 色差分比較 ---
+        // --- 色差分比較（元のロジック） ---
         let difference = 0;
-        // 高速化のため、全ピクセルではなく間引いて比較しても良いが、ここでは全ピクセル比較
         for (let j = 0; j < videoData.data.length; j += 4) {
           const rDiff = Math.abs(videoData.data[j] - markerData.data[j]);
           const gDiff = Math.abs(
@@ -131,42 +146,33 @@ export function useARDetection(
 
         const similarity = 1 - difference / (sampleSize * sampleSize * 3 * 255);
 
-        // 類似度が75%以上の場合、このマーカーを検出したとみなす
+        // 類似度が75%以上の場合、検出とみなす
         if (similarity > 0.75) {
+          // ★変更点: setTimeoutでのリセットを廃止し、ロックのみ行う
           setIsProcessing(true);
-          setDetectedMarkerId(MARKERS[i].id); // IDをセット (1, 2, or 3)
+          setDetectedMarkerId(MARKERS[i].id);
+
           console.log(
             `Marker ${MARKERS[i].id} detected! Similarity: ${similarity}`,
           );
 
-          // 5秒間検出状態を保持してからリセット
-          setTimeout(() => {
-            setDetectedMarkerId(null);
-            setIsProcessing(false);
-          }, 5000);
-
-          // ループを抜ける（同時に複数のマーカーは検出しない）
+          // ループを抜ける
           break;
         }
       }
 
+      // ロックされていない場合のみ次のフレームをリクエスト
       if (!isProcessing) {
         animationId = requestAnimationFrame(detectMarker);
       }
     };
 
-    // 検出開始
-    if (video.readyState >= video.HAVE_METADATA) {
-      detectMarker();
-    } else {
-      video.addEventListener("loadedmetadata", detectMarker);
-    }
+    detectMarker();
 
     return () => {
       cancelAnimationFrame(animationId);
-      video.removeEventListener("loadedmetadata", detectMarker);
     };
-  }, [videoRef, canvasRef, isReady, isProcessing]);
+  }, [videoRef, canvasRef, isReady, isProcessing]); // isProcessingを依存配列に含めることで、リセット時に再開される
 
-  return detectedMarkerId;
+  return { detectedMarkerId, resetDetection };
 }

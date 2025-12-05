@@ -8,21 +8,24 @@ import { ARHeader } from "@/components/arScanner/_components/arHeader";
 import { ScannerFrame } from "@/components/arScanner/_components/scannerFrame";
 import { Instructions } from "@/components/arScanner/_components/instructions";
 import { AR_JS_CDN_URL } from "@/components/arScanner/constants";
-import Image from "next/image";
+// Imageコンポーネントは未使用であれば削除、使うなら残す
+// import Image from "next/image";
 import { OverlayText } from "@/components/arScanner/_components/overlays/OverlayText";
 import { OverlayHorse } from "@/components/arScanner/_components/overlays/OverlayHorse";
 import { OverlayCoffee } from "@/components/arScanner/_components/overlays/OverlayCoffee";
-
 export default function ARScanner() {
   const [isARLoaded, setIsARLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // ★修正: useCamera の戻り値を受け取るように修正
   const { error } = useCamera(videoRef, isARLoaded);
 
-  // マーカーIDを取得 (1, 2, 3 または null)
-  const detectedMarkerId = useARDetection(videoRef, canvasRef, isARLoaded);
+  // 検出IDとリセット関数を取得
+  const { detectedMarkerId, resetDetection } = useARDetection(
+    videoRef,
+    canvasRef,
+    isARLoaded,
+  );
 
   return (
     <>
@@ -50,7 +53,6 @@ export default function ARScanner() {
           </div>
         )}
 
-        {/* boolean型に変換して渡す */}
         <ARHeader markerDetected={detectedMarkerId !== null} />
 
         <ScannerFrame markerDetected={detectedMarkerId !== null}>
@@ -59,7 +61,20 @@ export default function ARScanner() {
           {detectedMarkerId === 3 && <OverlayCoffee />}
         </ScannerFrame>
 
-        <Instructions />
+        {/* 検出時のみ表示されるリセットボタンエリア */}
+        {detectedMarkerId !== null && (
+          <div className="absolute bottom-24 left-0 right-0 z-50 flex justify-center">
+            <button
+              onClick={resetDetection}
+              className="rounded-full bg-white/90 px-8 py-3 text-lg font-bold text-slate-900 shadow-lg transition-all hover:bg-white active:scale-95"
+            >
+              再スキャンする
+            </button>
+          </div>
+        )}
+
+        {/* 未検出時のみインストラクションを表示 */}
+        {detectedMarkerId === null && <Instructions />}
       </div>
     </>
   );
