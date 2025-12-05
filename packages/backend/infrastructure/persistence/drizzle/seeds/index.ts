@@ -4,12 +4,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3'
 import fs from 'fs'
 import path from 'path'
 
-import {
-  exhibitionArDesignSchema,
-  exhibitionInformationSchema,
-  exhibitionSchema,
-  exhibitorSchema,
-} from '../client'
+import { exhibitionInformationSchema, exhibitionSchema, exhibitorSchema } from '../client'
 import { seedPublicExhibitions } from './exhibition'
 
 dotenv.config()
@@ -55,7 +50,6 @@ async function main() {
       ...exhibitorSchema,
       ...exhibitionSchema,
       ...exhibitionInformationSchema,
-      ...exhibitionArDesignSchema,
     },
   })
 

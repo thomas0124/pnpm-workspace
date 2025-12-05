@@ -13,15 +13,9 @@ CREATE TABLE `exhibition` (
 	CONSTRAINT "is_published" CHECK("exhibition"."is_published" IN (0, 1))
 );
 --> statement-breakpoint
-CREATE TABLE `exhibition_ar_design` (
-	`id` text PRIMARY KEY NOT NULL,
-	`url` text
-);
---> statement-breakpoint
 CREATE TABLE `exhibition_information` (
 	`id` text PRIMARY KEY NOT NULL,
 	`exhibitor_id` text NOT NULL,
-	`exhibition_ar_design_id` text,
 	`exhibitor_name` text NOT NULL,
 	`title` text NOT NULL,
 	`category` text NOT NULL,
@@ -32,8 +26,7 @@ CREATE TABLE `exhibition_information` (
 	`image` blob,
 	`created_at` text NOT NULL,
 	`updated_at` text NOT NULL,
-	FOREIGN KEY (`exhibitor_id`) REFERENCES `exhibitor`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`exhibition_ar_design_id`) REFERENCES `exhibition_ar_design`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`exhibitor_id`) REFERENCES `exhibitor`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `exhibition_information_exhibitor_id_unique` ON `exhibition_information` (`exhibitor_id`);--> statement-breakpoint

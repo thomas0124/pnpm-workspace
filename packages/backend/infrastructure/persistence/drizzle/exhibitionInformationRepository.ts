@@ -13,7 +13,6 @@ function mapToDomain(row: DbExhibitionInformation): DomainExhibitionInformation 
   return reconstructExhibitionInformation({
     id: row.id,
     exhibitorId: row.exhibitorId,
-    exhibitionArDesignId: row.exhibitionArDesignId,
     exhibitorName: row.exhibitorName,
     title: row.title,
     category: row.category,
@@ -46,7 +45,6 @@ export class DrizzleExhibitionInformationRepository implements ExhibitionInforma
       .values({
         id: info.id,
         exhibitorId: info.exhibitorId,
-        exhibitionArDesignId: info.exhibitionArDesignId,
         exhibitorName: info.exhibitorName,
         title: info.title,
         category: info.category,
@@ -62,7 +60,6 @@ export class DrizzleExhibitionInformationRepository implements ExhibitionInforma
         target: exhibitionInformation.id,
         set: {
           exhibitorId: info.exhibitorId,
-          exhibitionArDesignId: info.exhibitionArDesignId,
           exhibitorName: info.exhibitorName,
           title: info.title,
           category: info.category,

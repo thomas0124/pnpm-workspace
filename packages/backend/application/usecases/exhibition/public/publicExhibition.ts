@@ -4,14 +4,9 @@ import type {
   ExhibitionRepository,
   FindPublishedParams,
 } from '../../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type { PublicExhibitionDto, PublicExhibitionListResponseDto } from '../../../dto/exhibition'
-import {
-  PublicExhibitionArDesignSchema,
-  PublicExhibitionListResponseSchema,
-  PublicExhibitionSchema,
-} from '../../../dto/exhibition'
+import { PublicExhibitionListResponseSchema, PublicExhibitionSchema } from '../../../dto/exhibition'
 
 /**
  * 画像BLOB(Uint8Array)をBase64文字列に変換
@@ -39,8 +34,7 @@ export type ListPublicExhibitionsQuery = z.infer<typeof ListQuerySchema>
 export async function listPublicExhibitionsUseCase(
   rawQuery: ListPublicExhibitionsQuery,
   exhibitionRepository: ExhibitionRepository,
-  exhibitionInformationRepository: ExhibitionInformationRepository,
-  exhibitionArDesignRepository: ExhibitionArDesignRepository
+  exhibitionInformationRepository: ExhibitionInformationRepository
 ): Promise<PublicExhibitionListResponseDto> {
   const parsed = ListQuerySchema.parse({
     search: rawQuery.search,
@@ -60,16 +54,6 @@ export async function listPublicExhibitionsUseCase(
   const infos = await exhibitionInformationRepository.findByIds(uniqueInfoIds)
   const infoMap = new Map(infos.map((info) => [info.id, info]))
 
-  // 一覧分の ExhibitionArDesign を一括取得
-  const arDesignIds = infos
-    .map((info) => info.exhibitionArDesignId)
-    .filter((id): id is string => !!id)
-  const uniqueArDesignIds = Array.from(new Set(arDesignIds))
-  const arDesigns = uniqueArDesignIds.length
-    ? await exhibitionArDesignRepository.findByIds(uniqueArDesignIds)
-    : []
-  const arDesignMap = new Map(arDesigns.map((design) => [design.id, design]))
-
   const data: PublicExhibitionDto[] = []
   for (const ex of result) {
     if (!ex.exhibitionInformationId) {
@@ -79,17 +63,6 @@ export async function listPublicExhibitionsUseCase(
 
     const info = infoMap.get(ex.exhibitionInformationId)
     if (!info) continue
-
-    let arDesign: PublicExhibitionDto['arDesign'] = null
-    if (info.exhibitionArDesignId) {
-      const design = arDesignMap.get(info.exhibitionArDesignId)
-      if (design) {
-        arDesign = PublicExhibitionArDesignSchema.parse({
-          id: design.id,
-          url: design.url,
-        })
-      }
-    }
 
     // ExhibitionInformationドメインエンティティが保持する画像BLOBをBase64エンコード
     const image = toBase64OrNull(info.image)
@@ -103,7 +76,6 @@ export async function listPublicExhibitionsUseCase(
       price: info.price,
       requiredTime: info.requiredTime,
       comment: info.comment,
-      arDesign: arDesign,
       image,
     })
 

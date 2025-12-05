@@ -1,7 +1,6 @@
 import { NotFoundError, ValidationError } from '../../../../domain/errors'
 import { updateExhibitionInformation } from '../../../../domain/factories/exhibitionInformation'
 import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
-import type { ExhibitionArDesignRepository } from '../../../../domain/repositories/exhibitionArDesign'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type {
   ExhibitionInformationDto,
@@ -9,7 +8,6 @@ import type {
 } from '../../../dto/exhibition'
 import { toExhibitionInformationDto } from '../../../dto/exhibition'
 import { base64ToUint8Array } from '../../../utils/imageUtils'
-import { validateArDesignId } from '../../shared/validateArDesignId'
 import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwnershipCheck'
 
 /**
@@ -20,7 +18,6 @@ import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwne
  * @param exhibitorId 出展者ID（認証済み）
  * @param exhibitionRepository Exhibitionリポジトリ
  * @param exhibitionInformationRepository ExhibitionInformationリポジトリ
- * @param exhibitionArDesignRepository ExhibitionArDesignリポジトリ（ARデザインID検証用）
  * @returns 更新されたExhibitionInformationのDTO
  * @throws NotFoundError - ExhibitionまたはExhibitionInformationが見つからない場合
  * @throws ForbiddenError - Exhibitionが認証済み出展者の所有でない場合
@@ -33,8 +30,7 @@ export async function updateExhibitionInformationUseCase(
   input: ExhibitionInformationUpdateDto,
   exhibitorId: string,
   exhibitionRepository: ExhibitionRepository,
-  exhibitionInformationRepository: ExhibitionInformationRepository,
-  exhibitionArDesignRepository: ExhibitionArDesignRepository
+  exhibitionInformationRepository: ExhibitionInformationRepository
 ): Promise<ExhibitionInformationDto> {
   // Exhibitionを取得し、所有権チェック
   const exhibition = await findExhibitionWithOwnershipCheck(
@@ -56,9 +52,6 @@ export async function updateExhibitionInformationUseCase(
     throw new NotFoundError('出展情報が見つかりません')
   }
 
-  // ARデザインIDの存在確認
-  await validateArDesignId(input.exhibitionArDesignId, exhibitionArDesignRepository)
-
   // ✅ 画像データをBase64からUint8Arrayに変換
   const imageData =
     input.image !== undefined
@@ -73,10 +66,9 @@ export async function updateExhibitionInformationUseCase(
     title: input.title,
     category: input.category,
     location: input.location,
-    price: input.price ?? null,
-    requiredTime: input.requiredTime ?? null,
-    comment: input.comment ?? null,
-    exhibitionArDesignId: input.exhibitionArDesignId ?? null,
+    price: input.price,
+    requiredTime: input.requiredTime,
+    comment: input.comment,
     image: imageData,
   })
 
@@ -84,5 +76,5 @@ export async function updateExhibitionInformationUseCase(
   await exhibitionInformationRepository.save(updatedInformation)
 
   // DTOに変換
-  return toExhibitionInformationDto(updatedInformation, exhibitionArDesignRepository)
+  return toExhibitionInformationDto(updatedInformation)
 }
