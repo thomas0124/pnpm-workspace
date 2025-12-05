@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface CategoryButtonProps {
   category: string;
@@ -16,11 +17,12 @@ export function CategoryButton({
   return (
     <Button
       variant={isSelected ? "default" : "outline"}
-      className={`flex-1 whitespace-nowrap rounded-full px-4 ${
+      className={cn(
+        "flex-1 whitespace-nowrap rounded-full px-4",
         isSelected
           ? "bg-red-400 text-white hover:bg-red-500"
-          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-      }`}
+          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
+      )}
       onClick={onClick}
     >
       {category}
