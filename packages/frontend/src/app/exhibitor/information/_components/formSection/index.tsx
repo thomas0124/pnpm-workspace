@@ -1,6 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Clock, DollarSign } from "lucide-react";
-import type { ExhibitionFormData } from "@/app/exhibitor/information/types";
+import type { ExhibitionFormData } from "@/types/exhibitions";
 import { DESCRIPTION_MAX_LENGTH } from "@/app/exhibitor/information/constants";
 import { CategorySelector } from "@/app/exhibitor/information/_components/categorySelector";
 import { ImageUpload } from "@/app/exhibitor/information/_components/imageUpload";
@@ -76,7 +76,7 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
                 </>
               }
               type="number"
-              value={formData.price}
+              value={formData.price ?? ""}
               onChange={(e) => onUpdate("price", parseInt(e.target.value))}
               inputWrapper={(input) => (
                 <div className="relative">
@@ -99,7 +99,7 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
                 所要時間
               </>
             }
-            value={formData.requiredTime}
+            value={formData.requiredTime ?? ""}
             onChange={(e) => onUpdate("requiredTime", parseInt(e.target.value))}
           />
 
@@ -120,14 +120,15 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
             </p>
             <Textarea
               id="description"
-              value={formData.comment}
+              value={formData.comment ?? ""}
               onChange={(e) => onUpdate("comment", e.target.value)}
               maxLength={DESCRIPTION_MAX_LENGTH}
               rows={6}
               className="resize-none border-gray-200 bg-gray-50"
             />
             <div className="mt-1 text-right text-xs text-gray-500">
-              {formData.comment?.length} / {DESCRIPTION_MAX_LENGTH}
+              {formData.comment ? formData.comment.length : 0} /{" "}
+              {DESCRIPTION_MAX_LENGTH}
             </div>
           </div>
         </div>

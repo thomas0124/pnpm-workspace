@@ -1,6 +1,11 @@
-import type { Category, ArDesign } from "@/app/exhibitor/information/types";
+import type { Category, ArDesign } from "@/types/exhibitions";
 
-export const CATEGORIES: Category[] = ["飲食", "展示", "体験", "ステージ"];
+export const CATEGORIES: Category[] = [
+  "Food",
+  "Exhibition",
+  "Experience",
+  "Stage",
+];
 
 export const AR_DESIGNS: ArDesign[] = ["なし", "1番", "2番", "3番"];
 
