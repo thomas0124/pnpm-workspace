@@ -47,7 +47,7 @@ export function ExhibitionsContent() {
   return (
     <>
       {/* Search Bar */}
-      <div className="flex flex-col">
+      <div className="sticky top-0 z-10 flex flex-col">
         <SearchBar
           value={search}
           onChange={(value) => setQuery({ search: value })}
