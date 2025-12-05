@@ -158,9 +158,9 @@ pnpm db:migrate:remote:production   # Production環境
 
 | 環境 | トリガー | フロントエンド | バックエンド | データベース |
 |------|---------|--------------|------------|------------|
-| **Preview** | Pull Request作成時 | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
-| **Staging** | `develop`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
-| **Production** | `main`ブランチへのpush | Cloudflare Pages | Cloudflare Workers | D1 (共有) |
+| **Preview** | Pull Request作成時 | Cloudflare Workers | Cloudflare Workers | D1 (共有) |
+| **Staging** | `develop`ブランチへのpush | Cloudflare Workers | Cloudflare Workers | D1 |
+| **Production** | `main`ブランチへのpush | Cloudflare Workers | Cloudflare Workers | D1 |
 
 ### デプロイフロー
 
@@ -168,7 +168,7 @@ pnpm db:migrate:remote:production   # Production環境
 1. Pull Requestを作成
 2. GitHub Actionsが自動的に実行
 3. PR専用の環境がデプロイされる
-   - Frontend: `https://preview-pr-{PR番号}.ar-pamph.pages.dev`
+   - Frontend: `https://ar-pamph-frontend-preview-pr-{PR番号}.sekibun3109.workers.dev`
    - Backend: `https://ar-pamph-preview.sekibun3109.workers.dev`
    - Database: `ar-pamph-db-preview` (共有)
 4. PRにコメントでURLが通知される
@@ -178,7 +178,7 @@ pnpm db:migrate:remote:production   # Production環境
 1. `develop`ブランチにマージ/push
 2. GitHub Actionsが自動的に実行
 3. Staging環境にデプロイ
-   - Frontend: `https://ar-pamph-staging.pages.dev`
+   - Frontend: `https://ar-pamph-frontend-staging.sekibun3109.workers.dev`
    - Backend: `https://ar-pamph-staging.sekibun3109.workers.dev`
    - Database: `ar-pamph-db-staging`
 
@@ -186,7 +186,7 @@ pnpm db:migrate:remote:production   # Production環境
 1. `main`ブランチにpush
 2. GitHub Actionsが自動的に実行
 3. 本番環境にデプロイ
-   - Frontend: `https://ar-pamph.pages.dev`
+   - Frontend: `https://ar-pamph-frontend.sekibun3109.workers.dev`
    - Backend: `https://ar-pamph.sekibun3109.workers.dev`
    - Database: `ar-pamph-db-production`
 
