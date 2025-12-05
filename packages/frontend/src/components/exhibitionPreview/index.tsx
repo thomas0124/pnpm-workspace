@@ -2,7 +2,9 @@ import { Clock, MapPin } from "lucide-react";
 import Image from "next/image";
 import type { ExhibitionFormData } from "@/types/exhibitions";
 
-export function ExhibitionPreview({ item }: { item: ExhibitionFormData }) {
+type ExhibitionPreviewItem = ExhibitionFormData & { displayCategory?: string };
+
+export function ExhibitionPreview({ item }: { item: ExhibitionPreviewItem }) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
       <div className="flex gap-4">
@@ -33,7 +35,7 @@ export function ExhibitionPreview({ item }: { item: ExhibitionFormData }) {
           {/* Tags */}
           <div className="mb-3 flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs text-red-500">
-              {item.category}
+              {item.displayCategory}
             </span>
             {item.price !== undefined && (
               <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">

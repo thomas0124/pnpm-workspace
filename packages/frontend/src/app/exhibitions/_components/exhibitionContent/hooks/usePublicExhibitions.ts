@@ -15,7 +15,8 @@ async function fetcherExhibitions(
   if (search) {
     query.search = search;
   }
-  if (category && ["飲食", "展示", "体験", "ステージ"].includes(category)) {
+  // API expects english Category enum values
+  if (category && ["Food", "Exhibition", "Experience", "Stage"].includes(category)) {
     query.category = category as Category;
   }
 
