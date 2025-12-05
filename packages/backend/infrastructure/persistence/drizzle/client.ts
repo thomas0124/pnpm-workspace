@@ -15,9 +15,7 @@ import * as exhibitorSchema from './schema/exhibitor'
 export function getDb(
   d1: D1Database
 ): DrizzleD1Database<
-  typeof exhibitorSchema &
-    typeof exhibitionSchema &
-    typeof exhibitionInformationSchema
+  typeof exhibitorSchema & typeof exhibitionSchema & typeof exhibitionInformationSchema
 > {
   return drizzle(d1, {
     schema: {

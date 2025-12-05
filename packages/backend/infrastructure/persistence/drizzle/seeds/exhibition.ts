@@ -2,19 +2,13 @@ import { eq } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 
 import type { ExhibitionInformation, Exhibitor } from '../client'
-import {
-  exhibitionInformationSchema,
-  exhibitionSchema,
-  exhibitorSchema,
-} from '../client'
+import { exhibitionInformationSchema, exhibitionSchema, exhibitorSchema } from '../client'
 
 /**
  * 公開出展API（/public/exhibitions 系）の動作確認用 Seed
  */
 type SeedDb = BetterSQLite3Database<
-  typeof exhibitorSchema &
-    typeof exhibitionSchema &
-    typeof exhibitionInformationSchema
+  typeof exhibitorSchema & typeof exhibitionSchema & typeof exhibitionInformationSchema
 >
 
 export async function seedPublicExhibitions(db: SeedDb): Promise<void> {

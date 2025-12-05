@@ -6,10 +6,7 @@ import type {
 } from '../../../../domain/repositories/exhibition'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type { PublicExhibitionDto, PublicExhibitionListResponseDto } from '../../../dto/exhibition'
-import {
-  PublicExhibitionListResponseSchema,
-  PublicExhibitionSchema,
-} from '../../../dto/exhibition'
+import { PublicExhibitionListResponseSchema, PublicExhibitionSchema } from '../../../dto/exhibition'
 
 /**
  * 画像BLOB(Uint8Array)をBase64文字列に変換
