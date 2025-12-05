@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import ARScannerClient from "@/components/arscanner/arScannerClient"
+import ARScannerClient from "@/components/arscanner/arScannerClient";
 
 export default function ARScannerPage() {
-  return <ARScannerClient />
+  return <ARScannerClient />;
 }
