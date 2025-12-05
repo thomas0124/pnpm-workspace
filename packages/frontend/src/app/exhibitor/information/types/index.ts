@@ -24,14 +24,14 @@ export const exhibitionFormSchema = z.object({
     .max(100, "100文字以内で入力してください"),
   price: z
     .number({
-      invalid_type_error: "数値を入力してください",
+      message: "数値を入力してください",
     })
     .int("整数で入力してください")
     .min(0, "0以上で入力してください")
     .nullable(),
   requiredTime: z
     .number({
-      invalid_type_error: "数値を入力してください",
+      message: "数値を入力してください",
     })
     .int("整数で入力してください")
     .min(0, "0以上で入力してください")
