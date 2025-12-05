@@ -252,13 +252,11 @@ components:
           nullable: true
           minimum: 0
           example: 500
-          description: '金額(円単位)。nullの場合は無料'
         required_time:
           type: integer
           nullable: true
           minimum: 1
           example: 15
-          description: '所要時間(分単位)'
         comment:
           type: string
           nullable: true
@@ -269,6 +267,11 @@ components:
             - $ref: '#/components/schemas/ExhibitionArDesign'
             - nullable: true
           description: 'ARデザイン情報(NULLの場合はARなし)'
+        image:
+          type: string
+          format: byte
+          nullable: true
+          description: 'Base64エンコードされた画像データ(画像が登録されていない場合はnull)'
         created_at:
           type: string
           format: date-time
@@ -504,15 +507,64 @@ paths:
         新しい出展を下書きとして作成します。
         出展基本情報(ExhibitionInformation)を同時に作成します。
         作成後、is_draft=true(下書き)、is_published=false(非公開)の状態になります。
-        画像は別途 POST /exhibitions/{id}/information/image で登録してください。
+        画像はオプションで同時にアップロードできます。
       security:
         - BearerAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ExhibitionInformationInput'
+              type: object
+              required:
+                - exhibitor_name
+                - title
+                - category
+                - location
+              properties:
+                exhibitor_name:
+                  type: string
+                  maxLength: 100
+                  example: 'イタリア料理研究会'
+                  description: '出展者名'
+                title:
+                  type: string
+                  maxLength: 200
+                  example: 'マルゲリータピザ'
+                category:
+                  type: string
+                  enum: ['Food', 'Exhibition', 'Experience', 'Stage']
+                  example: 'Food'
+                location:
+                  type: string
+                  maxLength: 100
+                  example: '1号館 201'
+                price:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  example: 500
+                required_time:
+                  type: integer
+                  nullable: true
+                  minimum: 1
+                  example: 15
+                comment:
+                  type: string
+                  nullable: true
+                  maxLength: 100
+                  example: '本格窯焼きピザをお楽しみください'
+                exhibition_ar_design_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  example: '880e8400-e29b-41d4-a716-446655440003'
+                  description: 'ARデザインID(NULLの場合はARなし)'
+                image:
+                  type: string
+                  format: binary
+                  nullable: true
+                  description: '画像ファイル(PNG, JPG, GIF, 最大5MB)'
       responses:
         '201':
           description: 作成成功
@@ -538,7 +590,9 @@ paths:
       tags:
         - Exhibition Management
       summary: 出展情報の取得
-      description: 指定された出展情報を取得します(自分の出展のみ)
+      description: |
+        指定された出展情報を取得します(自分の出展のみ)。
+        画像データはBase64エンコードされた文字列としてexhibition_information.imageフィールドに含まれます。
       security:
         - BearerAuth: []
       parameters:
@@ -580,11 +634,13 @@ paths:
         - Exhibition Management
       summary: 出展の削除
       description: |
-        指定された出展を削除します(物理削除)
+        指定された出展を削除します(物理削除)。
+        画像データも含めて全て削除されます。
 
         **削除対象:**
         1. Exhibition レコード(必ず削除)
         2. ExhibitionInformation レコード(exhibition_information_id が NULL でない場合のみ削除)
+        3. ExhibitionInformation に保存されている画像データも削除
 
         **削除の流れ:**
 
@@ -595,7 +651,7 @@ paths:
 
         **注意事項:**
         - この操作は取り消しできません
-        - 公開中(is_published=true)の出展も削除できます
+        - 公開中(is_published=true)の出展は削除できません。先に非公開にしてください
         - 削除後、公開APIからも即座に非表示になります
       security:
         - BearerAuth: []
@@ -610,6 +666,12 @@ paths:
       responses:
         '204':
           description: 削除成功
+        '400':
+          description: バリデーションエラー（公開中の出展は削除できません）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: 認証エラー
           content:
@@ -633,11 +695,16 @@ paths:
     put:
       tags:
         - Exhibition Management
-      summary: 基本情報の更新
+      summary: 基本情報の更新(部分更新対応)
       description: |
-        出展の基本情報(ARデザインIDを含む)を更新します。
+        出展の基本情報(ARデザインID、画像を含む)を更新します。
         既存のExhibitionInformationを更新します。
-        画像は別途 POST /exhibitions/{id}/information/image で登録・更新してください。
+
+        **部分更新について:**
+        - リクエストに含まれるフィールドのみが更新されます
+        - リクエストに含まれないフィールドは既存の値が保持されます
+        - 画像を更新する場合は、imageフィールドに新しい画像ファイルを指定してください
+        - 画像を削除する場合は、imageフィールドにnullを指定してください(または空文字列)
       security:
         - BearerAuth: []
       parameters:
@@ -651,9 +718,53 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ExhibitionInformationInput'
+              type: object
+              properties:
+                exhibitor_name:
+                  type: string
+                  maxLength: 100
+                  example: 'イタリア料理研究会'
+                  description: '出展者名'
+                title:
+                  type: string
+                  maxLength: 200
+                  example: 'マルゲリータピザ'
+                category:
+                  type: string
+                  enum: ['Food', 'Exhibition', 'Experience', 'Stage']
+                  example: 'Food'
+                location:
+                  type: string
+                  maxLength: 100
+                  example: '1号館 201'
+                price:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  example: 500
+                required_time:
+                  type: integer
+                  nullable: true
+                  minimum: 1
+                  example: 15
+                comment:
+                  type: string
+                  nullable: true
+                  maxLength: 100
+                  example: '本格窯焼きピザをお楽しみください'
+                exhibition_ar_design_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  example: '880e8400-e29b-41d4-a716-446655440003'
+                  description: 'ARデザインID(NULLの場合はARなし)'
+                image:
+                  type: string
+                  format: binary
+                  nullable: true
+                  description: '画像ファイル(PNG, JPG, GIF, 最大5MB)。画像を削除する場合はnullまたは空文字列を指定'
       responses:
         '200':
           description: 更新成功
@@ -724,6 +835,7 @@ paths:
                 exhibition_information:
                   id: '770e8400-e29b-41d4-a716-446655440002'
                   exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                  exhibitor_name: 'イタリア料理研究会'
                   title: 'マルゲリータピザ'
                   category: 'Food'
                   location: '1号館 201'
@@ -733,6 +845,7 @@ paths:
                   ar_design:
                     id: '880e8400-e29b-41d4-a716-446655440003'
                     url: 'https://ar.example.com/designs/abc123'
+                  image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'
                 is_draft: true
@@ -809,6 +922,7 @@ paths:
                 exhibition_information:
                   id: '770e8400-e29b-41d4-a716-446655440002'
                   exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                  exhibitor_name: 'イタリア料理研究会'
                   title: 'マルゲリータピザ'
                   category: 'Food'
                   location: '1号館 201'
@@ -818,6 +932,7 @@ paths:
                   ar_design:
                     id: '880e8400-e29b-41d4-a716-446655440003'
                     url: 'https://ar.example.com/designs/abc123'
+                  image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'
                 is_draft: false
@@ -889,6 +1004,7 @@ paths:
                 exhibition_information:
                   id: '770e8400-e29b-41d4-a716-446655440002'
                   exhibitor_id: '550e8400-e29b-41d4-a716-446655440000'
+                  exhibitor_name: 'イタリア料理研究会'
                   title: 'マルゲリータピザ'
                   category: 'Food'
                   location: '1号館 201'
@@ -898,6 +1014,7 @@ paths:
                   ar_design:
                     id: '880e8400-e29b-41d4-a716-446655440003'
                     url: 'https://ar.example.com/designs/abc123'
+                  image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
                   created_at: '2025-11-15T10:00:00Z'
                   updated_at: '2025-11-15T11:00:00Z'
                 is_draft: false
@@ -905,216 +1022,6 @@ paths:
                 published_at: null
                 created_at: '2025-11-15T10:00:00Z'
                 updated_at: '2025-11-26T10:00:00Z'
-        '401':
-          description: 認証エラー
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: アクセス権限なし
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: 出展が見つかりません
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /exhibitions/{exhibition_id}/information/image:
-    post:
-      tags:
-        - Exhibition Management
-      summary: 出展画像のアップロード
-      description: |
-        出展の画像をアップロードします。
-        画像はBLOB形式でExhibitionInformationテーブルのimageカラムに保存されます。
-        既に画像が存在する場合は上書きされます。
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: exhibition_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: 出展ID(ExhibitionテーブルのID)
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - image
-              properties:
-                image:
-                  type: string
-                  format: binary
-                  description: '画像ファイル(PNG, JPG, GIF, 最大5MB)'
-      responses:
-        '200':
-          description: アップロード成功
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: '画像が正常にアップロードされました'
-    put:
-      tags:
-        - Exhibition Management
-      summary: 出展画像の更新
-      description: |
-        既に画像が登録されている出展の画像を更新します。
-        画像はBLOB形式でExhibitionInformationテーブルのimageカラムに保存されます。
-
-        注意:
-        - まだ画像が登録されていない出展に対してこのエンドポイントを呼び出した場合は 404 を返します。
-        - 画像の新規登録には POST /exhibitions/{id}/information/image を使用してください。
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: exhibition_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: 出展ID(ExhibitionテーブルのID)
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - image
-              properties:
-                image:
-                  type: string
-                  format: binary
-                  description: '画像ファイル(PNG, JPG, GIF, 最大5MB)'
-      responses:
-        '200':
-          description: 更新成功
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: '画像が正常に更新されました'
-        '400':
-          description: バリデーションエラー(ファイルサイズ、形式など)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: 認証エラー
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: アクセス権限なし
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: 出展または画像が見つかりません
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '413':
-          description: ファイルサイズが大きすぎます
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-    get:
-      tags:
-        - Exhibition Management
-      summary: 出展画像の取得
-      description: |
-        出展の画像を取得します。
-        ExhibitionInformationテーブルのBLOBデータを返します。
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: exhibition_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: 出展ID(ExhibitionテーブルのID)
-      responses:
-        '200':
-          description: 画像取得成功
-          content:
-            image/png:
-              schema:
-                type: string
-                format: binary
-            image/jpeg:
-              schema:
-                type: string
-                format: binary
-            image/gif:
-              schema:
-                type: string
-                format: binary
-        '401':
-          description: 認証エラー
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: アクセス権限なし
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: 出展または画像が見つかりません
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-    delete:
-      tags:
-        - Exhibition Management
-      summary: 出展画像の削除
-      description: |
-        出展の画像を削除します。
-        ExhibitionInformationテーブルのimageカラムをNULLに設定します。
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: exhibition_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: 出展ID(ExhibitionテーブルのID)
-      responses:
-        '204':
-          description: 削除成功
         '401':
           description: 認証エラー
           content:
@@ -1179,26 +1086,3 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-  /public/exhibitions/categories:
-    get:
-      tags:
-        - Public
-      summary: カテゴリ一覧取得
-      description: |
-        カテゴリごとの公開出展数を取得します。
-        is_published=true かつ exhibition_information_id が NULL でない出展をカウントします。
-      responses:
-        '200':
-          description: 取得成功
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - data
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/CategoryCount'

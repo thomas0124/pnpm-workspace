@@ -4,6 +4,7 @@ import type { Exhibition } from '../../domain/models/exhibition'
 import type { ExhibitionInformation } from '../../domain/models/exhibitionInformation'
 import type { ExhibitionCategory } from '../../domain/repositories/exhibition'
 import type { ExhibitionArDesignRepository } from '../../domain/repositories/exhibitionArDesign'
+import { uint8ArrayToBase64 } from '../utils/imageUtils'
 
 export const ExhibitionIdParamSchema = z.object({
   exhibitionId: z.uuid(),
@@ -79,9 +80,18 @@ export const ExhibitionInformationInputSchema = z.object({
   requiredTime: z.number().int().min(1).nullable().optional(),
   comment: z.string().max(100).trim().nullable().optional(),
   exhibitionArDesignId: z.uuid().nullable().optional(),
+  image: z.string().nullable().optional(), // Base64エンコードされた画像データ
 })
 
 export type ExhibitionInformationInputDto = z.infer<typeof ExhibitionInformationInputSchema>
+
+/**
+ * 出展情報入力（部分更新用）
+ * PUT /exhibitions/{exhibitionId}/information で使用
+ */
+export const ExhibitionInformationUpdateSchema = ExhibitionInformationInputSchema.partial()
+
+export type ExhibitionInformationUpdateDto = z.infer<typeof ExhibitionInformationUpdateSchema>
 
 /**
  * ARデザイン（管理API用）
@@ -110,6 +120,7 @@ export const ExhibitionInformationDtoSchema = z.object({
   arDesign: ExhibitionArDesignDtoSchema.nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  image: z.string().nullable(),
 })
 
 export type ExhibitionInformationDto = z.infer<typeof ExhibitionInformationDtoSchema>
@@ -166,6 +177,8 @@ export async function toExhibitionInformationDto(
     exhibitionInformation.exhibitionArDesignId,
     arDesignRepository
   )
+  // ✅ 画像データをBase64エンコード
+  const imageBase64 = uint8ArrayToBase64(exhibitionInformation.image)
 
   return ExhibitionInformationDtoSchema.parse({
     id: exhibitionInformation.id,
@@ -178,6 +191,7 @@ export async function toExhibitionInformationDto(
     requiredTime: exhibitionInformation.requiredTime,
     comment: exhibitionInformation.comment,
     arDesign: arDesignDto,
+    image: imageBase64,
     createdAt: exhibitionInformation.createdAt,
     updatedAt: exhibitionInformation.updatedAt,
   })
