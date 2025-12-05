@@ -37,7 +37,7 @@ const colorClasses: Record<ButtonColor, { default: string; outline: string }> =
         "border-2 border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50",
     },
     teal: {
-      default: "bg-teal-500 hover:bg-teal-600 text-white",
+      default: "bg-teal-400 hover:bg-teal-500 text-white",
       outline:
         "border-2 border-teal-500 bg-transparent text-teal-500 hover:bg-teal-50",
     },
@@ -55,7 +55,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <BaseButton
         ref={ref}
         className={cn(
-          "w-full rounded-lg font-medium",
+          "rounded-lg font-medium",
           sizeClass,
           colorClass,
           className,
