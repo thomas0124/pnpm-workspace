@@ -29,6 +29,8 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
         <div className="flex-shrink-0">
           <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-yellow-400 text-4xl">
             <Image
+              width={48}
+              height={48}
               src={
                 item.image
                   ? item.image.startsWith("data:")
