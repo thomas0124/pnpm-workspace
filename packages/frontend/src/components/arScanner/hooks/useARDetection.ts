@@ -19,6 +19,11 @@ export function useARDetection(
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
 
+    if (!context) {
+      console.error("2Dコンテキストの取得に失敗しました。");
+      return;
+    }
+
     // クリーンアップ用の変数
     let animationFrameId: number | null = null;
     let timeoutId: NodeJS.Timeout | null = null;
