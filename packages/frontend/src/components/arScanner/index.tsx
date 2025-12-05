@@ -20,7 +20,7 @@ export default function ARScanner() {
 
   // ★修正: useCamera の戻り値を受け取るように修正
   const { error } = useCamera(videoRef, isARLoaded);
-  
+
   // マーカーIDを取得 (1, 2, 3 または null)
   const detectedMarkerId = useARDetection(videoRef, canvasRef, isARLoaded);
 
@@ -45,20 +45,20 @@ export default function ARScanner() {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 via-transparent to-slate-900/30" />
 
         {error && (
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-red-500/90 p-6 text-center z-50">
+          <div className="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-red-500/90 p-6 text-center">
             <p className="text-sm font-medium text-white">{error}</p>
           </div>
         )}
 
         {/* boolean型に変換して渡す */}
         <ARHeader markerDetected={detectedMarkerId !== null} />
-        
+
         <ScannerFrame markerDetected={detectedMarkerId !== null}>
           {detectedMarkerId === 1 && <OverlayText />}
           {detectedMarkerId === 2 && <OverlayHorse />}
           {detectedMarkerId === 3 && <OverlayCoffee />}
         </ScannerFrame>
-        
+
         <Instructions />
       </div>
     </>

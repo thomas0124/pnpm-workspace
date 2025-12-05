@@ -12,10 +12,11 @@ export function useARDetection(
   videoRef: RefObject<HTMLVideoElement>,
   canvasRef: RefObject<HTMLCanvasElement>,
   isReady: boolean,
-): number | null { // 戻り値を検知したマーカーID(number)またはnullに変更
+): number | null {
+  // 戻り値を検知したマーカーID(number)またはnullに変更
   const [detectedMarkerId, setDetectedMarkerId] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   // 読み込んだ画像オブジェクトを保持するRef
   const loadedImagesRef = useRef<HTMLImageElement[]>([]);
 
@@ -49,10 +50,7 @@ export function useARDetection(
 
     const detectMarker = () => {
       // 処理中または動画の準備ができていない場合はスキップ
-      if (
-        video.readyState !== video.HAVE_ENOUGH_DATA ||
-        isProcessing
-      ) {
+      if (video.readyState !== video.HAVE_ENOUGH_DATA || isProcessing) {
         animationId = requestAnimationFrame(detectMarker);
         return;
       }
@@ -88,7 +86,7 @@ export function useARDetection(
       // 全てのマーカー画像と比較
       for (let i = 0; i < loadedImagesRef.current.length; i++) {
         const markerImg = loadedImagesRef.current[i];
-        
+
         // 画像が読み込まれていなければスキップ
         if (!markerImg.complete || markerImg.naturalWidth === 0) continue;
 
@@ -110,15 +108,24 @@ export function useARDetection(
           sampleSize,
         );
 
-        const markerData = tempContext.getImageData(0, 0, sampleSize, sampleSize);
+        const markerData = tempContext.getImageData(
+          0,
+          0,
+          sampleSize,
+          sampleSize,
+        );
 
         // --- 色差分比較 ---
         let difference = 0;
         // 高速化のため、全ピクセルではなく間引いて比較しても良いが、ここでは全ピクセル比較
         for (let j = 0; j < videoData.data.length; j += 4) {
           const rDiff = Math.abs(videoData.data[j] - markerData.data[j]);
-          const gDiff = Math.abs(videoData.data[j + 1] - markerData.data[j + 1]);
-          const bDiff = Math.abs(videoData.data[j + 2] - markerData.data[j + 2]);
+          const gDiff = Math.abs(
+            videoData.data[j + 1] - markerData.data[j + 1],
+          );
+          const bDiff = Math.abs(
+            videoData.data[j + 2] - markerData.data[j + 2],
+          );
           difference += rDiff + gDiff + bDiff;
         }
 
@@ -128,16 +135,18 @@ export function useARDetection(
         if (similarity > 0.75) {
           setIsProcessing(true);
           setDetectedMarkerId(MARKERS[i].id); // IDをセット (1, 2, or 3)
-          console.log(`Marker ${MARKERS[i].id} detected! Similarity: ${similarity}`);
+          console.log(
+            `Marker ${MARKERS[i].id} detected! Similarity: ${similarity}`,
+          );
 
           // 5秒間検出状態を保持してからリセット
           setTimeout(() => {
             setDetectedMarkerId(null);
             setIsProcessing(false);
           }, 5000);
-          
+
           // ループを抜ける（同時に複数のマーカーは検出しない）
-          break; 
+          break;
         }
       }
 
