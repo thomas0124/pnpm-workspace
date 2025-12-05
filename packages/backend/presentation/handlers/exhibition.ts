@@ -1,6 +1,7 @@
 import { zValidator } from '@hono/zod-validator'
 
 import {
+  AuthorizationHeaderSchema,
   ExhibitionIdParamSchema,
   ExhibitionInformationInputSchema,
   ExhibitionInformationUpdateSchema,
@@ -60,6 +61,7 @@ export const handleCreateExhibition = handlerFactory.createHandlers(async (c) =>
  */
 export const handleGetExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdParamSchema),
+  zValidator('header', AuthorizationHeaderSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
@@ -82,6 +84,8 @@ export const handleGetExhibition = handlerFactory.createHandlers(
  */
 export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdParamSchema),
+  zValidator('form', ExhibitionInformationUpdateSchema),
+  zValidator('header', AuthorizationHeaderSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
@@ -98,7 +102,7 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
       location: toStringOrUndefined(body.location),
       price: toOptionalInt(body.price),
       requiredTime: toOptionalInt(body.requiredTime),
-      comment: body.comment !== undefined ? toNullableString(body.comment) : undefined,
+      comment: toNullableString(body.comment),
       image: imageBase64,
     })
 
@@ -120,6 +124,7 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
  */
 export const handleDraftExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdParamSchema),
+  zValidator('header', AuthorizationHeaderSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
@@ -142,6 +147,7 @@ export const handleDraftExhibition = handlerFactory.createHandlers(
  */
 export const handlePublishExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdParamSchema),
+  zValidator('header', AuthorizationHeaderSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
@@ -164,6 +170,7 @@ export const handlePublishExhibition = handlerFactory.createHandlers(
  */
 export const handleUnpublishExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdParamSchema),
+  zValidator('header', AuthorizationHeaderSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
@@ -186,6 +193,7 @@ export const handleUnpublishExhibition = handlerFactory.createHandlers(
  */
 export const handleDeleteExhibition = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdParamSchema),
+  zValidator('header', AuthorizationHeaderSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)

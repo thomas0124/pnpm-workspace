@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/app/exhibitor/information/_components/header";
 import { Sidebar } from "@/app/exhibitor/information/_components/sidebar";
 import { FormSection } from "@/app/exhibitor/information/_components/formSection";
@@ -9,9 +11,21 @@ import { useExhibitionForm } from "@/app/exhibitor/information/hooks/useExhibiti
 import type { Category } from "@/types/exhibitions";
 
 export default function BasicInfoPage() {
+  const router = useRouter();
   const { isAuthenticated } = useAuthGuard();
-  const { form } = useExhibitionForm();
+  const { form, handleSubmit, exhibitionId, setExhibitionId, apiError } =
+    useExhibitionForm();
   const watched = form.watch();
+
+  const handleSaveForm = useCallback(async () => {
+    await handleSubmit();
+  }, [handleSubmit]);
+
+  const handleExhibitionDeleted = useCallback(() => {
+    setExhibitionId("");
+    form.reset();
+    router.push("/exhibitor/information");
+  }, [form, router, setExhibitionId]);
 
   if (isAuthenticated !== true) {
     return null;
@@ -31,7 +45,16 @@ export default function BasicInfoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header
+        exhibitionId={exhibitionId}
+        onSaveForm={handleSaveForm}
+        onExhibitionDeleted={handleExhibitionDeleted}
+      />
+      {apiError && (
+        <div className="mx-6 mt-4 border-l-4 border-red-400 bg-red-50 p-4">
+          <p className="text-sm text-red-700">{apiError}</p>
+        </div>
+      )}
       <div className="flex h-[calc(100vh-73px)]">
         <Sidebar />
         <main className="flex-1 overflow-hidden p-8">
