@@ -3,7 +3,7 @@
 import { Header } from "@/app/exhibitor/information/_components/header";
 import { Sidebar } from "@/app/exhibitor/information/_components/sidebar";
 import { FormSection } from "@/app/exhibitor/information/_components/formSection";
-import { PreviewSection } from "@/app/exhibitor/information/_components/previewSection";
+import { ExhibitionPreview } from "@/components/exhibitionPreview";
 import { useExhibitionForm } from "@/app/exhibitor/information/hooks/useExhibitionForm";
 
 export default function BasicInfoPage() {
@@ -18,7 +18,7 @@ export default function BasicInfoPage() {
           <div className="mx-auto h-full max-w-[1400px]">
             <div className="grid h-full grid-cols-3 gap-8">
               <FormSection formData={formData} onUpdate={updateField} />
-              <PreviewSection formData={formData} />
+              <ExhibitionPreview item={formData} />
             </div>
           </div>
         </main>
