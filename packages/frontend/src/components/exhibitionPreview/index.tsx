@@ -6,7 +6,7 @@ type ExhibitionPreviewItem = ExhibitionFormData & { displayCategory?: string };
 
 export function ExhibitionPreview({ item }: { item: ExhibitionPreviewItem }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+    <div className="max-h-64 overflow-hidden rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
       <div className="flex gap-4">
         {/* Icon */}
         <div className="flex-shrink-0">
