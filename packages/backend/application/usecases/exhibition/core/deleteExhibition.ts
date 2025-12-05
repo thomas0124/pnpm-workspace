@@ -1,3 +1,4 @@
+import { ValidationError } from '../../../../domain/errors'
 import type { ExhibitionRepository } from '../../../../domain/repositories/exhibition'
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import { findExhibitionWithOwnershipCheck } from './findExhibitionWithOwnershipCheck'
@@ -24,6 +25,11 @@ export async function deleteExhibitionUseCase(
     exhibitorId,
     exhibitionRepository
   )
+
+  // 公開中は削除できないように制御
+  if (exhibition.isPublished === 1) {
+    throw new ValidationError('公開中の出展は削除できません。先に非公開にしてください')
+  }
 
   // ExhibitionInformationのIDを保存（Exhibition削除後に削除する）
   const exhibitionInformationId = exhibition.exhibitionInformationId
