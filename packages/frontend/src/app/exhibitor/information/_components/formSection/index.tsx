@@ -1,4 +1,3 @@
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Clock, DollarSign } from "lucide-react";
 import type { ExhibitionFormData } from "@/app/exhibitor/information/types";
@@ -6,6 +5,8 @@ import { DESCRIPTION_MAX_LENGTH } from "@/app/exhibitor/information/constants";
 import { CategorySelector } from "@/app/exhibitor/information/_components/categorySelector";
 import { ArDesignSelector } from "@/app/exhibitor/information/_components/arDesignSelector";
 import { ImageUpload } from "@/app/exhibitor/information/_components/imageUpload";
+import { InputWithLabel } from "@/components/inputWithLabel";
+import * as React from "react";
 
 interface FormSectionProps {
   formData: ExhibitionFormData;
@@ -35,92 +36,69 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
           />
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="title"
-                className="mb-2 block text-sm font-medium text-gray-700"
-              >
-                出展タイトル
-              </label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => onUpdate("title", e.target.value)}
-                className="border-gray-200 bg-gray-50"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="circle"
-                className="mb-2 block text-sm font-medium text-gray-700"
-              >
-                サークル名
-              </label>
-              <Input
-                id="circle"
-                value={formData.circleName}
-                onChange={(e) => onUpdate("circleName", e.target.value)}
-                className="border-gray-200 bg-gray-50"
-              />
-            </div>
+            <InputWithLabel
+              id="title"
+              label="出展タイトル"
+              value={formData.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+            <InputWithLabel
+              id="circle"
+              label="サークル名"
+              value={formData.circleName}
+              onChange={(e) => onUpdate("circleName", e.target.value)}
+            />
           </div>
 
           <ImageUpload />
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="location"
-                className="mb-2 block text-sm font-medium text-gray-700"
-              >
-                <MapPin className="mr-1 inline h-4 w-4" />
-                場所
-              </label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => onUpdate("location", e.target.value)}
-                className="border-gray-200 bg-gray-50"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="price"
-                className="mb-2 block text-sm font-medium text-gray-700"
-              >
-                <DollarSign className="mr-1 inline h-4 w-4" />
-                金額
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                  ¥
-                </span>
-                <Input
-                  id="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => onUpdate("price", e.target.value)}
-                  className="border-gray-200 bg-gray-50 pl-8"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="duration"
-              className="mb-2 block text-sm font-medium text-gray-700"
-            >
-              <Clock className="mr-1 inline h-4 w-4" />
-              所要時間
-            </label>
-            <Input
-              id="duration"
-              value={formData.duration}
-              onChange={(e) => onUpdate("duration", e.target.value)}
-              className="border-gray-200 bg-gray-50"
+            <InputWithLabel
+              id="location"
+              label={
+                <>
+                  <MapPin className="mr-1 inline h-4 w-4" />
+                  場所
+                </>
+              }
+              value={formData.location}
+              onChange={(e) => onUpdate("location", e.target.value)}
+            />
+            <InputWithLabel
+              id="price"
+              label={
+                <>
+                  <DollarSign className="mr-1 inline h-4 w-4" />
+                  金額
+                </>
+              }
+              type="number"
+              value={formData.price}
+              onChange={(e) => onUpdate("price", e.target.value)}
+              inputWrapper={(input) => (
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    ¥
+                  </span>
+                  {React.cloneElement(input, {
+                    className: `${input.props.className} pl-8`,
+                  })}
+                </div>
+              )}
             />
           </div>
+
+          <InputWithLabel
+            id="duration"
+            label={
+              <>
+                <Clock className="mr-1 inline h-4 w-4" />
+                所要時間
+              </>
+            }
+            value={formData.duration}
+            onChange={(e) => onUpdate("duration", e.target.value)}
+          />
 
           <ArDesignSelector
             selectedArDesign={formData.selectedArDesign}
