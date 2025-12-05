@@ -33,7 +33,7 @@ export function ExhibitionPreview({ item }: { item: ExhibitionFormData }) {
           {/* Tags */}
           <div className="mb-3 flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs text-red-500">
-              {item.category === "Food" ? "飲食" : item.category === "Exhibition" ? "展示" : item.category === "Experience" ? "体験" : "ステージ"}
+              {item.category}
             </span>
             {item.price !== undefined && (
               <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">
