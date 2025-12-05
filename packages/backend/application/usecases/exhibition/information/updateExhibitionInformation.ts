@@ -5,7 +5,7 @@ import type { ExhibitionArDesignRepository } from '../../../../domain/repositori
 import type { ExhibitionInformationRepository } from '../../../../domain/repositories/exhibitionInformation'
 import type {
   ExhibitionInformationDto,
-  ExhibitionInformationInputDto,
+  ExhibitionInformationUpdateDto,
 } from '../../../dto/exhibition'
 import { toExhibitionInformationDto } from '../../../dto/exhibition'
 import { validateArDesignId } from '../../shared/validateArDesignId'
@@ -29,7 +29,7 @@ import { findExhibitionWithOwnershipCheck } from '../core/findExhibitionWithOwne
  */
 export async function updateExhibitionInformationUseCase(
   exhibitionId: string,
-  input: ExhibitionInformationInputDto,
+  input: ExhibitionInformationUpdateDto,
   exhibitorId: string,
   exhibitionRepository: ExhibitionRepository,
   exhibitionInformationRepository: ExhibitionInformationRepository,

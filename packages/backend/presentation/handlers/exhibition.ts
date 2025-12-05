@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import {
   ExhibitionIdParamSchema,
   ExhibitionInformationInputSchema,
+  ExhibitionInformationUpdateSchema,
 } from '../../application/dto/exhibition'
 import { createExhibitionUseCase } from '../../application/usecases/exhibition/core/createExhibition'
 import { deleteExhibitionUseCase } from '../../application/usecases/exhibition/core/deleteExhibition'
@@ -108,12 +109,54 @@ export const handleGetExhibition = handlerFactory.createHandlers(
  */
 export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdParamSchema),
-  zValidator('json', ExhibitionInformationInputSchema),
   async (c) => {
     const container = getContainer(c)
     const exhibitorId = getExhibitorId(c)
     const { exhibitionId } = c.req.valid('param')
-    const input = c.req.valid('json')
+
+    const body = await c.req.parseBody()
+
+    const toStringOrUndefined = (value: unknown) => {
+      if (value === undefined || value === null) return undefined
+      if (typeof value === 'string') return value
+      return undefined
+    }
+
+    const toNullableString = (value: unknown) => {
+      const str = toStringOrUndefined(value)
+      return str === undefined || str === '' ? null : str
+    }
+
+    const toOptionalInt = (value: unknown) => {
+      const str = toStringOrUndefined(value)
+      if (str === undefined || str === '') return undefined
+      const num = Number(str)
+      return Number.isFinite(num) ? num : undefined
+    }
+
+    let imageBase64: string | undefined
+    const image = body.image
+    if (image instanceof File) {
+      const arrayBuffer = await image.arrayBuffer()
+      imageBase64 = Buffer.from(arrayBuffer).toString('base64')
+    } else if (image && typeof image === 'object' && 'byteLength' in (image as ArrayBufferView)) {
+      const view = image as ArrayBufferView
+      imageBase64 = Buffer.from(view.buffer).toString('base64')
+    } else if (typeof image === 'string' && image.trim() !== '') {
+      imageBase64 = image
+    }
+
+    const input = ExhibitionInformationUpdateSchema.parse({
+      exhibitorName: toStringOrUndefined(body.exhibitorName),
+      title: toStringOrUndefined(body.title),
+      category: toStringOrUndefined(body.category),
+      location: toStringOrUndefined(body.location),
+      price: toOptionalInt(body.price),
+      requiredTime: toOptionalInt(body.requiredTime),
+      comment: toNullableString(body.comment) ?? undefined,
+      exhibitionArDesignId: toNullableString(body.exhibitionArDesignId) ?? undefined,
+      image: imageBase64,
+    })
 
     const result = await updateExhibitionInformationUseCase(
       exhibitionId,

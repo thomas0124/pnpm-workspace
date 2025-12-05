@@ -85,6 +85,14 @@ export const ExhibitionInformationInputSchema = z.object({
 export type ExhibitionInformationInputDto = z.infer<typeof ExhibitionInformationInputSchema>
 
 /**
+ * 出展情報入力（部分更新用）
+ * PUT /exhibitions/{exhibitionId}/information で使用
+ */
+export const ExhibitionInformationUpdateSchema = ExhibitionInformationInputSchema.partial()
+
+export type ExhibitionInformationUpdateDto = z.infer<typeof ExhibitionInformationUpdateSchema>
+
+/**
  * ARデザイン（管理API用）
  */
 export const ExhibitionArDesignDtoSchema = z.object({
