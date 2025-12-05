@@ -2,12 +2,12 @@
 
 import { useRef, useState } from "react";
 import Script from "next/script";
-import { useCamera } from "./hooks/useCamera";
-import { useARDetection } from "./hooks/useARDetection";
-import { ARHeader } from "./components/ARHeader";
-import { ScannerFrame } from "./components/ScannerFrame";
-import { Instructions } from "./components/Instructions";
-import { AR_JS_CDN_URL } from "./constants";
+import { useCamera } from "@/components/arscanner/hooks/useCamera";
+import { useARDetection } from "@/components/arscanner/hooks/useARDetection";
+import { ARHeader } from "@/components/arscanner/components/arHeader";
+import { ScannerFrame } from "@/components/arscanner/components/scannerFrame";
+import { Instructions } from "@/components/arscanner/components/instructions";
+import { AR_JS_CDN_URL } from "@/components/arscanner/constants";
 
 export default function ARScanner() {
   const [isARLoaded, setIsARLoaded] = useState(false);

@@ -1,4 +1,4 @@
-import { MarkerDetectedOverlay } from "./MarkerDetectedOverlay";
+import { MarkerDetectedOverlay } from "@/components/arscanner/components/markerDetectedOverlay";
 
 interface ScannerFrameProps {
   markerDetected: boolean;

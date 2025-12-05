@@ -1,6 +1,9 @@
 import { useEffect, useState, RefObject } from "react";
-import { CAMERA_PARAM_URL, MARKER_RESET_TIME_MS } from "../constants";
-import type { ARController } from "../types";
+import {
+  CAMERA_PARAM_URL,
+  MARKER_RESET_TIME_MS,
+} from "@/components/arscanner/constants";
+import type { ARController } from "@/components/arscanner/types";
 
 export function useARDetection(
   videoRef: RefObject<HTMLVideoElement>,
