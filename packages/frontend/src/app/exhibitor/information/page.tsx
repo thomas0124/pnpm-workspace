@@ -10,7 +10,8 @@ import type { Category } from "@/types/exhibitions";
 
 export default function BasicInfoPage() {
   const { isAuthenticated } = useAuthGuard();
-  const { formData, updateField } = useExhibitionForm();
+  const { form } = useExhibitionForm();
+  const watched = form.watch();
 
   if (isAuthenticated !== true) {
     return null;
@@ -24,8 +25,8 @@ export default function BasicInfoPage() {
   };
 
   const displayItem = {
-    ...formData,
-    displayCategory: categoryDisplayMap[formData.category as Category],
+    ...watched,
+    displayCategory: categoryDisplayMap[watched.category as Category],
   };
 
   return (
@@ -36,7 +37,7 @@ export default function BasicInfoPage() {
         <main className="flex-1 overflow-hidden p-8">
           <div className="mx-auto h-full max-w-[1400px]">
             <div className="grid h-full grid-cols-3 gap-8">
-              <FormSection formData={formData} onUpdate={updateField} />
+              <FormSection form={form} />
               <ExhibitionPreview item={displayItem} />
             </div>
           </div>

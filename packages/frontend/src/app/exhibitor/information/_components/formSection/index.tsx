@@ -1,6 +1,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Clock, DollarSign } from "lucide-react";
-import type { ExhibitionFormData } from "@/types/exhibitions";
+import type { UseFormReturn } from "react-hook-form";
+import type { ExhibitionFormInput } from "@/app/exhibitor/information/hooks/useExhibitionForm";
 import { DESCRIPTION_MAX_LENGTH } from "@/app/exhibitor/information/constants";
 import { CategorySelector } from "@/app/exhibitor/information/_components/categorySelector";
 import { ImageUpload } from "@/app/exhibitor/information/_components/imageUpload";
@@ -8,14 +9,20 @@ import { InputWithLabel } from "@/components/inputWithLabel";
 import * as React from "react";
 
 interface FormSectionProps {
-  formData: ExhibitionFormData;
-  onUpdate: <K extends keyof ExhibitionFormData>(
-    field: K,
-    value: ExhibitionFormData[K],
-  ) => void;
+  form: UseFormReturn<ExhibitionFormInput>;
 }
 
-export function FormSection({ formData, onUpdate }: FormSectionProps) {
+export function FormSection({ form }: FormSectionProps) {
+  const {
+    register,
+    setValue,
+    watch,
+    formState: { errors },
+  } = form;
+
+  const category = watch("category");
+  const commentValue = watch("comment") ?? "";
+
   return (
     <div className="col-span-2 h-full overflow-y-auto pr-2">
       <div className="rounded-lg border border-gray-200 bg-white p-6">
@@ -30,28 +37,45 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
 
         <div className="space-y-6">
           <CategorySelector
-            selectedCategory={formData.category}
-            onSelect={(category) => onUpdate("category", category)}
+            selectedCategory={category}
+            onSelect={(selectedCategory) =>
+              setValue("category", selectedCategory, {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
+            }
           />
+          {errors.category && (
+            <p className="text-sm text-red-500">{errors.category.message}</p>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <InputWithLabel
               id="title"
               label="出展タイトル"
-              value={formData.title}
-              onChange={(e) => onUpdate("title", e.target.value)}
+              {...register("title")}
             />
+            {errors.title && (
+              <p className="text-sm text-red-500">{errors.title.message}</p>
+            )}
             <InputWithLabel
               id="circle"
               label="サークル名"
-              value={formData.exhibitorName}
-              onChange={(e) => onUpdate("exhibitorName", e.target.value)}
+              {...register("exhibitorName")}
             />
+            {errors.exhibitorName && (
+              <p className="text-sm text-red-500">
+                {errors.exhibitorName.message}
+              </p>
+            )}
           </div>
 
           <ImageUpload
             onImageChange={(preview) => {
-              onUpdate("image", preview || "");
+              setValue("image", preview || "", {
+                shouldValidate: false,
+                shouldDirty: true,
+              });
             }}
           />
 
@@ -64,9 +88,11 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
                   場所
                 </>
               }
-              value={formData.location}
-              onChange={(e) => onUpdate("location", e.target.value)}
+              {...register("location")}
             />
+            {errors.location && (
+              <p className="text-sm text-red-500">{errors.location.message}</p>
+            )}
             <InputWithLabel
               id="price"
               label={
@@ -76,8 +102,9 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
                 </>
               }
               type="number"
-              value={formData.price ?? ""}
-              onChange={(e) => onUpdate("price", parseInt(e.target.value))}
+              {...register("price", {
+                setValueAs: (v) => (v === "" ? null : Number(v)),
+              })}
               inputWrapper={(input) => (
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
@@ -89,6 +116,9 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
                 </div>
               )}
             />
+            {errors.price && (
+              <p className="text-sm text-red-500">{errors.price.message}</p>
+            )}
           </div>
 
           <InputWithLabel
@@ -99,9 +129,15 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
                 所要時間
               </>
             }
-            value={formData.requiredTime ?? ""}
-            onChange={(e) => onUpdate("requiredTime", parseInt(e.target.value))}
+            {...register("requiredTime", {
+              setValueAs: (v) => (v === "" ? null : Number(v)),
+            })}
           />
+          {errors.requiredTime && (
+            <p className="text-sm text-red-500">
+              {errors.requiredTime.message}
+            </p>
+          )}
 
           {/* <ArDesignSelector
             selectedArDesign={formData.selectedArDesign}
@@ -120,14 +156,16 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
             </p>
             <Textarea
               id="description"
-              value={formData.comment ?? ""}
-              onChange={(e) => onUpdate("comment", e.target.value)}
+              {...register("comment")}
               maxLength={DESCRIPTION_MAX_LENGTH}
               rows={6}
               className="resize-none border-gray-200 bg-gray-50"
             />
+            {errors.comment && (
+              <p className="text-sm text-red-500">{errors.comment.message}</p>
+            )}
             <div className="mt-1 text-right text-xs text-gray-500">
-              {formData.comment ? formData.comment.length : 0} /{" "}
+              {commentValue ? commentValue.length : 0} /{" "}
               {DESCRIPTION_MAX_LENGTH}
             </div>
           </div>
