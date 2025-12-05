@@ -184,7 +184,7 @@ export async function toExhibitionInformationDto(
     requiredTime: exhibitionInformation.requiredTime,
     comment: exhibitionInformation.comment,
     arDesign: arDesignDto,
-    image: exhibitionInformation.image,
+    image: imageBase64,
     createdAt: exhibitionInformation.createdAt,
     updatedAt: exhibitionInformation.updatedAt,
   })
