@@ -39,11 +39,9 @@ export function ExhibitionPreview({ item }: { item: ExhibitionPreviewItem }) {
             <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs text-red-500">
               {item.displayCategory}
             </span>
-            {item.price !== undefined && (
-              <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">
-                ¥{item.price ?? 0}
-              </span>
-            )}
+            <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">
+              ¥{item.price ?? 0}
+            </span>
             <span className="inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs text-cyan-600">
               <MapPin className="h-3 w-3" />
               {item.location}
@@ -51,12 +49,10 @@ export function ExhibitionPreview({ item }: { item: ExhibitionPreviewItem }) {
           </div>
 
           {/* Duration */}
-          {item.requiredTime !== undefined && (
-            <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600">
-              <Clock className="h-4 w-4" />
-              <span>{item.requiredTime ?? 0}分</span>
-            </div>
-          )}
+          <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600">
+            <Clock className="h-4 w-4" />
+            <span>{item.requiredTime ?? 0}分</span>
+          </div>
 
           {/* Comment */}
           {item.comment && (
