@@ -30,18 +30,18 @@ export const handleCreateExhibition = handlerFactory.createHandlers(async (c) =>
   const container = getContainer(c)
   const exhibitorId = getExhibitorId(c)
 
-  const body = await c.req.parseBody()
+  const formData = await c.req.formData()
 
-  const imageBase64 = await parseImageToBase64(body.image)
+  const imageBase64 = await parseImageToBase64(formData.get('image'))
 
   const parsedInput = ExhibitionInformationInputSchema.parse({
-    exhibitorName: toStringOrUndefined(body.exhibitorName),
-    title: toStringOrUndefined(body.title),
-    category: toStringOrUndefined(body.category),
-    location: toStringOrUndefined(body.location),
-    price: toOptionalInt(body.price),
-    requiredTime: toOptionalInt(body.requiredTime),
-    comment: toNullableString(body.comment) ?? undefined,
+    exhibitorName: toStringOrUndefined(formData.get('exhibitorName')),
+    title: toStringOrUndefined(formData.get('title')),
+    category: toStringOrUndefined(formData.get('category')),
+    location: toStringOrUndefined(formData.get('location')),
+    price: toOptionalInt(formData.get('price')),
+    requiredTime: toOptionalInt(formData.get('requiredTime')),
+    comment: toNullableString(formData.get('comment')) ?? undefined,
     image: imageBase64,
   })
 

@@ -63,7 +63,7 @@ function buildFormData(data: ExhibitionFormSchema): FormData {
   const formData = new FormData();
 
   // 必須フィールド
-  formData.append("exhibitor_name", data.exhibitorName);
+  formData.append("exhibitorName", data.exhibitorName);
   formData.append("title", data.title);
   formData.append("category", data.category);
   formData.append("location", data.location);
@@ -73,7 +73,7 @@ function buildFormData(data: ExhibitionFormSchema): FormData {
     formData.append("price", data.price.toString());
   }
   if (data.requiredTime !== null && data.requiredTime !== undefined) {
-    formData.append("required_time", data.requiredTime.toString());
+    formData.append("requiredTime", data.requiredTime.toString());
   }
   if (
     data.comment !== null &&
@@ -82,11 +82,6 @@ function buildFormData(data: ExhibitionFormSchema): FormData {
   ) {
     formData.append("comment", data.comment);
   }
-
-  // ARデザインID（現在は未実装のためスキップ）
-  // if (data.arDesign?.id) {
-  //   formData.append("exhibition_ar_design_id", data.arDesign.id);
-  // }
 
   // 画像データ
   if (data.image && data.image.trim() !== "") {
@@ -116,11 +111,41 @@ export function useExhibitionApi() {
     setError(null);
 
     try {
-      const formData = buildFormData(data);
       const header = getAuthHeader();
 
+      // formオプションに渡すオブジェクトを構築
+      const formObject: Record<string, string | File> = {
+        exhibitorName: data.exhibitorName,
+        title: data.title,
+        category: data.category,
+        location: data.location,
+      };
+
+      // オプショナルフィールド
+      if (data.price !== null && data.price !== undefined) {
+        formObject.price = data.price.toString();
+      }
+      if (data.requiredTime !== null && data.requiredTime !== undefined) {
+        formObject.requiredTime = data.requiredTime.toString();
+      }
+      if (
+        data.comment !== null &&
+        data.comment !== undefined &&
+        data.comment !== ""
+      ) {
+        formObject.comment = data.comment;
+      }
+
+      // 画像データ
+      if (data.image && data.image.trim() !== "") {
+        const mimeType =
+          data.image.match(/data:([^;]+);base64,/)?.[1] || "image/png";
+        const blob = base64ToBlob(data.image, mimeType);
+        formObject.image = new File([blob], "image.png", { type: mimeType });
+      }
+
       const response = await client.exhibitions.$post({
-        form: formData,
+        form: formObject,
         header,
       });
 
@@ -238,7 +263,7 @@ export function useExhibitionApi() {
           ":exhibitionId"
         ].information.$put({
           param: { exhibitionId },
-          form: formData,
+          body: formData, // formではなくbodyを使用
           header,
         } as any); // 型エラー回避のため as any を追加
 

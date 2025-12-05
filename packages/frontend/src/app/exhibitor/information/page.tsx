@@ -49,6 +49,7 @@ export default function BasicInfoPage() {
         exhibitionId={exhibitionId}
         onSaveForm={handleSaveForm}
         onExhibitionDeleted={handleExhibitionDeleted}
+        formData={watched}
       />
       {apiError && (
         <div className="mx-6 mt-4 border-l-4 border-red-400 bg-red-50 p-4">

@@ -5,20 +5,23 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/button";
 import { Save, Share2, Trash2 } from "lucide-react";
 import { useExhibitionApi } from "../../hooks/useExhibitionApi";
+import { ExhibitionFormSchema } from "@/app/exhibitor/information/types";
 
 interface HeaderProps {
   exhibitionId: string;
   onSaveForm: () => Promise<void>;
   onExhibitionDeleted?: () => void;
+  formData?: ExhibitionFormSchema;
 }
 
 export function Header({
   exhibitionId,
   onSaveForm,
   onExhibitionDeleted,
+  formData,
 }: HeaderProps) {
   const router = useRouter();
-  const { saveDraft, publish, deleteExhibition, isLoading } =
+  const { createExhibition, saveDraft, publish, deleteExhibition, isLoading } =
     useExhibitionApi();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -29,7 +32,6 @@ export function Header({
       errorMessage: string,
     ) => {
       try {
-        // まずフォームデータを保存
         await onSaveForm();
 
         if (!exhibitionId) {
@@ -37,7 +39,6 @@ export function Header({
           return;
         }
 
-        // その後、アクションを実行
         await action();
         alert(successMessage);
       } catch (err) {
@@ -49,13 +50,42 @@ export function Header({
     [exhibitionId, onSaveForm],
   );
 
-  const handleSaveDraft = useCallback(() => {
-    return handleAction(
-      () => saveDraft(exhibitionId),
-      "下書きとして保存しました",
-      "下書き保存に失敗しました",
-    );
-  }, [exhibitionId, saveDraft, handleAction]);
+  const handleSaveDraft = useCallback(async () => {
+    try {
+      if (!formData) {
+        throw new Error("フォームデータが取得できませんでした");
+      }
+
+      // フォームデータの検証
+      if (
+        !formData.exhibitorName ||
+        !formData.title ||
+        !formData.category ||
+        !formData.location
+      ) {
+        alert(
+          "必須項目（サークル名、タイトル、カテゴリ、場所）を入力してください",
+        );
+        return;
+      }
+
+      // 新規作成の場合は直接createExhibitionを呼び出す
+      if (!exhibitionId) {
+        await createExhibition(formData);
+        alert("下書きとして保存しました");
+        return;
+      }
+
+      // 既存の場合はsaveDraftを呼び出す
+      await saveDraft(exhibitionId);
+      alert("下書きとして保存しました");
+    } catch (err) {
+      console.error("下書き保存に失敗しました:", err);
+      const message =
+        err instanceof Error ? err.message : "下書き保存に失敗しました";
+      alert(message);
+    }
+  }, [exhibitionId, createExhibition, formData, onSaveForm]);
 
   const handlePublish = useCallback(() => {
     return handleAction(
