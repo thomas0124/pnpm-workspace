@@ -1,4 +1,5 @@
 import { Clock, MapPin } from "lucide-react";
+import Image from "next/image";
 
 type Category = "Food" | "Exhibition" | "Experience" | "Stage";
 
@@ -27,7 +28,7 @@ export function ExhibitionItem({ item }: ExhibitionItemProps) {
         {/* Icon */}
         <div className="flex-shrink-0">
           <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-yellow-400 text-4xl">
-            <img
+            <Image
               src={
                 item.image
                   ? item.image.startsWith("data:")
