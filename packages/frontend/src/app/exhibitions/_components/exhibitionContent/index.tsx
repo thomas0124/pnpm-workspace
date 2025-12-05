@@ -41,8 +41,7 @@ export function ExhibitionsContent() {
   // APIから取得したデータを表示用に変換
   const displayItems = data.map((item) => ({
     ...item,
-    displayCategory:
-      categoryDisplayMap[item.category as Category],
+    displayCategory: categoryDisplayMap[item.category as Category],
   }));
 
   return (
@@ -94,7 +93,9 @@ export function ExhibitionsContent() {
             <p className="text-gray-500">出展が見つかりませんでした</p>
           </div>
         ) : (
-          displayItems.map((item) => <ExhibitionPreview key={item.id} item={item} />)
+          displayItems.map((item) => (
+            <ExhibitionPreview key={item.id} item={item} />
+          ))
         )}
       </div>
     </>

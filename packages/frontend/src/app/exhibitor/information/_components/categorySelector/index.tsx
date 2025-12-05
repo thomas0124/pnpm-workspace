@@ -26,9 +26,13 @@ export function CategorySelector({
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
-            {
-              category === "Food" ? "飲食" : category === "Exhibition" ? "展示" : category === "Experience" ? "体験" : "ステージ"
-            }
+            {category === "Food"
+              ? "飲食"
+              : category === "Exhibition"
+                ? "展示"
+                : category === "Experience"
+                  ? "体験"
+                  : "ステージ"}
           </button>
         ))}
       </div>

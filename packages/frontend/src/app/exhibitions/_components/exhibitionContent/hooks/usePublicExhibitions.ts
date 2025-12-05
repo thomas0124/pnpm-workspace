@@ -16,7 +16,10 @@ async function fetcherExhibitions(
     query.search = search;
   }
   // API expects english Category enum values
-  if (category && ["Food", "Exhibition", "Experience", "Stage"].includes(category)) {
+  if (
+    category &&
+    ["Food", "Exhibition", "Experience", "Stage"].includes(category)
+  ) {
     query.category = category as Category;
   }
 
