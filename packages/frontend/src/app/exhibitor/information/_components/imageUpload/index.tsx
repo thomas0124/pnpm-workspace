@@ -4,7 +4,7 @@ import { Upload } from "lucide-react";
 import { useRef, ChangeEvent } from "react";
 
 interface ImageUploadProps {
-  onImageChange: (file: File | null, preview: string | null) => void;
+  onImageChange: (file: string | null) => void;
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -38,7 +38,7 @@ export function ImageUpload({ onImageChange }: ImageUploadProps) {
     const reader = new FileReader();
     reader.onloadend = () => {
       const preview = reader.result as string;
-      onImageChange(file, preview);
+      onImageChange(preview);
     };
     reader.readAsDataURL(file);
   };

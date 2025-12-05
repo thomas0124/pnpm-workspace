@@ -30,8 +30,8 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
 
         <div className="space-y-6">
           <CategorySelector
-            selectedCategory={formData.selectedCategory}
-            onSelect={(category) => onUpdate("selectedCategory", category)}
+            selectedCategory={formData.category}
+            onSelect={(category) => onUpdate("category", category)}
           />
 
           <div className="grid grid-cols-2 gap-4">
@@ -44,15 +44,14 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
             <InputWithLabel
               id="circle"
               label="サークル名"
-              value={formData.circleName}
-              onChange={(e) => onUpdate("circleName", e.target.value)}
+              value={formData.exhibitorName}
+              onChange={(e) => onUpdate("exhibitorName", e.target.value)}
             />
           </div>
 
           <ImageUpload
-            onImageChange={(file, preview) => {
-              onUpdate("image", file);
-              onUpdate("imagePreview", preview);
+            onImageChange={(preview) => {
+              onUpdate("image", preview || "");
             }}
           />
 
@@ -78,7 +77,7 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
               }
               type="number"
               value={formData.price}
-              onChange={(e) => onUpdate("price", e.target.value)}
+              onChange={(e) => onUpdate("price", parseInt(e.target.value))}
               inputWrapper={(input) => (
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
@@ -100,8 +99,8 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
                 所要時間
               </>
             }
-            value={formData.duration}
-            onChange={(e) => onUpdate("duration", e.target.value)}
+            value={formData.requiredTime}
+            onChange={(e) => onUpdate("requiredTime", parseInt(e.target.value))}
           />
 
           {/* <ArDesignSelector
@@ -121,14 +120,14 @@ export function FormSection({ formData, onUpdate }: FormSectionProps) {
             </p>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => onUpdate("description", e.target.value)}
+              value={formData.comment}
+              onChange={(e) => onUpdate("comment", e.target.value)}
               maxLength={DESCRIPTION_MAX_LENGTH}
               rows={6}
               className="resize-none border-gray-200 bg-gray-50"
             />
             <div className="mt-1 text-right text-xs text-gray-500">
-              {formData.description.length} / {DESCRIPTION_MAX_LENGTH}
+              {formData.comment?.length} / {DESCRIPTION_MAX_LENGTH}
             </div>
           </div>
         </div>

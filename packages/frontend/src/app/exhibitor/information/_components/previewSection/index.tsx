@@ -12,9 +12,9 @@ export function PreviewSection({ formData }: PreviewSectionProps) {
         <h3 className="mb-4 text-sm font-medium text-gray-700">プレビュー</h3>
         <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl bg-yellow-400">
-            {formData.imagePreview ? (
+            {formData.image ? (
               <img
-                src={formData.imagePreview}
+                src={formData.image}
                 alt="プレビュー"
                 className="h-full w-full object-cover"
               />
@@ -25,10 +25,10 @@ export function PreviewSection({ formData }: PreviewSectionProps) {
           <h4 className="mb-1 text-lg font-bold text-gray-900">
             {formData.title}
           </h4>
-          <p className="mb-4 text-sm text-gray-600">{formData.circleName}</p>
+          <p className="mb-4 text-sm text-gray-600">{formData.exhibitorName}</p>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-500">
-              {formData.selectedCategory}
+              {formData.category}
             </span>
             <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-600">
               ¥{formData.price}
@@ -40,10 +40,10 @@ export function PreviewSection({ formData }: PreviewSectionProps) {
           </div>
           <div className="mb-3 flex items-center gap-1 text-sm text-gray-600">
             <Clock className="h-4 w-4" />
-            <span>{formData.duration}</span>
+            <span>{formData.requiredTime}</span>
           </div>
           <p className="text-sm leading-relaxed text-gray-700">
-            {formData.description || "本格窯焼きピザをお楽しみください"}
+            {formData.comment || "本格窯焼きピザをお楽しみください"}
           </p>
         </div>
       </div>
