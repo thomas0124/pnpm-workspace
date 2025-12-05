@@ -14,5 +14,4 @@ export const exhibitionRoutes = new Hono<{ Bindings: Bindings }>()
   .route('/', exhibitionCoreRoutes)
   // 基本情報更新のルート
   .route('/:exhibitionId/information', exhibitionInformationRoutes)
-  // 画像関連のルート
-  .route('/:exhibitionId/information/image', exhibitionImageRoutes)
+
