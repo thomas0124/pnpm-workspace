@@ -12,11 +12,11 @@ export default function BasicInfoPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="flex">
+      <div className="flex h-[calc(100vh-73px)]">
         <Sidebar />
-        <main className="flex-1 p-8">
-          <div className="mx-auto max-w-[1400px]">
-            <div className="grid grid-cols-3 gap-8">
+        <main className="flex-1 overflow-hidden p-8">
+          <div className="mx-auto h-full max-w-[1400px]">
+            <div className="grid h-full grid-cols-3 gap-8">
               <FormSection formData={formData} onUpdate={updateField} />
               <PreviewSection formData={formData} />
             </div>

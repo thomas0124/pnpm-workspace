@@ -17,7 +17,7 @@ interface FormSectionProps {
 
 export function FormSection({ formData, onUpdate }: FormSectionProps) {
   return (
-    <div className="col-span-2">
+    <div className="col-span-2 h-full overflow-y-auto pr-2">
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="mb-6">
           <h2 className="mb-1 text-xl font-bold text-gray-900">
