@@ -92,7 +92,8 @@ export function Header({
         return;
       }
 
-      // 既存の場合はsaveDraftを呼び出す
+      // 既存の場合は、まずフォーム内容を保存してからsaveDraftを呼び出す
+      await onSaveForm();
       await saveDraft(exhibitionId);
       alert("下書きとして保存しました");
     } catch (err) {
@@ -101,7 +102,7 @@ export function Header({
         err instanceof Error ? err.message : "下書き保存に失敗しました";
       alert(message);
     }
-  }, [exhibitionId, createExhibition, formData, onSaveForm]);
+  }, [exhibitionId, createExhibition, formData, onSaveForm, saveDraft]);
 
   const handlePublish = useCallback(() => {
     return handleAction(

@@ -171,12 +171,20 @@ export function useExhibitionForm() {
             setValue("id", result.id);
           }
         }
+        // データを再取得してUIを更新
+        await mutate();
       } catch (err) {
         console.error("Form submission failed:", err);
         throw err;
       }
     },
-    [exhibitionId, createExhibition, updateExhibitionInformation, setValue],
+    [
+      exhibitionId,
+      createExhibition,
+      updateExhibitionInformation,
+      setValue,
+      mutate,
+    ],
   );
 
   // 取得した出展情報をフォームに設定

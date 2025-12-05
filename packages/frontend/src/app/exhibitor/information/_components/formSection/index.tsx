@@ -98,7 +98,9 @@ export function FormSection({ form }: FormSectionProps) {
                 {...register("location")}
               />
               {errors.location && (
-                <p className="text-sm text-red-500">{errors.location.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.location.message}
+                </p>
               )}
             </div>
             <div className="space-y-1">

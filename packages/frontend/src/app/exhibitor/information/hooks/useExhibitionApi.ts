@@ -2,6 +2,9 @@ import { useState, useCallback } from "react";
 import client from "@/lib/apiClient";
 import { AUTH_TOKEN_KEY } from "../constants";
 import type { ExhibitionFormSchema } from "../types";
+import type { ExhibitionDto } from "@/types/exhibitions";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 /**
  * Base64文字列からBlobに変換
@@ -57,7 +60,7 @@ function extractErrorMessage(errorData: unknown): string {
 }
 
 /**
- * フォームデータからFormDataを構築
+ * フォームデータからFormDataを構築（新規作成用）
  */
 function buildFormData(data: ExhibitionFormSchema): FormData {
   const formData = new FormData();
@@ -85,12 +88,55 @@ function buildFormData(data: ExhibitionFormSchema): FormData {
 
   // 画像データ
   if (data.image && data.image.trim() !== "") {
-    // Base64文字列からBlobに変換
-    // data:image/png;base64, の形式を想定
     const mimeType =
       data.image.match(/data:([^;]+);base64,/)?.[1] || "image/png";
     const blob = base64ToBlob(data.image, mimeType);
     formData.append("image", blob, "image.png");
+  }
+
+  return formData;
+}
+
+/**
+ * フォームデータからFormDataを構築（更新用・部分更新対応）
+ */
+function buildFormDataForUpdate(data: Partial<ExhibitionFormSchema>): FormData {
+  const formData = new FormData();
+
+  // 部分更新のため、値が存在する場合のみ追加
+  if (data.exhibitorName !== undefined) {
+    formData.append("exhibitorName", data.exhibitorName);
+  }
+  if (data.title !== undefined) {
+    formData.append("title", data.title);
+  }
+  if (data.category !== undefined) {
+    formData.append("category", data.category);
+  }
+  if (data.location !== undefined) {
+    formData.append("location", data.location);
+  }
+  if (data.price !== undefined && data.price !== null) {
+    formData.append("price", data.price.toString());
+  }
+  if (data.requiredTime !== undefined && data.requiredTime !== null) {
+    formData.append("requiredTime", data.requiredTime.toString());
+  }
+  if (data.comment !== undefined) {
+    formData.append("comment", data.comment || "");
+  }
+
+  // 画像の処理
+  if (data.image !== undefined) {
+    if (data.image && data.image.trim() !== "") {
+      const mimeType =
+        data.image.match(/data:([^;]+);base64,/)?.[1] || "image/png";
+      const blob = base64ToBlob(data.image, mimeType);
+      formData.append("image", blob, "image.png");
+    } else {
+      // 画像を削除する場合は空のBlobを送信
+      formData.append("image", new Blob(), "");
+    }
   }
 
   return formData;
@@ -111,42 +157,19 @@ export function useExhibitionApi() {
     setError(null);
 
     try {
-      const header = getAuthHeader();
-
-      // formオプションに渡すオブジェクトを構築
-      const formObject: Record<string, string | File> = {
-        exhibitorName: data.exhibitorName,
-        title: data.title,
-        category: data.category,
-        location: data.location,
-      };
-
-      // オプショナルフィールド
-      if (data.price !== null && data.price !== undefined) {
-        formObject.price = data.price.toString();
-      }
-      if (data.requiredTime !== null && data.requiredTime !== undefined) {
-        formObject.requiredTime = data.requiredTime.toString();
-      }
-      if (
-        data.comment !== null &&
-        data.comment !== undefined &&
-        data.comment !== ""
-      ) {
-        formObject.comment = data.comment;
+      const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
+      if (!token) {
+        throw new Error("認証トークンが取得できませんでした");
       }
 
-      // 画像データ
-      if (data.image && data.image.trim() !== "") {
-        const mimeType =
-          data.image.match(/data:([^;]+);base64,/)?.[1] || "image/png";
-        const blob = base64ToBlob(data.image, mimeType);
-        formObject.image = new File([blob], "image.png", { type: mimeType });
-      }
+      const formData = buildFormData(data);
 
-      const response = await client.exhibitions.$post({
-        form: formObject,
-        header,
+      const response = await fetch(`${API_BASE_URL}/exhibitions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
       });
 
       if (!response.ok) {
@@ -205,40 +228,42 @@ export function useExhibitionApi() {
   /**
    * 認証済み出展者の出展情報の取得
    */
-  const getMyExhibition = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const getMyExhibition =
+    useCallback(async (): Promise<ExhibitionDto | null> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const header = getAuthHeader();
+      try {
+        const header = getAuthHeader();
 
-      // 型定義が更新されるまでの一時的な対応
-      const response = await (client.exhibitions as any).me.$get({
-        header,
-      });
+        const response = await client.exhibitions.me.$get({
+          header,
+        });
 
-      if (!response.ok) {
-        // 404の場合は出展情報が存在しないため、nullを返す
-        if (response.status === 404) {
-          return null;
+        if (!response.ok) {
+          // 404の場合は出展情報が存在しないため、nullを返す
+          if (response.status === 404) {
+            return null;
+          }
+          const errorData = await (response as Response)
+            .json()
+            .catch(() => ({}));
+          throw new Error(
+            extractErrorMessage(errorData) || "出展情報の取得に失敗しました",
+          );
         }
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          extractErrorMessage(errorData) || "出展情報の取得に失敗しました",
-        );
-      }
 
-      const result = await response.json();
-      return result;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "出展情報の取得に失敗しました";
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+        const result = (await response.json()) as ExhibitionDto;
+        return result;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "出展情報の取得に失敗しました";
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    }, []);
 
   /**
    * 出展情報の更新
@@ -249,61 +274,31 @@ export function useExhibitionApi() {
       setError(null);
 
       try {
-        const formData = new FormData();
         const header = getAuthHeader();
-        // 部分更新のため、値が存在する場合のみ追加
-        if (data.exhibitorName !== undefined) {
-          formData.append("exhibitorName", data.exhibitorName); // キャメルケースに変更
-        }
-        if (data.title !== undefined) {
-          formData.append("title", data.title);
-        }
-        if (data.category !== undefined) {
-          formData.append("category", data.category);
-        }
-        if (data.location !== undefined) {
-          formData.append("location", data.location);
-        }
-        if (data.price !== undefined) {
-          if (data.price !== null) {
-            formData.append("price", data.price.toString());
-          }
-        }
-        if (data.requiredTime !== undefined) {
-          if (data.requiredTime !== null) {
-            formData.append("requiredTime", data.requiredTime.toString()); // キャメルケースに変更
-          }
-        }
-        if (data.comment !== undefined) {
-          if (data.comment !== null && data.comment !== "") {
-            formData.append("comment", data.comment);
-          } else {
-            // コメントを削除する場合は空文字列を送信
-            formData.append("comment", "");
-          }
-        }
+        const formData = buildFormDataForUpdate(data);
 
-        // 画像の処理
-        if (data.image !== undefined) {
-          if (data.image && data.image.trim() !== "") {
-            // 新しい画像をアップロード
-            const mimeType =
-              data.image.match(/data:([^;]+);base64,/)?.[1] || "image/png";
-            const blob = base64ToBlob(data.image, mimeType);
-            formData.append("image", blob, "image.png");
+        // FormDataの内容を確認
+        const formDataEntries: Record<string, string> = {};
+        Array.from(formData.keys()).forEach((key) => {
+          const value = formData.get(key);
+          if (value instanceof File) {
+            formDataEntries[key] = `File(${value.name}, ${value.size} bytes)`;
           } else {
-            // 画像を削除する場合は空文字列を送信
-            formData.append("image", "");
+            formDataEntries[key] = String(value);
           }
-        }
+        });
 
-        const response = await client.exhibitions[
-          ":exhibitionId"
-        ].information.$put({
-          param: { exhibitionId },
-          body: formData, // formではなくbodyを使用
-          header,
-        } as any); // 型エラー回避のため as any を追加
+        // Honoクライアントの型定義の問題を回避するため、fetchを直接使用
+        const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
+        const url = `${API_BASE_URL}/exhibitions/${exhibitionId}/information`;
+
+        const response = await fetch(url, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));

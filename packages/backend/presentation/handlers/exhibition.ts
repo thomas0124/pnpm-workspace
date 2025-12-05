@@ -32,7 +32,6 @@ export const handleCreateExhibition = handlerFactory.createHandlers(async (c) =>
   const exhibitorId = getExhibitorId(c)
 
   const formData = await c.req.formData()
-
   const imageBase64 = await parseImageToBase64(formData.get('image'))
 
   const parsedInput = ExhibitionInformationInputSchema.parse({
@@ -110,7 +109,6 @@ export const handleGetMyExhibition = handlerFactory.createHandlers(
  */
 export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
   zValidator('param', ExhibitionIdParamSchema),
-  zValidator('form', ExhibitionInformationUpdateSchema),
   zValidator('header', AuthorizationHeaderSchema),
   async (c) => {
     const container = getContainer(c)
@@ -118,7 +116,6 @@ export const handleUpdateExhibitionInformation = handlerFactory.createHandlers(
     const { exhibitionId } = c.req.valid('param')
 
     const body = await c.req.parseBody()
-
     const imageBase64 = await parseImageToBase64(body.image)
 
     const input = ExhibitionInformationUpdateSchema.parse({
