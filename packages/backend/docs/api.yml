@@ -252,13 +252,11 @@ components:
           nullable: true
           minimum: 0
           example: 500
-          description: '金額(円単位)。nullの場合は無料'
         required_time:
           type: integer
           nullable: true
           minimum: 1
           example: 15
-          description: '所要時間(分単位)'
         comment:
           type: string
           nullable: true
@@ -653,7 +651,7 @@ paths:
 
         **注意事項:**
         - この操作は取り消しできません
-        - 公開中(is_published=true)の出展も削除できます
+        - 公開中(is_published=true)の出展は削除できません。先に非公開にしてください
         - 削除後、公開APIからも即座に非表示になります
       security:
         - BearerAuth: []
@@ -668,6 +666,12 @@ paths:
       responses:
         '204':
           description: 削除成功
+        '400':
+          description: バリデーションエラー（公開中の出展は削除できません）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: 認証エラー
           content:
