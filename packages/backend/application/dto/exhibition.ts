@@ -9,8 +9,10 @@ export const ExhibitionIdParamSchema = z.object({
   exhibitionId: z.uuid(),
 })
 
+// 認証ヘッダースキーマ（Hono clientの型推論用）
+// 実際の認証チェックはauthMiddlewareで行われる
 export const AuthorizationHeaderSchema = z.object({
-  Authorization: z.string(),
+  authorization: z.string().optional(),
 })
 
 // 公開出展一覧クエリ用スキーマ（文字列クエリのまま受け取り、ユースケース側で数値変換を行う）

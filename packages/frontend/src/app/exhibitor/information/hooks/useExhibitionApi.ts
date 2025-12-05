@@ -24,7 +24,7 @@ function base64ToBlob(base64: string, mimeType: string = "image/png"): Blob {
 /**
  * 認証ヘッダーを取得
  */
-function getAuthHeader(): { Authorization: string } {
+function getAuthHeader(): { authorization: string } {
   // ブラウザ環境のチェックを追加
   if (typeof window === "undefined") {
     throw new Error(
@@ -40,7 +40,7 @@ function getAuthHeader(): { Authorization: string } {
     throw new Error("認証トークンが取得できませんでした");
   }
   return {
-    Authorization: `Bearer ${token}`,
+    authorization: `Bearer ${token}`,
   };
 }
 
@@ -167,7 +167,7 @@ export function useExhibitionApi() {
       const response = await fetch(`${API_BASE_URL}/exhibitions`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          authorization: `Bearer ${token}`,
         },
         body: formData,
       });
@@ -274,7 +274,6 @@ export function useExhibitionApi() {
       setError(null);
 
       try {
-        const header = getAuthHeader();
         const formData = buildFormDataForUpdate(data);
 
         // FormDataの内容を確認
@@ -295,7 +294,7 @@ export function useExhibitionApi() {
         const response = await fetch(url, {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${token}`,
+            authorization: `Bearer ${token}`,
           },
           body: formData,
         });
