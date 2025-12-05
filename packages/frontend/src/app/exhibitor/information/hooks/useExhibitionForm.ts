@@ -188,6 +188,15 @@ export function useExhibitionForm() {
     }
   }, [exhibitionData, exhibitionId, setExhibitionData]);
 
+  // エラーメッセージを文字列に変換
+  const apiError =
+    error ||
+    (exhibitionError instanceof Error
+      ? exhibitionError.message
+      : exhibitionError
+        ? String(exhibitionError)
+        : null);
+
   return {
     form,
     register,
@@ -201,6 +210,6 @@ export function useExhibitionForm() {
     setExhibitionId,
     setExhibitionData,
     onSubmit,
-    apiError: error || exhibitionError,
+    apiError,
   };
 }
