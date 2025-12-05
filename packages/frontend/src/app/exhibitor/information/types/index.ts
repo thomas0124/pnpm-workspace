@@ -35,7 +35,7 @@ export const exhibitionFormSchema = z.object({
     z
       .number()
       .int("整数で入力してください")
-      .min(1, "1以上で入力してください")
+      .min(0, "0以上で入力してください")
       .nullable(),
   ),
   comment: z.preprocess(

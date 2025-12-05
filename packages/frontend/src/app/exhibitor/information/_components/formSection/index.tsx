@@ -102,6 +102,7 @@ export function FormSection({ form }: FormSectionProps) {
                 </>
               }
               type="number"
+              min="0"
               {...register("price", {
                 setValueAs: (v) => (v === "" ? null : Number(v)),
               })}
@@ -129,9 +130,21 @@ export function FormSection({ form }: FormSectionProps) {
                 所要時間
               </>
             }
+            type="number"
+            min="0"
             {...register("requiredTime", {
               setValueAs: (v) => (v === "" ? null : Number(v)),
             })}
+            inputWrapper={(input) => (
+              <div className="relative">
+                {React.cloneElement(input, {
+                  className: `${input.props.className} pr-8`,
+                })}
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  分
+                </span>
+              </div>
+            )}
           />
           {errors.requiredTime && (
             <p className="text-sm text-red-500">
