@@ -44,7 +44,7 @@ export async function parseImageToBase64(image: unknown): Promise<string | undef
   if (image && typeof image === 'object' && 'byteLength' in (image as ArrayBufferView)) {
     // parseBody が Uint8Array などの TypedArray を返す場合に対応
     const view = image as ArrayBufferView
-    return Buffer.from(view.buffer).toString('base64')
+    return Buffer.from(view.buffer, view.byteOffset, view.byteLength).toString('base64')
   }
 
   if (typeof image === 'string' && image.trim() !== '') {
