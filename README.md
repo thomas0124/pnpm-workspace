@@ -159,8 +159,8 @@ pnpm db:migrate:remote:production   # Production環境
 | 環境 | トリガー | フロントエンド | バックエンド | データベース |
 |------|---------|--------------|------------|------------|
 | **Preview** | Pull Request作成時 | Cloudflare Workers | Cloudflare Workers | D1 (共有) |
-| **Staging** | `develop`ブランチへのpush | Cloudflare Workers | Cloudflare Workers | D1 (共有) |
-| **Production** | `main`ブランチへのpush | Cloudflare Workers | Cloudflare Workers | D1 (共有) |
+| **Staging** | `develop`ブランチへのpush | Cloudflare Workers | Cloudflare Workers | D1 |
+| **Production** | `main`ブランチへのpush | Cloudflare Workers | Cloudflare Workers | D1 |
 
 ### デプロイフロー
 
