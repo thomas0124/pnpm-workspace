@@ -2,11 +2,12 @@ import { useState, useCallback, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type Resolver } from "react-hook-form";
 import useSWR from "swr";
+import { toast } from "sonner";
 import {
   exhibitionFormSchema,
   type ExhibitionFormSchema,
 } from "@/app/exhibitor/information/types";
-import { useExhibitionApi } from "./useExhibitionApi";
+import { useExhibitionApi, ApiError } from "./useExhibitionApi";
 import { AUTH_TOKEN_KEY } from "../constants";
 
 type ExhibitionDto = {
@@ -131,6 +132,7 @@ export function useExhibitionForm() {
   const {
     handleSubmit,
     setValue,
+    setError: setFormError,
     watch,
     formState: { isSubmitting },
   } = form;
@@ -175,9 +177,39 @@ export function useExhibitionForm() {
         }
         // データを再取得してUIを更新
         await mutate();
+
+        toast.success("保存しました", {
+          description: "出展情報が正常に保存されました。",
+        });
+
         return resultId;
       } catch (err) {
         console.error("Form submission failed:", err);
+
+        // バリデーションエラーの場合、各フィールドにエラーをセット
+        if (
+          err instanceof ApiError &&
+          err.status === 400 &&
+          err.data.fieldErrors
+        ) {
+          Object.entries(err.data.fieldErrors).forEach(([key, messages]) => {
+            if (Array.isArray(messages) && messages.length > 0) {
+              setFormError(key as keyof ExhibitionFormSchema, {
+                message: messages[0] as string,
+              });
+            }
+          });
+          toast.error("入力エラー", {
+            description:
+              "入力内容に誤りがあります。赤枠の項目を確認してください。",
+          });
+        } else {
+          const message =
+            err instanceof Error ? err.message : "エラーが発生しました";
+          toast.error("保存失敗", {
+            description: message,
+          });
+        }
         throw err;
       }
     },
@@ -187,6 +219,7 @@ export function useExhibitionForm() {
       updateExhibitionInformation,
       setValue,
       mutate,
+      setFormError,
     ],
   );
 
