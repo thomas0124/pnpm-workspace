@@ -52,7 +52,7 @@ export function OverlayExhibitionCard({
 
   if (isLoading) {
     return (
-      <div className="absolute bottom-36 left-0 right-0 z-40 flex justify-center">
+      <div className="pointer-events-none absolute bottom-36 left-0 right-0 z-40 flex justify-center">
         <div className="rounded-full bg-slate-900/50 p-2 backdrop-blur">
           <Spinner className="h-6 w-6 text-white" />
         </div>
@@ -63,11 +63,14 @@ export function OverlayExhibitionCard({
   // データがない場合の表示
   if (!displayItem) {
     return (
-      <div className="absolute bottom-36 left-4 right-4 z-40 duration-500 animate-in fade-in slide-in-from-bottom-4">
+      <div className="pointer-events-auto absolute bottom-36 left-4 right-4 z-40 duration-500 animate-in fade-in slide-in-from-bottom-4">
         <div className="relative rounded-xl bg-white/90 p-4 text-center shadow-lg backdrop-blur">
           <button
-            onClick={onClose}
-            className="absolute right-2 top-2 rounded-full p-1 text-slate-500 hover:bg-slate-200"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="absolute right-2 top-2 rounded-full p-2 text-slate-500 hover:bg-slate-200 active:scale-95"
           >
             <X className="h-5 w-5" />
           </button>
@@ -81,19 +84,26 @@ export function OverlayExhibitionCard({
   }
 
   return (
-    <div className="absolute bottom-36 left-4 right-4 z-40 duration-500 animate-in fade-in slide-in-from-bottom-8 md:left-1/2 md:right-auto md:w-96 md:-translate-x-1/2">
+    // pointer-events-auto を追加して、背面のレイヤーに邪魔されずタップできるようにする
+    <div className="pointer-events-auto absolute bottom-36 left-4 right-4 z-40 duration-500 animate-in fade-in slide-in-from-bottom-8 md:left-1/2 md:right-auto md:w-96 md:-translate-x-1/2">
       <div className="relative">
         {/* 閉じるボタン */}
         <button
-          onClick={onClose}
-          className="absolute -right-2 -top-2 z-50 rounded-full bg-slate-900 p-2 text-white shadow-lg transition-colors hover:bg-slate-700"
+          onClick={(e) => {
+            e.stopPropagation(); // イベントのバブリングを防止
+            onClose();
+          }}
+          // サイズを少し大きくし、z-indexを高く設定
+          className="absolute -right-3 -top-3 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-xl transition-transform hover:bg-slate-700 active:scale-95"
           aria-label="閉じる"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </button>
 
         {/* カード本体 */}
-        <ExhibitionPreview item={displayItem} />
+        <div className="overflow-hidden rounded-2xl bg-white shadow-xl">
+          <ExhibitionPreview item={displayItem} />
+        </div>
       </div>
     </div>
   );
