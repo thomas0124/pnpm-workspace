@@ -8,6 +8,24 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "えあパンフ",
   description: "学祭に使えるデジタルパンフレット",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    type: "website",
+    title: "えあパンフ",
+    description: "AR機能付きデジタルパンフレット",
+    url: "https://ar-pamph-frontend-preview-pr-66.sekibun3109.workers.dev/",
+    siteName: "えあパンフ",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
