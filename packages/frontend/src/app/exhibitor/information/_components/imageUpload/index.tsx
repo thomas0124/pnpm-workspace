@@ -38,7 +38,7 @@ export function ImageUpload({ onImageChange }: ImageUploadProps) {
     // ファイルサイズのバリデーション
     if (file.size > MAX_FILE_SIZE) {
       toast.error("サイズオーバー", {
-        description: "ファイルサイズは5MB以下にしてください",
+        description: "ファイルサイズは500kB以下にしてください",
       });
       // inputの値をリセット
       if (fileInputRef.current) {
@@ -86,7 +86,7 @@ export function ImageUpload({ onImageChange }: ImageUploadProps) {
         <p className="mb-1 text-sm text-gray-600">
           クリックして写真をアップロード
         </p>
-        <p className="text-xs text-gray-400">PNG, JPG, GIF (最大 5MB)</p>
+        <p className="text-xs text-gray-400">PNG, JPG, GIF (最大 500kB)</p>
       </div>
     </div>
   );

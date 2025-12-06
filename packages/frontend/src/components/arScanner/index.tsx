@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Script from "next/script";
 import { useCamera } from "@/components/arScanner/hooks/useCamera";
 import { useARDetection } from "@/components/arScanner/hooks/useARDetection";
@@ -8,24 +8,36 @@ import { ARHeader } from "@/components/arScanner/_components/arHeader";
 import { ScannerFrame } from "@/components/arScanner/_components/scannerFrame";
 import { Instructions } from "@/components/arScanner/_components/instructions";
 import { AR_JS_CDN_URL } from "@/components/arScanner/constants";
-// Imageコンポーネントは未使用であれば削除、使うなら残す
-// import Image from "next/image";
 import { OverlayText } from "@/components/arScanner/_components/overlays/OverlayText";
 import { OverlayHorse } from "@/components/arScanner/_components/overlays/OverlayHorse";
 import { OverlayCoffee } from "@/components/arScanner/_components/overlays/OverlayCoffee";
+import { OverlayExhibitionCard } from "@/components/arScanner/_components/overlays/OverlayExhibitionCard";
+
 export default function ARScanner() {
   const [isARLoaded, setIsARLoaded] = useState(false);
+  // カード表示の状態管理
+  const [isCardVisible, setIsCardVisible] = useState(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { error } = useCamera(videoRef, isARLoaded);
 
-  // 検出IDとリセット関数を取得
   const { detectedMarkerId, resetDetection } = useARDetection(
     videoRef,
     canvasRef,
     isARLoaded,
   );
+
+  // マーカーが切り替わったりリセットされたらカードを閉じる
+  useEffect(() => {
+    setIsCardVisible(false);
+  }, [detectedMarkerId]);
+
+  // 3Dオブジェクトをタップしたときのハンドラー
+  const handleObjectClick = () => {
+    setIsCardVisible(true);
+  };
 
   return (
     <>
@@ -56,13 +68,28 @@ export default function ARScanner() {
         <ARHeader markerDetected={detectedMarkerId !== null} />
 
         <ScannerFrame markerDetected={detectedMarkerId !== null}>
-          {detectedMarkerId === 1 && <OverlayText />}
-          {detectedMarkerId === 2 && <OverlayHorse />}
-          {detectedMarkerId === 3 && <OverlayCoffee />}
+          {/* 各IDに対応する3Dモデルを表示。タップでカードを表示する */}
+          {detectedMarkerId === 1 && (
+            <OverlayText onClick={handleObjectClick} />
+          )}
+          {detectedMarkerId === 2 && (
+            <OverlayHorse onClick={handleObjectClick} />
+          )}
+          {detectedMarkerId === 3 && (
+            <OverlayCoffee onClick={handleObjectClick} />
+          )}
+
+          {/* カードが表示モードになっている場合のみ表示 */}
+          {detectedMarkerId !== null && isCardVisible && (
+            <OverlayExhibitionCard
+              markerId={detectedMarkerId}
+              onClose={() => setIsCardVisible(false)}
+            />
+          )}
         </ScannerFrame>
 
-        {/* 検出時のみ表示されるリセットボタンエリア */}
-        {detectedMarkerId !== null && (
+        {/* リセットボタンエリア (カードが出ていない時のみ表示するなど、調整可能だが今回は常に出す) */}
+        {detectedMarkerId !== null && !isCardVisible && (
           <div className="absolute bottom-24 left-0 right-0 z-50 flex justify-center">
             <button
               onClick={resetDetection}
@@ -73,7 +100,6 @@ export default function ARScanner() {
           </div>
         )}
 
-        {/* 未検出時のみインストラクションを表示 */}
         {detectedMarkerId === null && <Instructions />}
       </div>
     </>
