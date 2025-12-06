@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { Button } from "@/components/button";
 import { Save, Share2, Trash2, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { useExhibitionApi } from "../../hooks/useExhibitionApi";
 import { ExhibitionFormSchema } from "@/app/exhibitor/information/types";
 
@@ -45,13 +46,13 @@ export function Header({
         const savedExhibitionId = await onSaveForm();
 
         if (!savedExhibitionId) {
-          alert("出展情報を先に保存してください");
+          toast.error("出展情報を先に保存してください");
           return;
         }
 
         // 保存されたexhibitionIdを使用してアクションを実行
         await action(savedExhibitionId);
-        alert(successMessage);
+        toast.success(successMessage);
 
         // 成功後のコールバックを実行
         if (onSuccess) {
@@ -60,7 +61,7 @@ export function Header({
       } catch (err) {
         console.error(`${errorMessage}:`, err);
         const message = err instanceof Error ? err.message : errorMessage;
-        alert(message);
+        toast.error(message);
       }
     },
     [onSaveForm],
@@ -79,30 +80,39 @@ export function Header({
         !formData.category ||
         !formData.location
       ) {
-        alert(
-          "必須項目（サークル名、タイトル、カテゴリ、場所）を入力してください",
-        );
+        toast.error("入力エラー", {
+          description:
+            "必須項目（サークル名、タイトル、カテゴリ、場所）を入力してください",
+        });
         return;
       }
 
       // 新規作成の場合は直接createExhibitionを呼び出す
       if (!exhibitionId) {
         await createExhibition(formData);
-        alert("下書きとして保存しました");
-        // 初回保存後はリロード
-        window.location.reload();
+        toast.success("保存しました", {
+          description: "下書きとして保存しました",
+        });
+        // 初回保存後はリロード (トーストを表示するために少し待機)
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
         return;
       }
 
       // 既存の場合は、まずフォーム内容を保存してからsaveDraftを呼び出す
       const savedExhibitionId = await onSaveForm();
       await saveDraft(savedExhibitionId || exhibitionId);
-      alert("下書きとして保存しました");
+      toast.success("保存しました", {
+        description: "下書きとして保存しました",
+      });
     } catch (err) {
       console.error("下書き保存に失敗しました:", err);
       const message =
         err instanceof Error ? err.message : "下書き保存に失敗しました";
-      alert(message);
+      toast.error("保存失敗", {
+        description: message,
+      });
     }
   }, [exhibitionId, createExhibition, formData, onSaveForm, saveDraft]);
 
@@ -126,7 +136,7 @@ export function Header({
 
   const handleDelete = useCallback(async () => {
     if (!exhibitionId) {
-      alert("削除する出展がありません");
+      toast.error("削除する出展がありません");
       return;
     }
 
@@ -141,14 +151,16 @@ export function Header({
     setIsDeleting(true);
     try {
       await deleteExhibition(exhibitionId);
-      alert("削除しました");
+      toast.success("削除しました");
       if (onExhibitionDeleted) {
         onExhibitionDeleted();
       }
     } catch (err) {
       console.error("削除に失敗しました:", err);
       const message = err instanceof Error ? err.message : "削除に失敗しました";
-      alert(message);
+      toast.error("削除に失敗しました", {
+        description: message,
+      });
     } finally {
       setIsDeleting(false);
     }
