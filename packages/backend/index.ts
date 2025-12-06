@@ -12,15 +12,32 @@ const app = new Hono<{ Bindings: Bindings }>()
 // エラーハンドラーを適用
 app.onError(errorHandler)
 
-// CORSを適用
+// CORSを適用（環境に応じて動的に設定）
 app.use(
   '*',
   cors({
-    origin: [
-      'https://ar-pamph-frontend.sekibun3109.workers.dev',
-      'http://localhost:3000', // 開発環境用
-      'http://localhost:8787', // 開発環境用
-    ],
+    origin: (origin, c) => {
+      const environment = c.env.ENVIRONMENT || 'development'
+      const allowedOrigins: string[] = [
+        'http://localhost:3000', // 開発環境用
+        'http://localhost:8787', // 開発環境用
+      ]
+
+      // 環境に応じてoriginを追加
+      if (environment === 'production') {
+        allowedOrigins.push('https://ar-pamph-frontend.sekibun3109.workers.dev')
+      } else if (environment === 'staging') {
+        allowedOrigins.push('https://ar-pamph-frontend-staging.sekibun3109.workers.dev')
+      }
+
+      // リクエストのoriginが許可リストに含まれているかチェック
+      if (origin && allowedOrigins.includes(origin)) {
+        return origin
+      }
+
+      // 許可リストに含まれていない場合は、最初のoriginを返す（開発環境用）
+      return allowedOrigins[0]
+    },
   })
 )
 
