@@ -14,10 +14,25 @@ export const errorHandler: ErrorHandler = (err, c) => {
 
   // Zodバリデーションエラー
   if (err instanceof ZodError) {
+    // flatten() が非推奨の場合があるため、issuesから手動でfieldErrorsを構築
+    const fieldErrors: Record<string, string[]> = {}
+
+    err.issues.forEach((issue) => {
+      // パスが存在する場合、その最初の要素をフィールド名として扱う
+      if (issue.path.length > 0) {
+        const key = String(issue.path[0])
+        if (!fieldErrors[key]) {
+          fieldErrors[key] = []
+        }
+        fieldErrors[key].push(issue.message)
+      }
+    })
+
     return c.json(
       {
         error: 'VALIDATION_ERROR',
-        message: 'リクエストパラメータが不正です',
+        message: '入力内容に不備があります',
+        fieldErrors: fieldErrors, // { title: ["必須入力です"], price: ["数値ではありません"] } のような形式
         details: err.issues,
       },
       400

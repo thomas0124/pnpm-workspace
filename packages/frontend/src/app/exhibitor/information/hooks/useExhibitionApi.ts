@@ -7,6 +7,22 @@ import type { ExhibitionDto } from "@/types/exhibitions";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 /**
+ * APIエラー用のカスタムクラス
+ * ステータスコードとレスポンスデータを含む
+ */
+export class ApiError extends Error {
+  status: number;
+  data: any;
+
+  constructor(message: string, status: number, data: any) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+  }
+}
+
+/**
  * Base64文字列からBlobに変換
  */
 function base64ToBlob(base64: string, mimeType: string = "image/png"): Blob {
@@ -173,14 +189,17 @@ export function useExhibitionApi() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
+        throw new ApiError(
           extractErrorMessage(errorData) || "出展情報の作成に失敗しました",
+          response.status,
+          errorData,
         );
       }
 
       const result = await response.json();
       return result;
     } catch (err) {
+      if (err instanceof ApiError) throw err;
       const errorMessage =
         err instanceof Error ? err.message : "出展情報の作成に失敗しました";
       setError(errorMessage);
@@ -206,15 +225,23 @@ export function useExhibitionApi() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
+        // HonoのRPC型推論でneverになる問題を回避
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
+        const errorData = await res.json().catch(() => ({}));
+        throw new ApiError(
           extractErrorMessage(errorData) || "出展情報の取得に失敗しました",
+          res.status,
+          errorData,
         );
       }
 
       const result = await response.json();
       return result;
     } catch (err) {
+      if (err instanceof ApiError) throw err;
       const errorMessage =
         err instanceof Error ? err.message : "出展情報の取得に失敗しました";
       setError(errorMessage);
@@ -240,21 +267,28 @@ export function useExhibitionApi() {
         });
 
         if (!response.ok) {
+          // HonoのRPC型推論でneverになる問題を回避
+          const res = response as unknown as {
+            status: number;
+            json: () => Promise<any>;
+          };
+
           // 404の場合は出展情報が存在しないため、nullを返す
-          if (response.status === 404) {
+          if (res.status === 404) {
             return null;
           }
-          const errorData = await (response as Response)
-            .json()
-            .catch(() => ({}));
-          throw new Error(
+          const errorData = await res.json().catch(() => ({}));
+          throw new ApiError(
             extractErrorMessage(errorData) || "出展情報の取得に失敗しました",
+            res.status,
+            errorData,
           );
         }
 
         const result = (await response.json()) as ExhibitionDto;
         return result;
       } catch (err) {
+        if (err instanceof ApiError) throw err;
         const errorMessage =
           err instanceof Error ? err.message : "出展情報の取得に失敗しました";
         setError(errorMessage);
@@ -300,14 +334,17 @@ export function useExhibitionApi() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(
+          throw new ApiError(
             extractErrorMessage(errorData) || "出展情報の更新に失敗しました",
+            response.status,
+            errorData,
           );
         }
 
         const result = await response.json();
         return result;
       } catch (err) {
+        if (err instanceof ApiError) throw err;
         const errorMessage =
           err instanceof Error ? err.message : "出展情報の更新に失敗しました";
         setError(errorMessage);
@@ -335,15 +372,23 @@ export function useExhibitionApi() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
+        // HonoのRPC型推論でneverになる問題を回避
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
+        const errorData = await res.json().catch(() => ({}));
+        throw new ApiError(
           extractErrorMessage(errorData) || "下書き保存に失敗しました",
+          res.status,
+          errorData,
         );
       }
 
       const result = await response.json();
       return result;
     } catch (err) {
+      if (err instanceof ApiError) throw err;
       const errorMessage =
         err instanceof Error ? err.message : "下書き保存に失敗しました";
       setError(errorMessage);
@@ -369,13 +414,23 @@ export function useExhibitionApi() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(extractErrorMessage(errorData) || "公開に失敗しました");
+        // HonoのRPC型推論でneverになる問題を回避
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
+        const errorData = await res.json().catch(() => ({}));
+        throw new ApiError(
+          extractErrorMessage(errorData) || "公開に失敗しました",
+          res.status,
+          errorData,
+        );
       }
 
       const result = await response.json();
       return result;
     } catch (err) {
+      if (err instanceof ApiError) throw err;
       const errorMessage =
         err instanceof Error ? err.message : "公開に失敗しました";
       setError(errorMessage);
@@ -403,15 +458,23 @@ export function useExhibitionApi() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
+        // HonoのRPC型推論でneverになる問題を回避
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
+        const errorData = await res.json().catch(() => ({}));
+        throw new ApiError(
           extractErrorMessage(errorData) || "非公開に失敗しました",
+          res.status,
+          errorData,
         );
       }
 
       const result = await response.json();
       return result;
     } catch (err) {
+      if (err instanceof ApiError) throw err;
       const errorMessage =
         err instanceof Error ? err.message : "非公開に失敗しました";
       setError(errorMessage);
@@ -437,12 +500,22 @@ export function useExhibitionApi() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(extractErrorMessage(errorData) || "削除に失敗しました");
+        // HonoのRPC型推論でneverになる問題を回避
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
+        const errorData = await res.json().catch(() => ({}));
+        throw new ApiError(
+          extractErrorMessage(errorData) || "削除に失敗しました",
+          res.status,
+          errorData,
+        );
       }
 
       return true;
     } catch (err) {
+      if (err instanceof ApiError) throw err;
       const errorMessage =
         err instanceof Error ? err.message : "削除に失敗しました";
       setError(errorMessage);
