@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     type: "website",
     title: "えあパンフ",
     description: "AR機能付きデジタルパンフレット",
-    url: "https://ar-pamph-frontend-preview-pr-66.sekibun3109.workers.dev/",
+    url: "https://ar-pamph-frontend.sekibun3109.workers.dev/",
     siteName: "えあパンフ",
     images: [
       {
