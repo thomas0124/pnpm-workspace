@@ -12,8 +12,44 @@ const app = new Hono<{ Bindings: Bindings }>()
 // エラーハンドラーを適用
 app.onError(errorHandler)
 
-// CORSを適用
-app.use('*', cors())
+// CORSを適用（環境に応じて動的に設定）
+app.use(
+  '*',
+  cors({
+    origin: (origin, c) => {
+      const environment = c.env.ENVIRONMENT || 'development'
+      const allowedOrigins: string[] = [
+        'http://localhost:3000', // 開発環境用
+        'http://localhost:8787', // 開発環境用
+      ]
+
+      // 環境に応じてoriginを追加
+      if (environment === 'production') {
+        allowedOrigins.push('https://ar-pamph-frontend.sekibun3109.workers.dev')
+      } else if (environment === 'staging') {
+        allowedOrigins.push('https://ar-pamph-frontend-staging.sekibun3109.workers.dev')
+      } else if (environment === 'preview') {
+        // Preview環境はPR番号が動的なため、パターンマッチで対応
+        // ar-pamph-frontend-preview-pr-{PR番号}.sekibun3109.workers.dev の形式を許可
+        if (
+          origin &&
+          origin.startsWith('https://ar-pamph-frontend-preview-pr-') &&
+          origin.endsWith('.sekibun3109.workers.dev')
+        ) {
+          return origin
+        }
+      }
+
+      // リクエストのoriginが許可リストに含まれているかチェック
+      if (origin && allowedOrigins.includes(origin)) {
+        return origin
+      }
+
+      // 許可リストに含まれていない場合は、最初のoriginを返す（開発環境用）
+      return allowedOrigins[0]
+    },
+  })
+)
 
 // ヘルスチェック
 app.get('/health', (c) => {
