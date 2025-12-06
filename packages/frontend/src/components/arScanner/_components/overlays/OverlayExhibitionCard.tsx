@@ -1,37 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { usePublicExhibitions } from "@/app/exhibitions/_components/exhibitionContent/hooks/usePublicExhibitions";
 import { ExhibitionPreview } from "@/components/exhibitionPreview";
 import { Spinner } from "@/components/ui/spinner";
 import type { ExhibitionFormSchema } from "@/app/exhibitor/information/types";
 
-// UI表示用の型定義
 type DisplayItem = ExhibitionFormSchema & {
   displayCategory: string;
 };
 
 interface OverlayExhibitionCardProps {
   markerId: number;
+  onClose: () => void;
 }
 
 export function OverlayExhibitionCard({
   markerId,
+  onClose,
 }: OverlayExhibitionCardProps) {
-  // 展示データをAPIから取得
   const { data, isLoading } = usePublicExhibitions();
   const [displayItem, setDisplayItem] = useState<DisplayItem | null>(null);
 
   useEffect(() => {
     if (!data) return;
 
-    // TODO: 本来は展示データに `markerId` を持たせて紐付けるべきですが、
-    // ここでは簡易的に (markerId - 1) 番目の展示データを表示するロジックにしています。
+    // 簡易的に (markerId - 1) 番目のデータを取得
     const index = markerId - 1;
     const item = data[index];
 
     if (item) {
-      // カテゴリの日本語変換マップ
       const categoryDisplayMap: Record<string, string> = {
         Food: "飲食",
         Exhibition: "展示",
@@ -39,17 +38,9 @@ export function OverlayExhibitionCard({
         Stage: "ステージ",
       };
 
-      // ExhibitionPreviewに渡すデータ形式へ変換
       const formattedItem: DisplayItem = {
-        id: item.id,
-        exhibitorName: item.exhibitorName,
-        title: item.title,
+        ...item,
         category: item.category as any,
-        location: item.location,
-        price: item.price,
-        requiredTime: item.requiredTime,
-        comment: item.comment,
-        image: item.image,
         displayCategory: categoryDisplayMap[item.category] || item.category,
       };
 
@@ -69,10 +60,17 @@ export function OverlayExhibitionCard({
     );
   }
 
+  // データがない場合の表示
   if (!displayItem) {
     return (
-      <div className="absolute bottom-36 left-4 right-4 z-40 duration-500 animate-in fade-in slide-in-from-bottom-4">
-        <div className="rounded-xl bg-white/90 p-4 text-center shadow-lg backdrop-blur">
+      <div className="absolute bottom-36 left-4 right-4 z-40 animate-in slide-in-from-bottom-4 fade-in duration-500">
+        <div className="relative rounded-xl bg-white/90 p-4 text-center shadow-lg backdrop-blur">
+          <button
+            onClick={onClose}
+            className="absolute right-2 top-2 rounded-full p-1 text-slate-500 hover:bg-slate-200"
+          >
+            <X className="h-5 w-5" />
+          </button>
           <p className="font-bold text-slate-800">No Data</p>
           <p className="text-sm text-slate-600">
             ID: {markerId} の展示情報が見つかりません
@@ -83,9 +81,20 @@ export function OverlayExhibitionCard({
   }
 
   return (
-    // 画面下部（再スキャンボタンの上）にカードを表示
-    <div className="absolute bottom-36 left-4 right-4 z-40 duration-500 animate-in fade-in slide-in-from-bottom-8 md:left-1/2 md:right-auto md:w-96 md:-translate-x-1/2">
-      <ExhibitionPreview item={displayItem} />
+    <div className="absolute bottom-36 left-4 right-4 z-40 animate-in slide-in-from-bottom-8 fade-in duration-500 md:left-1/2 md:w-96 md:-translate-x-1/2 md:right-auto">
+      <div className="relative">
+        {/* 閉じるボタン */}
+        <button
+          onClick={onClose}
+          className="absolute -right-2 -top-2 z-50 rounded-full bg-slate-900 text-white shadow-lg p-2 hover:bg-slate-700 transition-colors"
+          aria-label="閉じる"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        
+        {/* カード本体 */}
+        <ExhibitionPreview item={displayItem} />
+      </div>
     </div>
   );
 }

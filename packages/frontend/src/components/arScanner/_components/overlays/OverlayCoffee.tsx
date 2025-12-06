@@ -8,7 +8,12 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-export function OverlayCoffee() {
+// onClick プロパティを追加
+interface OverlayCoffeeProps {
+  onClick?: () => void;
+}
+
+export function OverlayCoffee({ onClick }: OverlayCoffeeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,7 +117,7 @@ export function OverlayCoffee() {
   }, []);
 
   return (
-    <div className="absolute left-1/2 top-1/2 flex h-80 w-full -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+    <div onClick={onClick} className="absolute left-1/2 top-1/2 flex h-80 w-full -translate-x-1/2 -translate-y-1/2 flex-col items-center cursor-pointer">
       {/* Three.js描画エリア */}
       <div
         ref={containerRef}
@@ -121,7 +126,7 @@ export function OverlayCoffee() {
 
       <div className="pointer-events-none mt-[-50px] rounded-xl bg-white/90 p-4 shadow-lg">
         <h3 className="text-center font-bold">ID: 3 Detected</h3>
-        <p className="text-sm">Coffee Machine (GLTF+KTX2)</p>
+        <p className="text-sm">Tap to view details</p>
       </div>
     </div>
   );
