@@ -38,7 +38,7 @@ async function fetcherExhibitions(
 export function usePublicExhibitions({
   search,
   category,
-}: UsePublicExhibitionsParams) {
+}: UsePublicExhibitionsParams = {}) {
   const { data, isLoading, error } = useSWR<ExhibitionFormData[], Error>(
     ["public-exhibitions", search, category],
     ([, search, category]: [string, string | undefined, string | undefined]) =>

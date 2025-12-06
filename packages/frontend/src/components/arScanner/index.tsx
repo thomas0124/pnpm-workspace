@@ -8,11 +8,11 @@ import { ARHeader } from "@/components/arScanner/_components/arHeader";
 import { ScannerFrame } from "@/components/arScanner/_components/scannerFrame";
 import { Instructions } from "@/components/arScanner/_components/instructions";
 import { AR_JS_CDN_URL } from "@/components/arScanner/constants";
-// Imageコンポーネントは未使用であれば削除、使うなら残す
-// import Image from "next/image";
-import { OverlayText } from "@/components/arScanner/_components/overlays/OverlayText";
+import { OverlayText } from "@/components/arScanner/_components/overlays/OverlayText"; // インポートを復活
 import { OverlayHorse } from "@/components/arScanner/_components/overlays/OverlayHorse";
 import { OverlayCoffee } from "@/components/arScanner/_components/overlays/OverlayCoffee";
+import { OverlayExhibitionCard } from "@/components/arScanner/_components/overlays/OverlayExhibitionCard";
+
 export default function ARScanner() {
   const [isARLoaded, setIsARLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -56,9 +56,15 @@ export default function ARScanner() {
         <ARHeader markerDetected={detectedMarkerId !== null} />
 
         <ScannerFrame markerDetected={detectedMarkerId !== null}>
+          {/* 各IDに対応する3Dモデルを表示 */}
           {detectedMarkerId === 1 && <OverlayText />}
           {detectedMarkerId === 2 && <OverlayHorse />}
           {detectedMarkerId === 3 && <OverlayCoffee />}
+
+          {/* どのIDが検出されても、展示情報カードを併せて表示 */}
+          {detectedMarkerId !== null && (
+            <OverlayExhibitionCard markerId={detectedMarkerId} />
+          )}
         </ScannerFrame>
 
         {/* 検出時のみ表示されるリセットボタンエリア */}
