@@ -13,7 +13,16 @@ const app = new Hono<{ Bindings: Bindings }>()
 app.onError(errorHandler)
 
 // CORSを適用
-app.use('*', cors())
+app.use(
+  '*',
+  cors({
+    origin: [
+      'https://ar-pamph-frontend.sekibun3109.workers.dev',
+      'http://localhost:3000', // 開発環境用
+      'http://localhost:8787', // 開発環境用
+    ],
+  })
+)
 
 // ヘルスチェック
 app.get('/health', (c) => {
