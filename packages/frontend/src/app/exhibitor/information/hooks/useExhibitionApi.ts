@@ -226,7 +226,10 @@ export function useExhibitionApi() {
 
       if (!response.ok) {
         // HonoのRPC型推論でneverになる問題を回避
-        const res = response as unknown as { status: number; json: () => Promise<any> };
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
         const errorData = await res.json().catch(() => ({}));
         throw new ApiError(
           extractErrorMessage(errorData) || "出展情報の取得に失敗しました",
@@ -265,7 +268,10 @@ export function useExhibitionApi() {
 
         if (!response.ok) {
           // HonoのRPC型推論でneverになる問題を回避
-          const res = response as unknown as { status: number; json: () => Promise<any> };
+          const res = response as unknown as {
+            status: number;
+            json: () => Promise<any>;
+          };
 
           // 404の場合は出展情報が存在しないため、nullを返す
           if (res.status === 404) {
@@ -367,7 +373,10 @@ export function useExhibitionApi() {
 
       if (!response.ok) {
         // HonoのRPC型推論でneverになる問題を回避
-        const res = response as unknown as { status: number; json: () => Promise<any> };
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
         const errorData = await res.json().catch(() => ({}));
         throw new ApiError(
           extractErrorMessage(errorData) || "下書き保存に失敗しました",
@@ -406,7 +415,10 @@ export function useExhibitionApi() {
 
       if (!response.ok) {
         // HonoのRPC型推論でneverになる問題を回避
-        const res = response as unknown as { status: number; json: () => Promise<any> };
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
         const errorData = await res.json().catch(() => ({}));
         throw new ApiError(
           extractErrorMessage(errorData) || "公開に失敗しました",
@@ -447,7 +459,10 @@ export function useExhibitionApi() {
 
       if (!response.ok) {
         // HonoのRPC型推論でneverになる問題を回避
-        const res = response as unknown as { status: number; json: () => Promise<any> };
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
         const errorData = await res.json().catch(() => ({}));
         throw new ApiError(
           extractErrorMessage(errorData) || "非公開に失敗しました",
@@ -486,7 +501,10 @@ export function useExhibitionApi() {
 
       if (!response.ok) {
         // HonoのRPC型推論でneverになる問題を回避
-        const res = response as unknown as { status: number; json: () => Promise<any> };
+        const res = response as unknown as {
+          status: number;
+          json: () => Promise<any>;
+        };
         const errorData = await res.json().catch(() => ({}));
         throw new ApiError(
           extractErrorMessage(errorData) || "削除に失敗しました",

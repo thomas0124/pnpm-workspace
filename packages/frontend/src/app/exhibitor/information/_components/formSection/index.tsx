@@ -19,7 +19,7 @@ interface FormSectionProps {
 function ErrorMessage({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <div className="mt-2 flex items-center gap-x-2 rounded-md bg-red-50 p-2 text-sm text-red-600 transition-all animate-in slide-in-from-top-1 fade-in duration-200">
+    <div className="mt-2 flex items-center gap-x-2 rounded-md bg-red-50 p-2 text-sm text-red-600 transition-all duration-200 animate-in fade-in slide-in-from-top-1">
       <AlertCircle className="h-4 w-4 shrink-0" />
       <p>{message}</p>
     </div>
@@ -70,7 +70,7 @@ export function FormSection({ form }: FormSectionProps) {
                 label="出展タイトル"
                 className={cn(
                   errors.title &&
-                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                    "border-red-500 bg-red-50/30 focus-visible:ring-red-500",
                 )}
                 {...register("title")}
               />
@@ -82,7 +82,7 @@ export function FormSection({ form }: FormSectionProps) {
                 label="サークル名"
                 className={cn(
                   errors.exhibitorName &&
-                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                    "border-red-500 bg-red-50/30 focus-visible:ring-red-500",
                 )}
                 {...register("exhibitorName")}
               />
@@ -111,7 +111,7 @@ export function FormSection({ form }: FormSectionProps) {
                 }
                 className={cn(
                   errors.location &&
-                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                    "border-red-500 bg-red-50/30 focus-visible:ring-red-500",
                 )}
                 {...register("location")}
               />
@@ -130,7 +130,7 @@ export function FormSection({ form }: FormSectionProps) {
                 min="1"
                 className={cn(
                   errors.price &&
-                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                    "border-red-500 bg-red-50/30 focus-visible:ring-red-500",
                 )}
                 {...register("price", {
                   setValueAs: (v) => {
@@ -167,7 +167,7 @@ export function FormSection({ form }: FormSectionProps) {
               min="1"
               className={cn(
                 errors.requiredTime &&
-                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                  "border-red-500 bg-red-50/30 focus-visible:ring-red-500",
               )}
               {...register("requiredTime", {
                 setValueAs: (v) => {
@@ -213,7 +213,7 @@ export function FormSection({ form }: FormSectionProps) {
               className={cn(
                 "resize-none border-gray-200 bg-gray-50",
                 errors.comment &&
-                  "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                  "border-red-500 bg-red-50/30 focus-visible:ring-red-500",
               )}
             />
             <ErrorMessage message={errors.comment?.message} />

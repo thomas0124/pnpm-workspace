@@ -187,7 +187,11 @@ export function useExhibitionForm() {
         console.error("Form submission failed:", err);
 
         // バリデーションエラーの場合、各フィールドにエラーをセット
-        if (err instanceof ApiError && err.status === 400 && err.data.fieldErrors) {
+        if (
+          err instanceof ApiError &&
+          err.status === 400 &&
+          err.data.fieldErrors
+        ) {
           Object.entries(err.data.fieldErrors).forEach(([key, messages]) => {
             if (Array.isArray(messages) && messages.length > 0) {
               setFormError(key as keyof ExhibitionFormSchema, {
@@ -196,10 +200,12 @@ export function useExhibitionForm() {
             }
           });
           toast.error("入力エラー", {
-            description: "入力内容に誤りがあります。赤枠の項目を確認してください。",
+            description:
+              "入力内容に誤りがあります。赤枠の項目を確認してください。",
           });
         } else {
-          const message = err instanceof Error ? err.message : "エラーが発生しました";
+          const message =
+            err instanceof Error ? err.message : "エラーが発生しました";
           toast.error("保存失敗", {
             description: message,
           });
