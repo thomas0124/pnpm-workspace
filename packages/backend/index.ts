@@ -28,6 +28,12 @@ app.use(
         allowedOrigins.push('https://ar-pamph-frontend.sekibun3109.workers.dev')
       } else if (environment === 'staging') {
         allowedOrigins.push('https://ar-pamph-frontend-staging.sekibun3109.workers.dev')
+      } else if (environment === 'preview') {
+        // Preview環境はPR番号が動的なため、パターンマッチで対応
+        // ar-pamph-frontend-preview-pr-{PR番号}.sekibun3109.workers.dev の形式を許可
+        if (origin && origin.startsWith('https://ar-pamph-frontend-preview-pr-') && origin.endsWith('.sekibun3109.workers.dev')) {
+          return origin
+        }
       }
 
       // リクエストのoriginが許可リストに含まれているかチェック
