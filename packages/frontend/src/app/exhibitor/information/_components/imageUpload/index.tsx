@@ -2,6 +2,7 @@
 
 import { Upload } from "lucide-react";
 import { useRef, ChangeEvent } from "react";
+import { toast } from "sonner";
 
 interface ImageUploadProps {
   onImageChange: (file: string | null) => void;
@@ -24,13 +25,25 @@ export function ImageUpload({ onImageChange }: ImageUploadProps) {
 
     // ファイル形式のバリデーション
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      alert("PNG、JPG、GIF形式の画像のみアップロードできます");
+      toast.error("形式エラー", {
+        description: "PNG、JPG、GIF形式の画像のみアップロードできます",
+      });
+      // inputの値をリセットして、同じファイルを再度選択できるようにする
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
     // ファイルサイズのバリデーション
     if (file.size > MAX_FILE_SIZE) {
-      alert("ファイルサイズは5MB以下にしてください");
+      toast.error("サイズオーバー", {
+        description: "ファイルサイズは5MB以下にしてください",
+      });
+      // inputの値をリセット
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
@@ -39,6 +52,12 @@ export function ImageUpload({ onImageChange }: ImageUploadProps) {
     reader.onloadend = () => {
       const preview = reader.result as string;
       onImageChange(preview);
+      toast.success("画像をアップロードしました");
+    };
+    reader.onerror = () => {
+      toast.error("読み込みエラー", {
+        description: "画像の読み込みに失敗しました",
+      });
     };
     reader.readAsDataURL(file);
   };
@@ -61,7 +80,7 @@ export function ImageUpload({ onImageChange }: ImageUploadProps) {
       />
       <div
         onClick={handleClick}
-        className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-12 text-center transition-colors hover:border-gray-400"
+        className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-12 text-center transition-colors hover:border-gray-400 hover:bg-gray-50"
       >
         <Upload className="mx-auto mb-3 h-8 w-8 text-gray-400" />
         <p className="mb-1 text-sm text-gray-600">

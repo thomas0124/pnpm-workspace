@@ -1,5 +1,5 @@
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Clock, DollarSign } from "lucide-react";
+import { MapPin, Clock, DollarSign, AlertCircle } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 import type { ExhibitionFormSchema } from "@/app/exhibitor/information/types";
 import { DESCRIPTION_MAX_LENGTH } from "@/app/exhibitor/information/constants";
@@ -7,9 +7,23 @@ import { CategorySelector } from "@/app/exhibitor/information/_components/catego
 import { ImageUpload } from "@/app/exhibitor/information/_components/imageUpload";
 import { InputWithLabel } from "@/components/inputWithLabel";
 import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface FormSectionProps {
   form: UseFormReturn<ExhibitionFormSchema>;
+}
+
+/**
+ * エラーメッセージ表示用コンポーネント
+ */
+function ErrorMessage({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <div className="mt-2 flex items-center gap-x-2 rounded-md bg-red-50 p-2 text-sm text-red-600 transition-all animate-in slide-in-from-top-1 fade-in duration-200">
+      <AlertCircle className="h-4 w-4 shrink-0" />
+      <p>{message}</p>
+    </div>
+  );
 }
 
 export function FormSection({ form }: FormSectionProps) {
@@ -46,9 +60,7 @@ export function FormSection({ form }: FormSectionProps) {
                 })
               }
             />
-            {errors.category && (
-              <p className="text-sm text-red-500">{errors.category.message}</p>
-            )}
+            <ErrorMessage message={errors.category?.message} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -56,23 +68,25 @@ export function FormSection({ form }: FormSectionProps) {
               <InputWithLabel
                 id="title"
                 label="出展タイトル"
+                className={cn(
+                  errors.title &&
+                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                )}
                 {...register("title")}
               />
-              {errors.title && (
-                <p className="text-sm text-red-500">{errors.title.message}</p>
-              )}
+              <ErrorMessage message={errors.title?.message} />
             </div>
             <div className="space-y-1">
               <InputWithLabel
                 id="circle"
                 label="サークル名"
+                className={cn(
+                  errors.exhibitorName &&
+                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                )}
                 {...register("exhibitorName")}
               />
-              {errors.exhibitorName && (
-                <p className="text-sm text-red-500">
-                  {errors.exhibitorName.message}
-                </p>
-              )}
+              <ErrorMessage message={errors.exhibitorName?.message} />
             </div>
           </div>
 
@@ -95,13 +109,13 @@ export function FormSection({ form }: FormSectionProps) {
                     場所
                   </>
                 }
+                className={cn(
+                  errors.location &&
+                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                )}
                 {...register("location")}
               />
-              {errors.location && (
-                <p className="text-sm text-red-500">
-                  {errors.location.message}
-                </p>
-              )}
+              <ErrorMessage message={errors.location?.message} />
             </div>
             <div className="space-y-1">
               <InputWithLabel
@@ -114,6 +128,10 @@ export function FormSection({ form }: FormSectionProps) {
                 }
                 type="number"
                 min="1"
+                className={cn(
+                  errors.price &&
+                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+                )}
                 {...register("price", {
                   setValueAs: (v) => {
                     if (v === "" || v === null || v === undefined) return null;
@@ -132,9 +150,7 @@ export function FormSection({ form }: FormSectionProps) {
                   </div>
                 )}
               />
-              {errors.price && (
-                <p className="text-sm text-red-500">{errors.price.message}</p>
-              )}
+              <ErrorMessage message={errors.price?.message} />
             </div>
           </div>
 
@@ -149,6 +165,10 @@ export function FormSection({ form }: FormSectionProps) {
               }
               type="number"
               min="1"
+              className={cn(
+                errors.requiredTime &&
+                    "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+              )}
               {...register("requiredTime", {
                 setValueAs: (v) => {
                   if (v === "" || v === null || v === undefined) return null;
@@ -167,11 +187,7 @@ export function FormSection({ form }: FormSectionProps) {
                 </div>
               )}
             />
-            {errors.requiredTime && (
-              <p className="text-sm text-red-500">
-                {errors.requiredTime.message}
-              </p>
-            )}
+            <ErrorMessage message={errors.requiredTime?.message} />
           </div>
 
           {/* <ArDesignSelector
@@ -194,11 +210,13 @@ export function FormSection({ form }: FormSectionProps) {
               {...register("comment")}
               maxLength={DESCRIPTION_MAX_LENGTH}
               rows={6}
-              className="resize-none border-gray-200 bg-gray-50"
+              className={cn(
+                "resize-none border-gray-200 bg-gray-50",
+                errors.comment &&
+                  "border-red-500 focus-visible:ring-red-500 bg-red-50/30"
+              )}
             />
-            {errors.comment && (
-              <p className="text-sm text-red-500">{errors.comment.message}</p>
-            )}
+            <ErrorMessage message={errors.comment?.message} />
             <div className="mt-1 text-right text-xs text-gray-500">
               {commentValue ? commentValue.length : 0} /{" "}
               {DESCRIPTION_MAX_LENGTH}

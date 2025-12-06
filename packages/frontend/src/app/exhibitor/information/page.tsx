@@ -8,6 +8,7 @@ import { ExhibitionPreview } from "@/components/exhibitionPreview";
 import { useAuthGuard } from "@/app/exhibitor/information/hooks/useAuthGuard";
 import { useExhibitionForm } from "@/app/exhibitor/information/hooks/useExhibitionForm";
 import type { Category } from "@/types/exhibitions";
+import { Toaster } from "@/components/ui/sonner"; // sonnerのToasterを追加
 
 export default function BasicInfoPage() {
   const { isAuthenticated } = useAuthGuard();
@@ -16,7 +17,7 @@ export default function BasicInfoPage() {
     onSubmit,
     exhibitionId,
     setExhibitionId,
-    apiError,
+    // apiError, // トーストで表示するため削除
     isPublished,
     mutate,
   } = useExhibitionForm();
@@ -62,11 +63,6 @@ export default function BasicInfoPage() {
         isPublished={isPublished}
         onStatusChange={mutate}
       />
-      {apiError && (
-        <div className="mx-6 mt-4 border-l-4 border-red-400 bg-red-50 p-4">
-          <p className="text-sm text-red-700">{apiError}</p>
-        </div>
-      )}
       <div className="flex h-[calc(100vh-73px)]">
         <Sidebar />
         <main className="flex-1 overflow-hidden p-8">
@@ -78,6 +74,7 @@ export default function BasicInfoPage() {
           </div>
         </main>
       </div>
+      <Toaster />
     </div>
   );
 }

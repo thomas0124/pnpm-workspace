@@ -14,10 +14,14 @@ export const errorHandler: ErrorHandler = (err, c) => {
 
   // Zodバリデーションエラー
   if (err instanceof ZodError) {
+    // エラーをフラット化して、フィールドごとのエラーメッセージを取得しやすくする
+    const flattened = err.flatten()
+
     return c.json(
       {
         error: 'VALIDATION_ERROR',
-        message: 'リクエストパラメータが不正です',
+        message: '入力内容に不備があります',
+        fieldErrors: flattened.fieldErrors, // { title: ["必須入力です"], price: ["数値ではありません"] } のような形式
         details: err.issues,
       },
       400
