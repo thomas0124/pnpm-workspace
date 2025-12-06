@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "えあパンフ",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: "https://ar-pamph-frontend.sekibun3109.workers.dev/opengraph-image.png",
         width: 1200,
         height: 630,
         type: "image/png",
