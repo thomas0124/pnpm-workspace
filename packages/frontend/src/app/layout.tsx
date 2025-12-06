@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   title: "えあパンフ",
   description: "学祭に使えるデジタルパンフレット",
   icons: {
-    icon: "/favicon.png",
+    icon: "/favicon.ico",
   },
   openGraph: {
     type: "website",
     title: "えあパンフ",
     description: "AR機能付きデジタルパンフレット",
-    url: "https://ar-pamph-frontend-preview-pr-65.sekibun3109.workers.dev/",
+    url: "https://ar-pamph-frontend-preview-pr-66.sekibun3109.workers.dev/",
     siteName: "えあパンフ",
     images: [
       {
