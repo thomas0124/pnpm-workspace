@@ -1,0 +1,65 @@
+# Cloudflare Workers Configuration for Backend
+
+name = "ar-pamph"
+main = "index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers環境の設定
+
+# Preview環境（Pull Request用）
+[env.preview]
+name = "ar-pamph-preview"
+workers_dev = true
+
+# Staging環境（developブランチ用）
+[env.staging]
+name = "ar-pamph-staging"
+workers_dev = true
+
+# Production環境（mainブランチ用）
+[env.production]
+name = "ar-pamph"
+workers_dev = false
+
+# D1データベースのバインディング（デフォルト/開発環境）
+[[d1_databases]]
+binding = "DB"
+database_name = "ar-pamph-db"
+database_id = "ar-pamph-db"
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
+
+# Preview環境用のD1データベース設定
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "ar-pamph-db-preview"
+database_id = "" # GitHub Actionsで動的に設定されます
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
+
+# Staging環境用のD1データベース設定
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "ar-pamph-db-staging"
+database_id = "" # GitHub Actionsで動的に設定されます
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
+
+# Production環境用のD1データベース設定
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "ar-pamph-db-production"
+database_id = "" # GitHub Actionsで動的に設定されます
+migrations_dir = "infrastructure/persistence/drizzle/migrations"
+
+# 環境変数設定
+[vars]
+ENVIRONMENT = "development"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+

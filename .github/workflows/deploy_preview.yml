@@ -1,0 +1,424 @@
+name: Deploy Preview Environment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+env:
+  PNPM_VERSION: "9.15.5"
+  NODE_VERSION: "20"
+  CLOUDFLARE_WORKERS_SUBDOMAIN: "sekibun3109"
+  WRANGLER_VERSION: "4.51.0"
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    name: Deploy Preview to Cloudflare
+    if: github.event.action != 'closed'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Clean build cache
+        run: |
+          echo "🧹 Cleaning build cache..."
+          rm -rf packages/backend/dist
+          rm -rf packages/frontend/.next
+          rm -rf packages/frontend/.vercel
+          rm -rf packages/frontend/out
+          echo "✅ Cache cleaned"
+
+      - name: Build Backend
+        run: pnpm --filter @uttk/backend run build
+
+      - name: Setup Cloudflare Wrangler
+        run: pnpm add -g wrangler@${{ env.WRANGLER_VERSION }}
+
+      - name: Create or get D1 database
+        id: d1-setup
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # PR番号を使った一意のデータベース名
+          DB_NAME="ar-pamph-db-pr-${{ github.event.pull_request.number }}"
+          echo "DB_NAME=$DB_NAME" >> $GITHUB_OUTPUT
+
+          # 既存のデータベースをチェック
+          DB_LIST=$(wrangler d1 list --json || echo "[]")
+          DB_ID=$(echo "$DB_LIST" | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid" || echo "")
+
+          # 既存DBが存在する場合は削除
+          if [ -n "$DB_ID" ]; then
+            echo "🗑️ Deleting existing database: $DB_NAME (ID: $DB_ID)"
+            wrangler d1 delete "$DB_NAME" -y
+            echo "✅ Existing database deleted"
+          fi
+
+          # 新規データベースを作成
+          echo "Creating new D1 database: $DB_NAME"
+          wrangler d1 create "$DB_NAME"
+          
+          # データベース作成の反映を待つ（リトライ＋指数バックオフ）
+          for i in {1..5}; do
+            DB_ID=$(wrangler d1 list --json | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid")
+            if [ -n "$DB_ID" ]; then
+              echo "Created database with ID: $DB_ID"
+              break
+            fi
+            echo "Waiting for database to be available (attempt $i/5)..."
+            sleep $((2 ** i))
+          done
+          
+          if [ -z "$DB_ID" ]; then
+            echo "Error: Failed to retrieve database ID after creation"
+            exit 1
+          fi
+          
+          # 常に新規作成フラグを設定
+          echo "IS_NEW_DB=true" >> $GITHUB_OUTPUT
+          echo "✅ New database created"
+          echo "DB_ID=$DB_ID" >> $GITHUB_OUTPUT
+
+      - name: Update wrangler.toml with D1 database ID
+        working-directory: packages/backend
+        run: |
+          # Preview環境のdatabase_nameとdatabase_idを動的に設定
+          DB_NAME="${{ steps.d1-setup.outputs.DB_NAME }}"
+          DB_ID="${{ steps.d1-setup.outputs.DB_ID }}"
+          
+          # env.preview.d1_databasesセクション内のdatabase_nameを更新
+          sed -i "s|database_name = \"ar-pamph-db-preview\"|database_name = \"$DB_NAME\"|" wrangler.toml
+          
+          # env.preview.d1_databasesセクション内のdatabase_idを更新
+          # [[env.preview.d1_databases]]から次のセクションまでの範囲でdatabase_idを置換
+          sed -i "/\[\[env\.preview\.d1_databases\]\]/,/^\[\[/ s|database_id = \"\"|database_id = \"$DB_ID\"|" wrangler.toml
+          cat wrangler.toml
+
+      - name: Run D1 Database Migrations
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          IS_NEW_DB="${{ steps.d1-setup.outputs.IS_NEW_DB }}"
+          
+          # マイグレーションファイルが存在するかチェック
+          if [ ! -d "infrastructure/persistence/drizzle/migrations" ] || [ -z "$(ls -A infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null)" ]; then
+            echo "ℹ️ No migrations found, skipping..."
+            exit 0
+          fi
+          
+          echo "📦 Checking database migrations..."
+          
+          if [ "$IS_NEW_DB" = "true" ]; then
+            echo "🆕 New database detected - applying all migrations"
+          else
+            echo "♻️ Existing database detected - checking for unapplied migrations"
+            
+            # 適用済みマイグレーションをリスト
+            APPLIED_MIGRATIONS=$(wrangler d1 migrations list ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env preview 2>/dev/null | grep -E "^\d{4}_" | awk '{print $1}' || echo "")
+            
+            # ローカルのマイグレーションファイルをリスト
+            LOCAL_MIGRATIONS=$(ls infrastructure/persistence/drizzle/migrations/*.sql 2>/dev/null | xargs -n 1 basename || echo "")
+            
+            # 未適用のマイグレーションがあるかチェック
+            UNAPPLIED_COUNT=0
+            for migration in $LOCAL_MIGRATIONS; do
+              if ! echo "$APPLIED_MIGRATIONS" | grep -q "^${migration}$"; then
+                UNAPPLIED_COUNT=$((UNAPPLIED_COUNT + 1))
+                echo "  ⏳ Unapplied: $migration"
+              fi
+            done
+            
+            if [ $UNAPPLIED_COUNT -eq 0 ]; then
+              echo "✅ All migrations already applied - database is up to date"
+              exit 0
+            fi
+            
+            echo "📝 Found $UNAPPLIED_COUNT unapplied migration(s)"
+          fi
+          
+          # マイグレーション適用
+          echo "🚀 Applying migrations..."
+          if wrangler d1 migrations apply ${{ steps.d1-setup.outputs.DB_NAME }} --remote --env preview 2>&1 | tee /tmp/migration_output.log; then
+            echo "✅ Migrations applied successfully"
+          else
+            MIGRATION_ERROR=$(cat /tmp/migration_output.log)
+            echo "❌ Migration failed with error:"
+            echo "$MIGRATION_ERROR"
+            exit 1
+          fi
+
+      - name: Seed D1 Database
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          IS_NEW_DB="${{ steps.d1-setup.outputs.IS_NEW_DB }}"
+          
+          if [ "$IS_NEW_DB" = "true" ]; then
+            if [ -f "infrastructure/persistence/drizzle/seeds/index.ts" ]; then
+              echo "🌱 Preparing seed data..."
+              
+              # ローカルマイグレーション
+              pnpm db:migrate:local
+              
+              # ローカルでseed実行
+              pnpm run db:seed
+              
+              # ローカルDBからデータをダンプ
+              LATEST_DB=$(ls -t .wrangler/state/v3/d1/miniflare-D1DatabaseObject/*.sqlite | head -1)
+              
+              if [ -n "$LATEST_DB" ]; then
+                echo "📦 Extracting seed data..."
+                # 外部キー制約を無効化
+                echo "PRAGMA foreign_keys=OFF;" > full-dump.sql
+                # データのみダンプ（内部テーブル除外）
+                sqlite3 "$LATEST_DB" .dump | \
+                  grep "^INSERT" | \
+                  grep -v "d1_migrations" | \
+                  grep -v "_cf_" >> full-dump.sql
+                # 外部キー制約を再度有効化
+                echo "PRAGMA foreign_keys=ON;" >> full-dump.sql
+                
+                # リモートD1に適用
+                echo "📤 Seeding remote D1..."
+                wrangler d1 execute ${{ steps.d1-setup.outputs.DB_NAME }} \
+                  --remote \
+                  --env preview \
+                  --file=full-dump.sql
+                
+                echo "✅ Seed complete"
+              else
+                echo "❌ Local DB not found"
+                exit 1
+              fi
+            else
+              echo "ℹ️ No seed file, skipping..."
+            fi
+          else
+            echo "ℹ️ Skipping seed for existing database"
+          fi
+
+      - name: Set JWT_SECRET secret
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "🔐 Setting JWT_SECRET secret for preview environment..."
+          echo "${{ secrets.JWT_SECRET }}" | wrangler secret put JWT_SECRET --env preview
+          echo "✅ JWT_SECRET secret set successfully"
+
+      - name: Deploy Backend to Cloudflare Workers
+        id: deploy-backend
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Preview環境にデプロイ（通常のバンドルモード）
+          # TypeScriptエントリーポイント（index.ts）をWranglerにバンドルさせる
+          echo "🚀 Deploying backend (with bundling)..."
+          DEPLOY_OUTPUT=$(wrangler deploy --env preview)
+          echo "$DEPLOY_OUTPUT"
+
+          # 環境変数とWorker名から明示的にURLを生成
+          WORKER_NAME="ar-pamph-preview"
+          WORKER_URL="https://${WORKER_NAME}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
+          
+          echo "WORKER_URL=$WORKER_URL" >> $GITHUB_OUTPUT
+          echo "✅ Backend deployed to: $WORKER_URL"
+
+      - name: Build Frontend
+        working-directory: packages/frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
+        run: |
+          echo "🧹 Cleaning frontend cache..."
+          rm -rf .next .open-next .vercel out
+          echo "Building frontend with API URL: $NEXT_PUBLIC_API_URL"
+          npx opennextjs-cloudflare build
+
+      - name: Update wrangler.jsonc for preview environment
+        working-directory: packages/frontend
+        run: |
+          # Preview環境用のWorker名を設定
+          WORKER_NAME="ar-pamph-frontend-preview-pr-${{ github.event.pull_request.number }}"
+          # wrangler.jsoncのnameを更新
+          sed -i "s|\"name\": \"ar-pamph-frontend\"|\"name\": \"$WORKER_NAME\"|" wrangler.jsonc
+          sed -i "s|\"service\": \"ar-pamph-frontend\"|\"service\": \"$WORKER_NAME\"|" wrangler.jsonc
+          cat wrangler.jsonc
+
+      - name: Deploy Frontend to Cloudflare Workers
+        id: deploy-frontend
+        working-directory: packages/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Cloudflare Workersにデプロイ
+          wrangler deploy --config wrangler.jsonc
+          
+          # デプロイされたURLを生成（Workers のURL）
+          WORKER_NAME="ar-pamph-frontend-preview-pr-${{ github.event.pull_request.number }}"
+          FRONTEND_URL="https://${WORKER_NAME}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
+          echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_OUTPUT
+          echo "✅ Frontend deployed to: $FRONTEND_URL"
+
+      - name: Comment PR with deployment URLs
+        uses: actions/github-script@v7
+        env:
+          FRONTEND_URL: ${{ steps.deploy-frontend.outputs.FRONTEND_URL }}
+          BACKEND_URL: ${{ steps.deploy-backend.outputs.WORKER_URL }}
+          DB_NAME: ${{ steps.d1-setup.outputs.DB_NAME }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const frontendUrl = process.env.FRONTEND_URL;
+            const backendUrl = process.env.BACKEND_URL;
+            const dbName = process.env.DB_NAME;
+
+            const comment = `## 🚀 Preview Environment Deployed!
+
+            ### 📱 Frontend
+            ${frontendUrl}
+
+            ### ⚙️ Backend API
+            ${backendUrl}
+
+            ### 🗄️ Database
+            D1 Database: \`${dbName}\` (🆕 新規作成)
+
+            ---
+
+            Preview環境が正常にデプロイされました！
+            各URLにアクセスして動作を確認してください。
+
+            *このPreview環境はPRがマージまたはクローズされるまで利用可能です。*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  cleanup-preview:
+    runs-on: ubuntu-latest
+    name: Cleanup Preview Environment
+    if: github.event.action == 'closed'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Setup Cloudflare Wrangler
+        run: pnpm add -g wrangler@${{ env.WRANGLER_VERSION }}
+
+      - name: Delete D1 database
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # PR番号からデータベース名を生成
+          DB_NAME="ar-pamph-db-pr-${{ github.event.pull_request.number }}"
+          echo "🗑️ Checking for database: $DB_NAME"
+
+          # 既存のデータベースをチェック
+          DB_LIST=$(wrangler d1 list --json || echo "[]")
+          DB_ID=$(echo "$DB_LIST" | jq -r ".[] | select(.name==\"$DB_NAME\") | .uuid" 2>/dev/null || echo "")
+
+          if [ -z "$DB_ID" ]; then
+            echo "⚠️ Database $DB_NAME not found. It may have already been deleted."
+          else
+            echo "Found database: $DB_NAME (ID: $DB_ID)"
+            echo "Deleting database..."
+            if wrangler d1 delete "$DB_NAME" -y; then
+              echo "✅ Successfully deleted database: $DB_NAME"
+            else
+              echo "⚠️ Failed to delete database: $DB_NAME"
+              echo "This may be because the database was already deleted or does not exist."
+            fi
+          fi
+
+      - name: Delete Cloudflare Worker deployment (Backend)
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          WORKER_NAME="ar-pamph-preview"
+          echo "🗑️ Checking for Cloudflare Worker: $WORKER_NAME (preview environment)"
+
+          # Workerが存在するか確認
+          if wrangler deployments list --env preview 2>/dev/null | grep -q "$WORKER_NAME"; then
+            echo "Found Worker deployment. Attempting to delete..."
+            # Workerの削除（preview環境）
+            if wrangler delete "$WORKER_NAME" --env preview --force 2>/dev/null; then
+              echo "✅ Successfully deleted Worker: $WORKER_NAME (preview)"
+            else
+              echo "⚠️ Failed to delete Worker: $WORKER_NAME (preview)"
+              echo "This may be because the Worker was already deleted or does not exist."
+            fi
+          else
+            echo "⚠️ Worker $WORKER_NAME (preview) not found. It may have already been deleted."
+          fi
+
+      - name: Delete Cloudflare Worker deployment (Frontend)
+        working-directory: packages/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          WORKER_NAME="ar-pamph-frontend-preview-pr-${{ github.event.pull_request.number }}"
+          echo "🗑️ Checking for Cloudflare Worker: $WORKER_NAME"
+
+          # Workerが存在するか確認して削除
+          if wrangler deployments list 2>/dev/null | grep -q "$WORKER_NAME"; then
+            echo "Found Worker deployment. Attempting to delete..."
+            if wrangler delete "$WORKER_NAME" --force 2>/dev/null; then
+              echo "✅ Successfully deleted Worker: $WORKER_NAME"
+            else
+              echo "⚠️ Failed to delete Worker: $WORKER_NAME"
+              echo "This may be because the Worker was already deleted or does not exist."
+            fi
+          else
+            echo "⚠️ Worker $WORKER_NAME not found. It may have already been deleted."
+          fi

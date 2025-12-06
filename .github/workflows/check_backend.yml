@@ -1,0 +1,48 @@
+name: Check Backend
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Type Check
+        run: pnpm --filter @uttk/backend run type-check
+
+      - name: Run Lint Check
+        run: pnpm --filter @uttk/backend run lint:check
+
+      - name: Run Format Fix
+        run: pnpm --filter @uttk/backend run format:fix
+
+      - name: Check for unformatted files
+        run: |
+          git add -N .
+          git diff --name-only --exit-code
+
+      - name: Build Backend
+        run: pnpm --filter @uttk/backend run build
