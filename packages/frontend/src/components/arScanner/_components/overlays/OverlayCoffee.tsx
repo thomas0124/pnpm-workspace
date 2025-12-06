@@ -117,7 +117,10 @@ export function OverlayCoffee({ onClick }: OverlayCoffeeProps) {
   }, []);
 
   return (
-    <div onClick={onClick} className="absolute left-1/2 top-1/2 flex h-80 w-full -translate-x-1/2 -translate-y-1/2 flex-col items-center cursor-pointer">
+    <div
+      onClick={onClick}
+      className="absolute left-1/2 top-1/2 flex h-80 w-full -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center"
+    >
       {/* Three.js描画エリア */}
       <div
         ref={containerRef}

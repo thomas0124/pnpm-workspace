@@ -69,9 +69,15 @@ export default function ARScanner() {
 
         <ScannerFrame markerDetected={detectedMarkerId !== null}>
           {/* 各IDに対応する3Dモデルを表示。タップでカードを表示する */}
-          {detectedMarkerId === 1 && <OverlayText onClick={handleObjectClick} />}
-          {detectedMarkerId === 2 && <OverlayHorse onClick={handleObjectClick} />}
-          {detectedMarkerId === 3 && <OverlayCoffee onClick={handleObjectClick} />}
+          {detectedMarkerId === 1 && (
+            <OverlayText onClick={handleObjectClick} />
+          )}
+          {detectedMarkerId === 2 && (
+            <OverlayHorse onClick={handleObjectClick} />
+          )}
+          {detectedMarkerId === 3 && (
+            <OverlayCoffee onClick={handleObjectClick} />
+          )}
 
           {/* カードが表示モードになっている場合のみ表示 */}
           {detectedMarkerId !== null && isCardVisible && (

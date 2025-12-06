@@ -67,12 +67,15 @@ export function OverlayHorse({ onClick }: OverlayHorseProps) {
   }, []);
 
   return (
-    <div onClick={onClick} className="absolute left-1/2 top-1/2 flex h-80 w-full -translate-x-1/2 -translate-y-1/2 flex-col items-center cursor-pointer">
+    <div
+      onClick={onClick}
+      className="absolute left-1/2 top-1/2 flex h-80 w-full -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center"
+    >
       <div
         ref={containerRef}
         className="h-full w-full duration-500 animate-in zoom-in"
       />
-      <div className="mt-[-50px] rounded-xl bg-white/90 p-4 shadow-lg pointer-events-none">
+      <div className="pointer-events-none mt-[-50px] rounded-xl bg-white/90 p-4 shadow-lg">
         <h3 className="text-center font-bold">ID: 2 Detected</h3>
         <p className="text-sm">Tap to view details</p>
       </div>

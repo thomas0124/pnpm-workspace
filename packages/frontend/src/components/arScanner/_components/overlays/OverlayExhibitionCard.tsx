@@ -63,7 +63,7 @@ export function OverlayExhibitionCard({
   // データがない場合の表示
   if (!displayItem) {
     return (
-      <div className="absolute bottom-36 left-4 right-4 z-40 animate-in slide-in-from-bottom-4 fade-in duration-500">
+      <div className="absolute bottom-36 left-4 right-4 z-40 duration-500 animate-in fade-in slide-in-from-bottom-4">
         <div className="relative rounded-xl bg-white/90 p-4 text-center shadow-lg backdrop-blur">
           <button
             onClick={onClose}
@@ -81,17 +81,17 @@ export function OverlayExhibitionCard({
   }
 
   return (
-    <div className="absolute bottom-36 left-4 right-4 z-40 animate-in slide-in-from-bottom-8 fade-in duration-500 md:left-1/2 md:w-96 md:-translate-x-1/2 md:right-auto">
+    <div className="absolute bottom-36 left-4 right-4 z-40 duration-500 animate-in fade-in slide-in-from-bottom-8 md:left-1/2 md:right-auto md:w-96 md:-translate-x-1/2">
       <div className="relative">
         {/* 閉じるボタン */}
         <button
           onClick={onClose}
-          className="absolute -right-2 -top-2 z-50 rounded-full bg-slate-900 text-white shadow-lg p-2 hover:bg-slate-700 transition-colors"
+          className="absolute -right-2 -top-2 z-50 rounded-full bg-slate-900 p-2 text-white shadow-lg transition-colors hover:bg-slate-700"
           aria-label="閉じる"
         >
           <X className="h-4 w-4" />
         </button>
-        
+
         {/* カード本体 */}
         <ExhibitionPreview item={displayItem} />
       </div>
